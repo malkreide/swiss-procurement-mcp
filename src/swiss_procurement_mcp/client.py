@@ -53,8 +53,8 @@ def pick_lang(value: Any, language: str) -> str | None:
     if isinstance(value, str):
         return value
     if isinstance(value, dict):
-        return value.get(language) or value.get("de") or next(
-            (v for v in value.values() if v), None
+        return (
+            value.get(language) or value.get("de") or next((v for v in value.values() if v), None)
         )
     return str(value)
 
@@ -119,9 +119,7 @@ class SimapClient:
     async def project_search(self, params: dict[str, Any]) -> tuple[Any, str, str]:
         params.setdefault("lang", DEFAULT_LANGUAGE)
         key = "search:" + "&".join(f"{k}={v}" for k, v in sorted(params.items()))
-        return await self._cached(
-            key, "/publications/v2/project/project-search", params
-        )
+        return await self._cached(key, "/publications/v2/project/project-search", params)
 
     async def publication_details(
         self, project_id: str, publication_id: str, language: str
@@ -132,9 +130,7 @@ class SimapClient:
             {"lang": language},
         )
 
-    async def past_publications(
-        self, publication_id: str, language: str
-    ) -> tuple[Any, str, str]:
+    async def past_publications(self, publication_id: str, language: str) -> tuple[Any, str, str]:
         return await self._cached(
             f"past:{publication_id}:{language}",
             f"/publications/v1/publication/{publication_id}/past-publications",
@@ -151,9 +147,7 @@ class SimapClient:
         )
 
     async def procurement_offices_public(self, language: str) -> tuple[Any, str, str]:
-        return await self._cached(
-            f"po:{language}", "/procoffices/v1/po/public", {"lang": language}
-        )
+        return await self._cached(f"po:{language}", "/procoffices/v1/po/public", {"lang": language})
 
     async def probe(self, name: str, path: str) -> dict[str, Any]:
         assert self._http is not None

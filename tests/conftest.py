@@ -21,8 +21,10 @@ def search_payload():
                 "procOfficeName": {"de": "Bereich Liegenschaften"},
                 "lots": [],
                 "orderAddress": {
-                    "countryId": "CH", "cantonId": "ZH",
-                    "postalCode": "8952", "city": {"de": "Schlieren"},
+                    "countryId": "CH",
+                    "cantonId": "ZH",
+                    "postalCode": "8952",
+                    "city": {"de": "Schlieren"},
                 },
             }
         ],
@@ -40,7 +42,8 @@ def detail_payload():
         },
         "procurement": {
             "orderDescription": {"de": "Metallverkleidung Dachzentrale"},
-            "processType": "open", "orderType": "construction_work",
+            "processType": "open",
+            "orderType": "construction_work",
             "additionalCpvCodes": [],
             "bkpCodes": [{"code": "215.2", "label": {"de": "Fassadenbau"}}],
             "npkCodes": [],
