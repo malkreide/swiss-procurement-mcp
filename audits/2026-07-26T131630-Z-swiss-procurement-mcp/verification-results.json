@@ -1,0 +1,402 @@
+{
+  "audit_meta": {
+    "server_name": "swiss-procurement-mcp",
+    "audit_date": "2026-07-26",
+    "skill_version": "1.0.0",
+    "catalog_version": "2026-07",
+    "applies_when_dsl_version": "1.0",
+    "policy": "fail-or-partial"
+  },
+  "results": {
+    "ARCH-001": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_procurement_mcp/server.py:93 — async def search_procurements: snake_case tool name",
+        "src/swiss_procurement_mcp/server.py:180,232,285,320,349,388,438 — all 8 tools snake_case (search_awards, get_procurement_details, get_publication_history, search_cpv_codes, search_construction_codes, find_procurement_office, source_status); no spaces/dots/parens",
+        "src/swiss_procurement_mcp/server.py:104-122 — rich multi-line docstrings with use-case context (entry point, chain-to-details guidance)"
+      ],
+      "gaps": []
+    },
+    "ARCH-002": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_procurement_mcp/server.py:104-122 — search_procurements docstring >100 chars with Args and use-case",
+        "src/swiss_procurement_mcp/server.py:187-192 — search_awards docstring explicitly differentiates from search_procurements and states caveat (uneven award coverage)",
+        "src/swiss_procurement_mcp/server.py:321-326 vs 352-360 — search_cpv_codes vs search_construction_codes descriptions make differentiation explicit"
+      ],
+      "gaps": []
+    },
+    "ARCH-003": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_procurement_mcp/server.py:164-166 — search_procurements returns actionable note on empty results ('Widen the date range or check canton/CPV filters')",
+        "src/swiss_procurement_mcp/server.py:398,417 — find_procurement_office does client-side substring (fuzzy-ish) matching"
+      ],
+      "gaps": [
+        "No match_type field (exact/fuzzy/none) on any response",
+        "No fuzzy-match/suggestion fallback for empty CPV/construction-code or award searches (search_awards has no empty-result note)"
+      ]
+    },
+    "ARCH-004": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_procurement_mcp/__main__.py:11-20 — single entry point selects stdio + sse + streamable-http via MCP_TRANSPORT env var; shared mcp object",
+        "src/swiss_procurement_mcp/server.py:92-449 — tool handlers take no request/session object and produce transport-independent outputs (no direct request access)",
+        "src/swiss_procurement_mcp/server.py:43 — one FastMCP instance is the shared lifespan/setup for all transports"
+      ],
+      "gaps": []
+    },
+    "ARCH-005": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "critical",
+      "evidence": [
+        "src/swiss_procurement_mcp/constants.py — only a public User-Agent and hardcoded public base URL; no keys/tokens/passwords anywhere in src/",
+        ".gitignore:6 — .env is ignored",
+        "SECURITY.md:31 — documents there are no API keys/credentials (public endpoints)"
+      ],
+      "gaps": [
+        "No CI secret-scanning workflow (gitleaks/trufflehog) on PRs — .github/workflows/ has none",
+        "No .env.example in repo (no secrets exist to template, but the control is absent)"
+      ]
+    },
+    "ARCH-006": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_procurement_mcp/server.py — 8 tools total (<=12 budget)",
+        "src/swiss_procurement_mcp/server.py:179-228 — search_awards is a high-level convenience wrapper (queries all 4 award pub-types), not a 1:1 endpoint mapping",
+        "src/swiss_procurement_mcp/server.py:387-434 — find_procurement_office fetches the ~1MB office list once and filters server-side (aggregation, not raw passthrough)"
+      ],
+      "gaps": []
+    },
+    "ARCH-007": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_procurement_mcp/server.py:197 — search_awards aggregates all four award pub-types into one upstream call",
+        "src/swiss_procurement_mcp/server.py:191-192 — docstring states the aggregated character ('queries all four award publication types at once')"
+      ],
+      "gaps": [
+        "search_procurements returns summaries requiring a follow-up get_procurement_details call (IDs/pointers, not self-contained)",
+        "No asyncio.gather parallelization anywhere; anchor demo needs 3 tool calls, above the <=2 target"
+      ]
+    },
+    "ARCH-008": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_procurement_mcp/server.py — only Tools primitive used; no @mcp.resource or @mcp.prompt registrations",
+        "README.md:89-102 — Tools table present"
+      ],
+      "gaps": [
+        "Only one of three primitives used and README does not document a justification for tools-only",
+        "Idempotent read-only tools (e.g. reference-code searches) not assessed for Resources-migration potential"
+      ]
+    },
+    "ARCH-009": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_procurement_mcp/server.py:92,179,231,284,319,348,387,437 — all 8 tools carry explicit annotations={'readOnlyHint': True}, consistent with read-only behaviour",
+        "README.md:102 — 'All tools are readOnlyHint: true' documented"
+      ],
+      "gaps": [
+        "openWorldHint: true is NOT set on any tool, yet all 8 reach an external system (simap.ch HTTP) — should be present",
+        "idempotentHint not set on the idempotent read tools"
+      ]
+    },
+    "ARCH-011": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "Repo root — README.md, README.de.md, CHANGELOG.md, LICENSE, pyproject.toml all present",
+        "src/swiss_procurement_mcp/ (src-layout), tests/, .github/workflows/ all present",
+        ".github/workflows/ci.yml + publish.yml — CI (no-live) and publish workflows both present; README.de.md mirrors README.md sections"
+      ],
+      "gaps": []
+    },
+    "ARCH-012": {
+      "status": "fail",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "CHANGELOG.md:1-4 — present, explicitly Keep-a-Changelog format",
+        "CHANGELOG.md:6 — versioned 0.1.0 entry with Added/Security/Scope sections"
+      ],
+      "gaps": [
+        "protocolVersion is not pinned anywhere in server code (relies on SDK default negotiation)",
+        "No 'MCP Protocol Version' section and no SDK update policy in README",
+        "No Dependabot/Renovate config for SDK update PRs (.github/dependabot.yml / renovate.json absent)"
+      ]
+    },
+    "CH-004": {
+      "status": "partial",
+      "category": "CH",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_procurement_mcp/constants.py:21-25 — ATTRIBUTION names source (simap.ch), operator (simap.ch association) and API version",
+        "src/swiss_procurement_mcp/models.py:12-16 — every response Envelope carries source + provenance + retrieved_at (per-response provenance)",
+        "README.md:209-214 — Credits section documents the simap.ch data source and API docs link"
+      ],
+      "gaps": [
+        "Attribution text does not name an explicit data license (e.g. CC BY 4.0 with author/source/license/modification); only source+operator+version are cited"
+      ]
+    },
+    "OBS-001": {
+      "status": "pass",
+      "category": "OBS",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_procurement_mcp/server.py:151-156 — UpstreamError caught in handler and returned as a structured degraded envelope (not a raw crash)",
+        "src/swiss_procurement_mcp/server.py:125-130 — invalid input raises ValueError, surfaced by FastMCP as a tool error result",
+        "tests/test_resilience.py:30-49 — execution-error path (network degrade, 400 not-retried) tested; tests/test_tools.py:32-42 — protocol/arg-error path (bad canton, bad pub_type) tested"
+      ],
+      "gaps": []
+    },
+    "OBS-002": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_procurement_mcp/client.py:99-100 — upstream 4xx body truncated to 300 chars; no traceback/exc_info surfaced",
+        "src/swiss_procurement_mcp/server.py:46-52 — degraded note is a user-friendly message, no stack traces",
+        "SECURITY.md:32 — documents that no stack traces are surfaced to the model"
+      ],
+      "gaps": [
+        "FastMCP is initialised without mask_error_details=True (src/swiss_procurement_mcp/server.py:43)",
+        "Degraded note embeds str(exc) which can include the truncated upstream response body (public-API text, low sensitivity, but not fully masked)"
+      ]
+    },
+    "OBS-003": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "medium",
+      "evidence": [
+        "src/swiss_procurement_mcp/ — no print() statements (clean stdout for stdio)",
+        "SECURITY.md:50-54 — structured logging explicitly documented as accepted risk for a stdio public-data server"
+      ],
+      "gaps": [
+        "No structured logging library (structlog/loguru) in dependencies; no JSON/logfmt output",
+        "No RFC 5424 severity levels or per-tool-call bound context (session_id/correlation_id) — the server does no logging at all"
+      ]
+    },
+    "OBS-004": {
+      "status": "pass",
+      "category": "OBS",
+      "severity": "critical",
+      "evidence": [
+        "src/swiss_procurement_mcp/ — grep confirms zero print() statements in src/",
+        "SECURITY.md:33 — stdout reserved for the JSON-RPC stream; server writes no logs to stdout",
+        "src/swiss_procurement_mcp/__main__.py — no logging init that could target stdout; same config across stdio and HTTP transports"
+      ],
+      "gaps": []
+    },
+    "OPS-001": {
+      "status": "partial",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        "tests/test_tools.py + tests/test_resilience.py — respx-mocked unit tests present",
+        "tests/test_live.py:13 — pytestmark = pytest.mark.live; live tests gated",
+        "pyproject.toml:42 — 'live' marker registered; ci.yml:43 runs pytest -m 'not live'; ci.yml:64-82 separate nightly/dispatch live job"
+      ],
+      "gaps": [
+        "Unit-test depth below spec: ~7 unit + 4 resilience tests total, not >=5 per tool for 8 tools",
+        "Live tests cover 5 of 8 tools (missing get_publication_history, search_construction_codes, find_procurement_office)"
+      ]
+    },
+    "OPS-002": {
+      "status": "pass",
+      "category": "OPS",
+      "severity": "medium",
+      "evidence": [
+        "README.md — all required sections present: Anchor demo (19), Installation (116), Tools (89), Configuration (141), Security (198), Architecture decision + project-structure ASCII tree (44,177), Known limitations (165), License/Credits (209)",
+        "README.md:165-173 — Known limitations section lists 4 explicit limits; CHANGELOG.md keep-a-changelog format",
+        "CONTRIBUTING.md + CONTRIBUTING.de.md and README.de.md present (bilingual docs)"
+      ],
+      "gaps": []
+    },
+    "OPS-003": {
+      "status": "partial",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        "README.md:44-56 — read-only-first posture explicit (Architecture A, write endpoints out of scope), consistent with readOnlyHint annotations",
+        "SECURITY.md:63-73 — Re-evaluation triggers document prerequisites for gaining write/PII/cloud capability (phase-transition conditions)"
+      ],
+      "gaps": [
+        "No explicit 'Phase 1/2/3' declaration in README",
+        "No roadmap file with phase-specific tasks"
+      ]
+    },
+    "SCALE-002": {
+      "status": "partial",
+      "category": "SCALE",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_procurement_mcp/client.py:62-66 — cache is per-SimapClient instance created per tool call (no shared cross-request server state to balance)",
+        "SECURITY.md:63-72 — cloud/SSE scaling explicitly deferred as a re-evaluation trigger; server is stdio-primary and not cloud-deployed"
+      ],
+      "gaps": [
+        "No sticky-session or shared-state (Redis/Durable Objects) session manager for the SSE/streamable-http transport",
+        "No explicit session TTL and no failover test — acceptable only while single-instance/stdio-primary"
+      ]
+    },
+    "SEC-004": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "src/swiss_procurement_mcp/constants.py:12 — SIMAP_BASE is a single hardcoded HTTPS URL; scheme is always https",
+        "src/swiss_procurement_mcp/client.py:85 — url = f'{SIMAP_BASE}{path}' where path is a fixed per-endpoint string; no user-supplied host reaches the request",
+        "src/swiss_procurement_mcp/client.py:71-75 — httpx.AsyncClient with default TLS verification on (never disabled), so SSRF vector (user-controlled host) is structurally absent"
+      ],
+      "gaps": []
+    },
+    "SEC-005": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_procurement_mcp/constants.py:12 — fixed trusted host www.simap.ch; users cannot supply or influence the hostname",
+        "src/swiss_procurement_mcp/client.py:71-75 — persistent httpx client with default TLS; certificate validation against the fixed simap.ch hostname",
+        "src/swiss_procurement_mcp/client.py:92 — request always targets the hardcoded URL, so DNS-rebinding of an attacker-controlled host is not exploitable"
+      ],
+      "gaps": []
+    },
+    "SEC-006": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_procurement_mcp/__main__.py:11,20 — default transport (no env var) is stdio; stdio path opens no TCP port",
+        "src/swiss_procurement_mcp/__main__.py:12-18 — SSE/HTTP only activated via explicit MCP_TRANSPORT env var",
+        "README.md:122-149 — local stdio/Claude Desktop use-case primary; Cloud (Render/Railway) documented separately with loopback-default binding note"
+      ],
+      "gaps": []
+    },
+    "SEC-007": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "SECURITY.md:42-48 — container sandboxing explicitly documented as accepted risk for a local-stdio public-data server",
+        "Repo — no Dockerfile shipped (deployment is local-stdio; defense-in-depth deferred to OS user level)"
+      ],
+      "gaps": [
+        "No Dockerfile with non-root USER / no Kubernetes securityContext (runAsNonRoot, readOnlyRootFilesystem, capabilities.drop, seccomp) — none exist to satisfy the container hardening criteria"
+      ]
+    },
+    "SEC-008": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "medium",
+      "evidence": [
+        "pyproject.toml — hatchling build, no pre/postinstall hooks; no dynamic code fetching",
+        "README.md:118-133 — full install command shown transparently (uvx swiss-procurement-mcp; Claude Desktop JSON)",
+        ".github/workflows/publish.yml:20-45 — PyPI publish via OIDC Trusted Publisher (id-token: write, pypa/gh-action-pypi-publish, no stored password)"
+      ],
+      "gaps": []
+    },
+    "SEC-009": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "src/swiss_procurement_mcp/ — no auth model; server exposes only public read data, so there is no OAuth user identity to bind a session to",
+        "src/swiss_procurement_mcp/client.py:63-66 — per-call ephemeral client, no per-user server-side session state to hijack"
+      ],
+      "gaps": [
+        "No application-level cryptographic user_id:session_id binding (no OAuth sub-claim exists); relies on FastMCP default session handling",
+        "No explicitly-set session TTL / server-side invalidation — low real impact because there is no per-user data, but the specific controls are absent for the SSE transport"
+      ]
+    },
+    "SEC-013": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_procurement_mcp/ — Public Open Data, zero secrets/API keys required (Stufe 1 acceptable per check)",
+        "SECURITY.md:31 — no-secrets posture explicitly documented",
+        ".github/workflows/ — no secrets embedded; no container image layer to leak secrets into"
+      ],
+      "gaps": []
+    },
+    "SEC-016": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "src/swiss_procurement_mcp/__main__.py:16 — host default is 127.0.0.1; no 0.0.0.0 hardcoded default",
+        "src/swiss_procurement_mcp/__main__.py:16 — host set via MCP_HOST/HOST env var, 0.0.0.0 requires explicit opt-in",
+        "README.md:146 + CHANGELOG.md:22-24 — local/cloud binding differentiation documented (loopback default, explicit 0.0.0.0 for cloud)"
+      ],
+      "gaps": []
+    },
+    "SEC-018": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_procurement_mcp/server.py:125-130,194,362-365 — canton/process_type/pub_type/system validated against fixed allow-lists (whitelist), rejected with actionable ValueError",
+        "src/swiss_procurement_mcp/client.py:38-46 — language validated against SUPPORTED_LANGUAGES allow-list",
+        "tests/test_tools.py:32-42 — edge-case tests for rejected ISO canton code and invalid pub_type"
+      ],
+      "gaps": [
+        "Numeric limit params (search_cpv_codes, search_construction_codes, find_procurement_office) have no ge/le bounds — unbounded",
+        "Free-text string params (query, name_contains) have no min_length/max_length/pattern; Pydantic strict=True and extra='forbid' are not set; no tests for over-long strings / out-of-range numbers"
+      ]
+    },
+    "SEC-019": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "src/swiss_procurement_mcp/ — reads only PUBLIC procurement data (no private/sensitive data), so the 'private data access' leg of the trifecta is absent",
+        "src/swiss_procurement_mcp/constants.py:12 — egress fixed to a single hardcoded host; no send/write-to-arbitrary-destination capability (the exfiltration leg is absent)",
+        "server.py — all tools readOnlyHint; at most two trifecta legs present (external fetch + ingesting external content)"
+      ],
+      "gaps": [
+        "No explicit lethal-trifecta assessment/ADR documented in README or docs/ (server is structurally safe but the required written evaluation is missing)"
+      ]
+    },
+    "SEC-020": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "src/swiss_procurement_mcp/ — grep confirms no os.system, subprocess, shell=True, eval, exec, or os.popen anywhere",
+        "src/swiss_procurement_mcp/client.py — all external access is via httpx (no shell), user input passed as structured query params not command strings",
+        "src/swiss_procurement_mcp/ — no filesystem path operations from user input"
+      ],
+      "gaps": []
+    },
+    "SEC-021": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/swiss_procurement_mcp/constants.py:12 — egress is hardcoded to a single HTTPS host (SIMAP_BASE); no user input can redirect the host, effectively a one-host allow-list",
+        "SECURITY.md:26-29 — egress posture documented (single hard-coded HTTPS base URL, caller never supplies a host)"
+      ],
+      "gaps": [
+        "No explicit frozenset allow-list + assert_host_allowed pre-request guard (relies on hardcoding instead)",
+        "No network-layer egress control (NetworkPolicy/SG) and no docs/network-egress.md with an update procedure"
+      ]
+    }
+  }
+}

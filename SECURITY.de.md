@@ -8,9 +8,14 @@ authentifizierten Lese-Endpoints der simap.ch-API. Dieses Dokument beschreibt di
 aktuelle Sicherheitslage sowie die **akzeptierten Risiken** für Kontrollen, die
 für dieses Server-Profil bewusst zurückgestellt werden.
 
-> Ein formales Audit gegen den internen MCP-Best-Practice-Katalog (die
-> Portfolio-Methodik `mcp-audit`) wurde für diesen Server noch nicht erfasst.
-> Nach dem Lauf liegt der Bericht unter `audits/` und wird hier referenziert.
+Er wurde gegen den internen MCP-Best-Practice-Katalog (die Portfolio-Methodik
+`mcp-audit`, 68 Checks / 8 Kategorien) geprüft. Der jüngste Lauf
+(`audits/2026-07-26T131630-Z-swiss-procurement-mcp/`) ergab **15 pass / 16
+partial / 1 fail** über die 32 anwendbaren Checks — **produktionsreif, ohne
+offenes Finding mit Sicherheits-Impact** (das einzige Fail, ARCH-012, ist eine
+`medium`-Doku-/Tooling-Lücke; alle `critical`- und `high`-Findings sind
+`partial`, d. h. weitgehend erfüllt mit dokumentiertem Rest). Die vollständigen
+Berichte liegen unter `audits/`.
 
 ## Schwachstelle melden
 
@@ -35,6 +40,34 @@ umgesetzte Härtung:
 | Stdout | Reserviert für den JSON-RPC-Stream; der Server schreibt keine Logs nach stdout |
 | Umfang | Die rund 200 schreibenden, `my/`- und OIDC-geschützten simap-Endpoints (Publikation, Einreichung) werden bewusst nicht gekapselt |
 | Tests | respx-mockierte Unit-Suite bei jedem PR (3.10/3.11/3.12); Live-API-Tests auf einen Nightly-Job beschränkt |
+
+## Audit-Findings (26.07.2026)
+
+17 Findings wurden dokumentiert (Policy `fail-or-partial`). Keines blockiert die
+Produktion. Sie fallen in zwei Gruppen; die vollständigen Finding-Dokumente
+liegen unter `audits/2026-07-26T131630-Z-swiss-procurement-mcp/findings/`.
+
+**Geplante Härtung (geringer Impact, umsetzbar):**
+
+- **ARCH-012** (fail, medium) — MCP-Protokoll-Version pinnen/festhalten,
+  SDK-Update-Policy und Dependabot-Konfiguration ergänzen.
+- **ARCH-009** (high) — `openWorldHint: true` an jedem Tool ergänzen (alle rufen
+  live simap.ch auf).
+- **OBS-002** (high) — FastMCP mit `mask_error_details=True` initialisieren und
+  den rohen Upstream-Body aus der degraded-Note entfernen.
+- **SEC-018** (high) — numerische `limit`-Parameter und Freitext-Länge begrenzen.
+- **SEC-021** (high) — expliziten `assert_host_allowed`-Guard + `docs/network-egress.md`
+  ergänzen (Egress ist bereits auf einen Host fest verdrahtet).
+- **SEC-019** (critical, strukturell sicher) — die Lethal-Trifecta-Bewertung
+  schriftlich festhalten (nur der External-Fetch-Zweig ist vorhanden).
+- **ARCH-005** (critical, keine Secrets vorhanden) — CI-Secret-Scanning als
+  Regressions-Guard ergänzen.
+- Dazu **ARCH-003 / ARCH-007 / CH-004 / OPS-001 / OPS-003** — Doku-, Test-Tiefe-
+  und Attributions-Politur.
+
+**Akzeptiertes Risiko (profilbedingt zurückgestellt):** ARCH-008 (tools-only),
+OBS-003 (strukturiertes Logging), SCALE-002 (Stateful-LB), SEC-007
+(Container-Sandboxing), SEC-009 (Session-Binding) — siehe unten.
 
 ## Akzeptierte Risiken
 
