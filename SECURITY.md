@@ -7,9 +7,14 @@ wraps only the unauthenticated read endpoints of the simap.ch API. This document
 states the current security posture and the **accepted-risk** decisions for
 controls deliberately deferred for this server profile.
 
-> A formal audit against the internal MCP best-practice catalogue (the portfolio
-> `mcp-audit` methodology) has not yet been recorded for this server. Once run,
-> the report will live under `audits/` and this document will reference it.
+It was audited against the internal MCP best-practice catalogue (the portfolio
+`mcp-audit` methodology, 68 checks / 8 categories). The latest run
+(`audits/2026-07-26T131630-Z-swiss-procurement-mcp/`) scored **15 pass / 16
+partial / 1 fail** across the 32 applicable checks — **production-ready, no
+security-impacting finding open** (the single fail, ARCH-012, is a `medium`
+documentation/tooling gap; all `critical` and `high` findings are `partial`, i.e.
+substantially met with a documented remainder). See `audits/` for the full report
+and per-finding docs.
 
 ## Reporting a vulnerability
 
@@ -33,6 +38,34 @@ path, no user authentication, and no personal data. Hardening in place:
 | Stdout | Reserved for the JSON-RPC stream; the server writes no logs to stdout |
 | Scope | The ~200 write / `my/` / OIDC-protected simap endpoints (publishing, submissions) are deliberately not wrapped |
 | Tests | respx-mocked unit suite on every PR (3.10/3.11/3.12); live API tests gated to a nightly job |
+
+## Audit findings (2026-07-26)
+
+17 findings were documented (`fail-or-partial` policy). None blocks production.
+They fall into two groups; full per-finding docs are under
+`audits/2026-07-26T131630-Z-swiss-procurement-mcp/findings/`.
+
+**Planned hardening (low impact, actionable):**
+
+- **ARCH-012** (fail, medium) — pin/record the MCP protocol version, add an
+  SDK-update policy note and a Dependabot config.
+- **ARCH-009** (high) — add `openWorldHint: true` to every tool (all reach live
+  simap.ch).
+- **OBS-002** (high) — initialise FastMCP with `mask_error_details=True` and drop
+  the raw upstream body from the degraded note.
+- **SEC-018** (high) — bound numeric `limit` params and free-text length.
+- **SEC-021** (high) — add an explicit `assert_host_allowed` guard + a
+  `docs/network-egress.md` (egress is already hardcoded to one host).
+- **SEC-019** (critical, structurally safe) — write down the lethal-trifecta
+  assessment (only the external-fetch leg is present).
+- **ARCH-005** (critical, no secrets exist) — add CI secret-scanning as a
+  regression guard.
+- Plus **ARCH-003 / ARCH-007 / CH-004 / OPS-001 / OPS-003** — documentation,
+  test-depth and attribution polish.
+
+**Accepted risk (deferred by profile):** ARCH-008 (tools-only), OBS-003
+(structured logging), SCALE-002 (stateful LB), SEC-007 (container sandboxing),
+SEC-009 (session binding) — see below.
 
 ## Accepted risks
 

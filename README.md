@@ -197,8 +197,11 @@ report bugs, suggest a new endpoint, or submit code.
 
 ## Security
 
-This is a read-only, no-PII, public-open-data server. See [SECURITY.md](SECURITY.md)
-for the security posture and how to report a vulnerability.
+This is a read-only, no-PII, public-open-data server. Audited against the
+portfolio MCP best-practice catalogue (**15 pass / 16 partial / 1 fail** across
+32 applicable checks, production-ready). See [SECURITY.md](SECURITY.md) for the
+posture and how to report a vulnerability, and [`audits/`](audits/) for the full
+report.
 
 ## Changelog
 

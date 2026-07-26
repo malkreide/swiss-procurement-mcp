@@ -205,9 +205,11 @@ Fehler melden, einen neuen Endpoint vorschlagen oder Code einreichen.
 
 ## Sicherheit
 
-Dies ist ein rein lesender, PII-freier Public-Open-Data-Server. Siehe
-[SECURITY.de.md](SECURITY.de.md) für die Sicherheitslage und die Meldung von
-Schwachstellen.
+Dies ist ein rein lesender, PII-freier Public-Open-Data-Server. Geprüft gegen den
+Portfolio-MCP-Best-Practice-Katalog (**15 pass / 16 partial / 1 fail** über 32
+anwendbare Checks, produktionsreif). Siehe [SECURITY.de.md](SECURITY.de.md) für
+die Sicherheitslage und die Meldung von Schwachstellen sowie [`audits/`](audits/)
+für den vollständigen Bericht.
 
 ## Changelog
 
