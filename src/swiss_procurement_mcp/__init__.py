@@ -4,4 +4,4 @@ __version__ = "0.1.0"
 
 from .server import mcp
 
-__all__ = ["mcp", "__version__"]
+__all__ = ["__version__", "mcp"]

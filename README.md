@@ -4,9 +4,12 @@
 
 # swiss-procurement-mcp
 
+[![CI](https://github.com/malkreide/swiss-procurement-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/malkreide/swiss-procurement-mcp/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/swiss-procurement-mcp)](https://pypi.org/project/swiss-procurement-mcp/)
+[![Python](https://img.shields.io/pypi/pyversions/swiss-procurement-mcp)](https://pypi.org/project/swiss-procurement-mcp/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-orange.svg)](https://modelcontextprotocol.io/)
+[![Portfolio](https://img.shields.io/badge/portfolio-swiss--public--data--mcp-blue)](https://github.com/malkreide/swiss-public-data-mcp)
 [![Deutsch](https://img.shields.io/badge/Doku-Deutsch-red.svg)](README.de.md)
 
 MCP server for **Swiss public procurement** — read access to the official simap.ch API, covering all cantons and the Confederation, updated intraday.
@@ -132,8 +135,18 @@ uvx swiss-procurement-mcp
 ### Cloud (Render / Railway)
 
 ```bash
-MCP_TRANSPORT=sse PORT=8000 python -m swiss_procurement_mcp
+MCP_TRANSPORT=sse HOST=0.0.0.0 PORT=8000 python -m swiss_procurement_mcp
 ```
+
+### Configuration
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `MCP_TRANSPORT` | `stdio` | `stdio` \| `sse` \| `streamable-http` |
+| `MCP_HOST` / `HOST` | `127.0.0.1` | HTTP binding (cloud transports only). Defaults to loopback; set `0.0.0.0` explicitly to expose all interfaces in a cloud deployment. |
+| `PORT` / `MCP_PORT` | `8000` | HTTP port (cloud transports only) |
+
+No API keys — the wrapped simap.ch read endpoints are fully public.
 
 ---
 
@@ -143,6 +156,9 @@ MCP_TRANSPORT=sse PORT=8000 python -m swiss_procurement_mcp
 PYTHONPATH=src pytest tests/ -m "not live"   # offline, respx-mocked
 PYTHONPATH=src pytest tests/ -m live         # hits the real API
 ```
+
+See [EXAMPLES.md](EXAMPLES.md) for use cases grouped by audience (schools,
+public, administration, developers) and a tool-selection reference table.
 
 ---
 
@@ -155,6 +171,38 @@ PYTHONPATH=src pytest tests/ -m live         # hits the real API
 - **No contract values in search results.** Amounts, where published, live in the
   detail record's statistics section, which varies by procedure.
 - **Unofficial client.** Publications remain authoritative on simap.ch itself.
+
+---
+
+## Project structure
+
+```
+swiss-procurement-mcp/
+├── src/swiss_procurement_mcp/
+│   ├── server.py      # FastMCP tools (8, read-only)
+│   ├── client.py      # simap.ch HTTP client + retry + normalisation
+│   ├── constants.py   # probe-derived lookup tables (cantons, pub types, codes)
+│   ├── models.py      # Pydantic v2 envelopes (source + provenance)
+│   └── __main__.py    # Dual-transport entry point (stdio / SSE / streamable-http)
+├── tests/             # respx-mocked + @pytest.mark.live
+└── .github/workflows/ # CI + OIDC PyPI/MCP-registry publish
+```
+
+---
+
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for how to
+report bugs, suggest a new endpoint, or submit code.
+
+## Security
+
+This is a read-only, no-PII, public-open-data server. See [SECURITY.md](SECURITY.md)
+for the security posture and how to report a vulnerability.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 

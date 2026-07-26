@@ -17,6 +17,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Retry with exponential backoff (2s / 4s / 8s); 4xx except 429 not retried.
 - Graceful degradation instead of silent empty lists.
 
+### Security
+
+- HTTP transports (`MCP_TRANSPORT=sse|streamable-http`) bind to loopback
+  (`127.0.0.1`) by default; exposing all interfaces now requires an explicit
+  `MCP_HOST`/`HOST=0.0.0.0` opt-in (SEC-016). stdio (the default) does not bind.
+
 ### Known findings (live probe, 2026-07-26)
 
 - **Read API lives under `www.simap.ch/api`**, not the `simap.ch/de` web UI.

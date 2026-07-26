@@ -165,9 +165,14 @@ async def search_procurements(
     if not results:
         note = "No publications matched. Widen the date range or check canton/CPV filters."
     return SearchResponse(
-        source=ATTRIBUTION, provenance=provenance, retrieved_at=stamp, note=note,
-        count=len(results), has_more=has_more,
-        next_cursor=next_cursor if has_more else None, results=results,
+        source=ATTRIBUTION,
+        provenance=provenance,
+        retrieved_at=stamp,
+        note=note,
+        count=len(results),
+        has_more=has_more,
+        next_cursor=next_cursor if has_more else None,
+        results=results,
     )
 
 
@@ -213,9 +218,13 @@ async def search_awards(
     results = [_to_summary(e, lang) for e in projects]
     has_more = bool(next_cursor) and len(results) >= pagination.get("itemsPerPage", 20)
     return SearchResponse(
-        source=ATTRIBUTION, provenance=provenance, retrieved_at=stamp,
-        count=len(results), has_more=has_more,
-        next_cursor=next_cursor if has_more else None, results=results,
+        source=ATTRIBUTION,
+        provenance=provenance,
+        retrieved_at=stamp,
+        count=len(results),
+        has_more=has_more,
+        next_cursor=next_cursor if has_more else None,
+        results=results,
     )
 
 
@@ -247,8 +256,11 @@ async def get_procurement_details(
     base = payload.get("base") or {}
 
     return ProcurementDetail(
-        source=ATTRIBUTION, provenance=provenance, retrieved_at=stamp,
-        project_id=project_id, publication_id=publication_id,
+        source=ATTRIBUTION,
+        provenance=provenance,
+        retrieved_at=stamp,
+        project_id=project_id,
+        publication_id=publication_id,
         title=pick_lang(info.get("title") or base.get("title"), lang) or "",
         order_description=pick_lang(proc.get("orderDescription"), lang),
         process_type=proc.get("processType") or info.get("processType"),
@@ -295,8 +307,12 @@ async def get_publication_history(publication_id: str, language: str = "de") -> 
         for p in past
     ]
     return HistoryResponse(
-        source=ATTRIBUTION, provenance=provenance, retrieved_at=stamp,
-        project_id=None, count=len(entries), publications=entries,
+        source=ATTRIBUTION,
+        provenance=provenance,
+        retrieved_at=stamp,
+        project_id=None,
+        count=len(entries),
+        publications=entries,
     )
 
 
@@ -317,12 +333,15 @@ async def search_cpv_codes(query: str, limit: int = 10, language: str = "de") ->
 
     raw = payload.get("codes", []) if isinstance(payload, dict) else payload
     codes = [
-        CodeEntry(code=c.get("code", ""), label=pick_lang(c.get("label"), lang) or "")
-        for c in raw
+        CodeEntry(code=c.get("code", ""), label=pick_lang(c.get("label"), lang) or "") for c in raw
     ]
     return CodeSearchResponse(
-        source=ATTRIBUTION, provenance=provenance, retrieved_at=stamp,
-        system="cpv", count=len(codes), codes=codes,
+        source=ATTRIBUTION,
+        provenance=provenance,
+        retrieved_at=stamp,
+        system="cpv",
+        count=len(codes),
+        codes=codes,
     )
 
 
@@ -353,12 +372,15 @@ async def search_construction_codes(
 
     raw = payload.get("codes", []) if isinstance(payload, dict) else payload
     codes = [
-        CodeEntry(code=c.get("code", ""), label=pick_lang(c.get("label"), lang) or "")
-        for c in raw
+        CodeEntry(code=c.get("code", ""), label=pick_lang(c.get("label"), lang) or "") for c in raw
     ]
     return CodeSearchResponse(
-        source=ATTRIBUTION, provenance=provenance, retrieved_at=stamp,
-        system=sys_norm, count=len(codes), codes=codes,
+        source=ATTRIBUTION,
+        provenance=provenance,
+        retrieved_at=stamp,
+        system=sys_norm,
+        count=len(codes),
+        codes=codes,
     )
 
 
@@ -380,9 +402,13 @@ async def find_procurement_office(
         except UpstreamError as exc:
             return OfficeSearchResponse(**_degraded(exc), count=0, offices=[])
 
-    raw = payload.get("procOffices") or payload.get("offices") or (
-        payload if isinstance(payload, list) else next(
-            (v for v in payload.values() if isinstance(v, list)), []
+    raw = (
+        payload.get("procOffices")
+        or payload.get("offices")
+        or (
+            payload
+            if isinstance(payload, list)
+            else next((v for v in payload.values() if isinstance(v, list)), [])
         )
     )
     matched: list[ProcurementOffice] = []
@@ -391,15 +417,20 @@ async def find_procurement_office(
         if needle in name.lower():
             matched.append(
                 ProcurementOffice(
-                    id=o.get("id", ""), name=name, type=o.get("type"),
+                    id=o.get("id", ""),
+                    name=name,
+                    type=o.get("type"),
                     institution_id=o.get("institutionId"),
                 )
             )
             if len(matched) >= limit:
                 break
     return OfficeSearchResponse(
-        source=ATTRIBUTION, provenance=provenance, retrieved_at=stamp,
-        count=len(matched), offices=matched,
+        source=ATTRIBUTION,
+        provenance=provenance,
+        retrieved_at=stamp,
+        count=len(matched),
+        offices=matched,
     )
 
 
@@ -410,9 +441,12 @@ async def source_status() -> StatusResponse:
         probe = await client.probe("simap.ch read API", "/cantons/v1?lang=de")
     status = SourceStatus(**probe)
     return StatusResponse(
-        source=ATTRIBUTION, provenance="live_api", retrieved_at=utc_now_iso(),
-        sources=[status], all_healthy=status.reachable,
+        source=ATTRIBUTION,
+        provenance="live_api",
+        retrieved_at=utc_now_iso(),
+        sources=[status],
+        all_healthy=status.reachable,
     )
 
 
-__all__ = ["mcp", "PROJECT_SUB_TYPES"]
+__all__ = ["PROJECT_SUB_TYPES", "mcp"]
