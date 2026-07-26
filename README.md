@@ -20,9 +20,10 @@ MCP server for **Swiss public procurement** — read access to the official sima
 
 > *«Which school-building tenders did the City of Zurich publish in 2026, which BKP construction categories do they concern, and who are the procuring offices?»*
 
-This chains `search_procurements`, `search_construction_codes` and
-`get_procurement_details`, and connects procurement to school-building planning
-via the BKP construction codes.
+A single `search_procurements_detailed(query="Schulhaus", canton="ZH", published_from="2026-01-01")`
+returns the leading tenders already expanded with their BKP construction codes and
+procuring offices — connecting procurement to school-building planning in one call
+(optionally paired with `search_construction_codes` to resolve a category).
 
 ---
 
@@ -91,6 +92,7 @@ list.
 | Tool | Purpose |
 |---|---|
 | `search_procurements` | Search publications by canton, CPV, process type, date, text |
+| `search_procurements_detailed` | Search + full detail for the top *n* hits in one call (aggregated) |
 | `search_awards` | Awarded contracts only (all four award types at once) |
 | `get_procurement_details` | Full record for one publication |
 | `get_publication_history` | Earlier publications of the same project (tender → award) |
@@ -99,7 +101,8 @@ list.
 | `find_procurement_office` | Public procurement offices by partial name |
 | `source_status` | Reachability and latency of the simap.ch API |
 
-All tools are `readOnlyHint: true`.
+All tools carry `readOnlyHint`, `idempotentHint` and `openWorldHint` (they query
+the live simap.ch API).
 
 ---
 
@@ -179,7 +182,7 @@ public, administration, developers) and a tool-selection reference table.
 ```
 swiss-procurement-mcp/
 ├── src/swiss_procurement_mcp/
-│   ├── server.py      # FastMCP tools (8, read-only)
+│   ├── server.py      # FastMCP tools (9, read-only)
 │   ├── client.py      # simap.ch HTTP client + retry + normalisation
 │   ├── constants.py   # probe-derived lookup tables (cantons, pub types, codes)
 │   ├── models.py      # Pydantic v2 envelopes (source + provenance)
@@ -224,6 +227,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 ## Credits
 
 - Data: [simap.ch](https://www.simap.ch) read API v1.5.1, operated by the simap.ch association. API docs: [simap.ch/api-doc](https://www.simap.ch/api-doc), guides: [kissimap.ch](https://www.kissimap.ch/de/anleitungen).
+- The underlying tenders are official public-procurement announcements by Swiss public bodies. simap.ch publishes **no explicit open-data licence**; reuse is subject to the [simap.ch terms](https://www.simap.ch/de/about/legal). Attribute the source as *simap.ch (Verein simap.ch)*.
 - Built following the `mcp-data-source-probe` methodology.
 
-MIT licensed. Public money, public code.
+The **code** in this repository is MIT licensed; the **data** is simap.ch's, under its terms (see above). Public money, public code.

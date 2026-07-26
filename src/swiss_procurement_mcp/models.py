@@ -63,6 +63,17 @@ class ProcurementDetail(Envelope):
     has_documents: bool = False
 
 
+class EnrichedSearchResponse(Envelope):
+    count: int = Field(description="Number of full detail records returned (<= top_n).")
+    match_type: str = Field(
+        default="none", description="exact when results were returned, none when empty."
+    )
+    total_matched: int = Field(
+        default=0, description="Total search hits before the top_n detail cutoff."
+    )
+    results: list[ProcurementDetail]
+
+
 class CodeEntry(BaseModel):
     code: str
     label: str

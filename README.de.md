@@ -20,7 +20,11 @@ MCP-Server für das **öffentliche Beschaffungswesen der Schweiz** — lesender 
 
 > *«Welche Bauausschreibungen für Schulhäuser hat die Stadt Zürich 2026 publiziert, welche BKP-Kategorien betreffen sie, und wer sind die ausschreibenden Stellen?»*
 
-Diese Frage verkettet `search_procurements`, `search_construction_codes` und
+Ein einziger Aufruf `search_procurements_detailed(query="Schulhaus", canton="ZH", published_from="2026-01-01")`
+liefert die führenden Ausschreibungen bereits mit ihren BKP-Codes und
+ausschreibenden Stellen — in **einem** Call (optional ergänzt um
+`search_construction_codes`). Alternativ verkettet die klassische Variante
+`search_procurements`, `search_construction_codes` und
 `get_procurement_details` und verbindet die Beschaffung über die BKP-Codes mit
 der Schulraumplanung.
 
@@ -96,6 +100,7 @@ stillschweigend leere Liste.
 | Tool | Zweck |
 |---|---|
 | `search_procurements` | Publikationen nach Kanton, CPV, Verfahrensart, Datum, Text |
+| `search_procurements_detailed` | Suche + vollständige Details der Top-*n*-Treffer in einem Call (aggregiert) |
 | `search_awards` | Nur Zuschläge (alle vier Zuschlagsarten zusammen) |
 | `get_procurement_details` | Vollständiger Datensatz einer Publikation |
 | `get_publication_history` | Frühere Publikationen desselben Projekts (Ausschreibung → Zuschlag) |
@@ -104,7 +109,8 @@ stillschweigend leere Liste.
 | `find_procurement_office` | Beschaffungsstellen nach Teilname |
 | `source_status` | Erreichbarkeit und Latenz der simap.ch-API |
 
-Alle Tools sind `readOnlyHint: true`.
+Alle Tools tragen `readOnlyHint`, `idempotentHint` und `openWorldHint` (sie fragen
+die Live-simap.ch-API ab).
 
 ---
 
@@ -187,7 +193,7 @@ Siehe [EXAMPLES.md](EXAMPLES.md) für Anwendungsfälle nach Zielgruppe (Schule,
 ```
 swiss-procurement-mcp/
 ├── src/swiss_procurement_mcp/
-│   ├── server.py      # FastMCP-Tools (8, rein lesend)
+│   ├── server.py      # FastMCP-Tools (9, rein lesend)
 │   ├── client.py      # simap.ch-HTTP-Client + Retry + Normalisierung
 │   ├── constants.py   # probe-abgeleitete Lookup-Tabellen (Kantone, Pub-Typen, Codes)
 │   ├── models.py      # Pydantic-v2-Envelopes (source + provenance)
@@ -232,6 +238,7 @@ Siehe [CHANGELOG.md](CHANGELOG.md).
 ## Credits
 
 - Daten: [simap.ch](https://www.simap.ch) Lese-API v1.5.1, betrieben vom Verein simap.ch. API-Doku: [simap.ch/api-doc](https://www.simap.ch/api-doc), Anleitungen: [kissimap.ch](https://www.kissimap.ch/de/anleitungen).
+- Die zugrunde liegenden Ausschreibungen sind amtliche Beschaffungs-Bekanntmachungen Schweizer öffentlicher Stellen. simap.ch veröffentlicht **keine explizite Open-Data-Lizenz**; die Nutzung unterliegt den [simap.ch-Bedingungen](https://www.simap.ch/de/about/legal). Quelle als *simap.ch (Verein simap.ch)* angeben.
 - Gebaut nach der Methodik `mcp-data-source-probe`.
 
-MIT-lizenziert. Public money, public code.
+Der **Code** in diesem Repository ist MIT-lizenziert; die **Daten** gehören simap.ch und unterliegen deren Bedingungen (siehe oben). Public money, public code.

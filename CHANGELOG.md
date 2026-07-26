@@ -3,6 +3,28 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] — 2026-07-26
+
+Closes the last two open audit findings from the 0.2.0 hardening pass.
+
+### Added
+
+- **`search_procurements_detailed`** — aggregated tool that runs a search and
+  fetches the full detail record for the top *n* hits in parallel
+  (`asyncio.gather`), so the anchor query is answered in a single call instead of a
+  search-then-N-details chain (ARCH-007). Bounded by `top_n` (1–5).
+- `EnrichedSearchResponse` model (`count`, `total_matched`, `match_type`,
+  `results: list[ProcurementDetail]`).
+
+### Changed
+
+- Attribution now states the data-reuse basis: the tenders are official
+  public-procurement announcements and simap.ch publishes no explicit open-data
+  licence, so reuse follows the simap.ch terms. Source/operator/terms are named in
+  `ATTRIBUTION`, the README Credits and every response's `source` (CH-004).
+- Refactored shared search-param building and detail mapping into `_build_search_params`
+  and `_detail_from_payload` (used by both the single and aggregated tools).
+
 ## [0.2.0] — 2026-07-26
 
 Audit-driven hardening following the `mcp-audit` run

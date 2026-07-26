@@ -112,6 +112,7 @@ Warum nützlich: Jede Antwort trägt `source` und `provenance` (`live_api` / `ca
 | Ich möchte… | Tool(s) | Auth nötig? |
 |---|---|---|
 | Publikationen nach Kanton, CPV, Verfahren, Datum oder Text suchen | `search_procurements` | Nein |
+| Suchen und die Top-Treffer sofort mit vollem Detail (BKP, Frist, Stelle) erhalten | `search_procurements_detailed` | Nein |
 | Nur Zuschläge finden (alle vier Zuschlagsarten) | `search_awards` | Nein |
 | Den vollständigen Datensatz einer Publikation abrufen | `get_procurement_details` | Nein |
 | Den Verlauf eines Projekts nachvollziehen (Ausschreibung → Zuschlag) | `get_publication_history` | Nein |

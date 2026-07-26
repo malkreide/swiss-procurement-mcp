@@ -6,6 +6,7 @@ endpoints (publishing tenders, submitting offers); none of them are wrapped here
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
@@ -29,6 +30,7 @@ from .constants import (
 from .models import (
     CodeEntry,
     CodeSearchResponse,
+    EnrichedSearchResponse,
     HistoryEntry,
     HistoryResponse,
     OfficeSearchResponse,
@@ -50,6 +52,9 @@ READ_TOOL = {"readOnlyHint": True, "idempotentHint": True, "openWorldHint": True
 # arguments fail fast with a clear error instead of being passed upstream.
 MAX_LIMIT = 100
 MAX_TEXT_LEN = 200
+# ARCH-007: cap how many hits the aggregated tool expands to full detail, so one
+# call fans out to a bounded number of parallel upstream requests.
+MAX_DETAIL_N = 5
 
 
 def _check_limit(limit: int) -> None:
@@ -110,6 +115,84 @@ def _to_summary(entry: dict[str, Any], lang: str) -> ProcurementSummary:
     )
 
 
+def _build_search_params(
+    lang: str,
+    query: str | None,
+    canton: str | None,
+    cpv_codes: list[str] | None,
+    process_type: str | None,
+    pub_type: str | None,
+    published_from: str | None,
+    published_until: str | None,
+    cursor: str | None,
+) -> dict[str, Any]:
+    """Validate the shared search filters and build the project-search params."""
+    _check_text(query, "query")
+    if canton and canton.upper() not in CANTON_IDS:
+        raise ValueError(f"Unknown canton {canton!r}. Use a bare id like ZH, not CH-ZH.")
+    if process_type and process_type not in PROCESS_TYPES:
+        raise ValueError(f"process_type must be one of {PROCESS_TYPES}.")
+    if pub_type and pub_type not in PUB_TYPES:
+        raise ValueError(f"pub_type must be one of {PUB_TYPES}.")
+
+    params: dict[str, Any] = {"lang": lang}
+    if query:
+        params["search"] = query
+    if canton:
+        params["orderAddressCantons"] = canton.upper()
+    if cpv_codes:
+        params["cpvCodes"] = cpv_codes
+    if process_type:
+        params["processTypes"] = process_type
+    if pub_type:
+        params["newestPubTypes"] = pub_type
+    if published_from:
+        params["newestPublicationFrom"] = published_from
+    if published_until:
+        params["newestPublicationUntil"] = published_until
+    if cursor:
+        params["lastItem"] = cursor
+    return params
+
+
+def _detail_from_payload(
+    payload: dict[str, Any],
+    project_id: str,
+    publication_id: str,
+    lang: str,
+    provenance: str,
+    stamp: str,
+) -> ProcurementDetail:
+    """Map a publication-details payload to a ProcurementDetail envelope."""
+    info = payload.get("project-info") or {}
+    proc = payload.get("procurement") or {}
+    dates = payload.get("dates") or {}
+    base = payload.get("base") or {}
+    office_addr = (
+        info.get("procOfficeAddress") if isinstance(info.get("procOfficeAddress"), dict) else None
+    )
+    return ProcurementDetail(
+        source=ATTRIBUTION,
+        provenance=provenance,
+        retrieved_at=stamp,
+        project_id=project_id,
+        publication_id=publication_id,
+        title=pick_lang(info.get("title") or base.get("title"), lang) or "",
+        order_description=pick_lang(proc.get("orderDescription"), lang),
+        process_type=proc.get("processType") or info.get("processType"),
+        order_type=proc.get("orderType"),
+        cpv_code=_code_str(base.get("cpvCode")),
+        additional_cpv_codes=_code_list(proc.get("additionalCpvCodes")),
+        bkp_codes=_code_list(proc.get("bkpCodes")),
+        npk_codes=_code_list(proc.get("npkCodes")),
+        procurement_office=pick_lang(office_addr.get("name"), lang) if office_addr else None,
+        procurement_office_address=office_addr,
+        offer_deadline=dates.get("offerDeadline"),
+        publication_date=dates.get("publicationDate"),
+        has_documents=bool(payload.get("hasProjectDocuments")),
+    )
+
+
 @mcp.tool(annotations=READ_TOOL)
 async def search_procurements(
     query: str | None = None,
@@ -142,32 +225,17 @@ async def search_procurements(
         language: de, fr, it or en.
     """
     lang = normalise_language(language)
-    _check_text(query, "query")
-
-    if canton and canton.upper() not in CANTON_IDS:
-        raise ValueError(f"Unknown canton {canton!r}. Use a bare id like ZH, not CH-ZH.")
-    if process_type and process_type not in PROCESS_TYPES:
-        raise ValueError(f"process_type must be one of {PROCESS_TYPES}.")
-    if pub_type and pub_type not in PUB_TYPES:
-        raise ValueError(f"pub_type must be one of {PUB_TYPES}.")
-
-    params: dict[str, Any] = {"lang": lang}
-    if query:
-        params["search"] = query
-    if canton:
-        params["orderAddressCantons"] = canton.upper()
-    if cpv_codes:
-        params["cpvCodes"] = cpv_codes
-    if process_type:
-        params["processTypes"] = process_type
-    if pub_type:
-        params["newestPubTypes"] = pub_type
-    if published_from:
-        params["newestPublicationFrom"] = published_from
-    if published_until:
-        params["newestPublicationUntil"] = published_until
-    if cursor:
-        params["lastItem"] = cursor
+    params = _build_search_params(
+        lang,
+        query,
+        canton,
+        cpv_codes,
+        process_type,
+        pub_type,
+        published_from,
+        published_until,
+        cursor,
+    )
 
     async with SimapClient() as client:
         try:
@@ -195,6 +263,84 @@ async def search_procurements(
         match_type="exact" if results else "none",
         has_more=has_more,
         next_cursor=next_cursor if has_more else None,
+        results=results,
+    )
+
+
+@mcp.tool(annotations=READ_TOOL)
+async def search_procurements_detailed(
+    query: str | None = None,
+    canton: str | None = None,
+    cpv_codes: list[str] | None = None,
+    process_type: str | None = None,
+    pub_type: str | None = None,
+    published_from: str | None = None,
+    published_until: str | None = None,
+    top_n: int = 3,
+    language: str = "de",
+) -> EnrichedSearchResponse:
+    """Search publications and return the FULL record for the top matches at once.
+
+    Aggregated entry point for the common "find tenders and show me their details"
+    question: it runs the search and then fetches `get_procurement_details` for the
+    first `top_n` hits in parallel, so a typical query is answered in a single tool
+    call instead of a search-then-N-details chain. Each result carries the CPV and
+    Swiss construction codes (BKP, NPK), deadlines and procurement office.
+
+    Prefer `search_procurements` when you only need the summaries or want to
+    paginate; use this when you want the leading hits fully expanded immediately.
+
+    Args:
+        top_n: How many of the top hits to expand to full detail (1-5).
+        query, canton, cpv_codes, process_type, pub_type, published_from,
+        published_until, language: identical to `search_procurements`.
+    """
+    lang = normalise_language(language)
+    if not 1 <= top_n <= MAX_DETAIL_N:
+        raise ValueError(f"top_n must be between 1 and {MAX_DETAIL_N}.")
+    params = _build_search_params(
+        lang,
+        query,
+        canton,
+        cpv_codes,
+        process_type,
+        pub_type,
+        published_from,
+        published_until,
+        None,
+    )
+
+    async with SimapClient() as client:
+        try:
+            payload, provenance, stamp = await client.project_search(params)
+        except UpstreamError as exc:
+            return EnrichedSearchResponse(**_degraded(exc), count=0, total_matched=0, results=[])
+
+        projects = payload.get("projects", [])
+        total = len(projects)
+        pairs = [(p.get("id", ""), p.get("publicationId", "")) for p in projects[:top_n]]
+
+        async def _fetch(pid: str, pubid: str) -> ProcurementDetail | None:
+            try:
+                d_payload, d_prov, d_stamp = await client.publication_details(pid, pubid, lang)
+            except UpstreamError:
+                return None
+            return _detail_from_payload(d_payload, pid, pubid, lang, d_prov, d_stamp)
+
+        details = await asyncio.gather(*(_fetch(pid, pubid) for pid, pubid in pairs))
+
+    results = [d for d in details if d is not None]
+    note = None
+    if not total:
+        note = "No publications matched. Widen the date range or check canton/CPV filters."
+    return EnrichedSearchResponse(
+        source=ATTRIBUTION,
+        provenance=provenance,
+        retrieved_at=stamp,
+        note=note,
+        count=len(results),
+        match_type="exact" if results else "none",
+        total_matched=total,
         results=results,
     )
 
@@ -274,35 +420,7 @@ async def get_procurement_details(
                 **_degraded(exc), project_id=project_id, publication_id=publication_id, title=""
             )
 
-    info = payload.get("project-info") or {}
-    proc = payload.get("procurement") or {}
-    dates = payload.get("dates") or {}
-    base = payload.get("base") or {}
-
-    return ProcurementDetail(
-        source=ATTRIBUTION,
-        provenance=provenance,
-        retrieved_at=stamp,
-        project_id=project_id,
-        publication_id=publication_id,
-        title=pick_lang(info.get("title") or base.get("title"), lang) or "",
-        order_description=pick_lang(proc.get("orderDescription"), lang),
-        process_type=proc.get("processType") or info.get("processType"),
-        order_type=proc.get("orderType"),
-        cpv_code=_code_str(base.get("cpvCode")),
-        additional_cpv_codes=_code_list(proc.get("additionalCpvCodes")),
-        bkp_codes=_code_list(proc.get("bkpCodes")),
-        npk_codes=_code_list(proc.get("npkCodes")),
-        procurement_office=pick_lang(info.get("procOfficeAddress", {}).get("name"), lang)
-        if isinstance(info.get("procOfficeAddress"), dict)
-        else None,
-        procurement_office_address=info.get("procOfficeAddress")
-        if isinstance(info.get("procOfficeAddress"), dict)
-        else None,
-        offer_deadline=dates.get("offerDeadline"),
-        publication_date=dates.get("publicationDate"),
-        has_documents=bool(payload.get("hasProjectDocuments")),
-    )
+    return _detail_from_payload(payload, project_id, publication_id, lang, provenance, stamp)
 
 
 @mcp.tool(annotations=READ_TOOL)
