@@ -190,6 +190,18 @@ swiss-procurement-mcp/
 
 ---
 
+## Maturity & updates
+
+**Phase 1 — read-only.** This server wraps only the public read endpoints; the
+write / OIDC-protected simap endpoints are deliberately out of scope. See the
+[SECURITY.md](SECURITY.md) re-evaluation triggers for the conditions that would
+move it to a write phase.
+
+The server targets the MCP protocol version negotiated by the pinned `mcp` SDK.
+SDK and dependency updates arrive as [Dependabot](.github/dependabot.yml) PRs, so
+a breaking protocol or SDK change is reviewed deliberately rather than drifting
+in silently.
+
 ## Contributing
 
 Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for how to

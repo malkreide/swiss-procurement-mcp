@@ -35,6 +35,9 @@ class ProcurementSummary(BaseModel):
 
 class SearchResponse(Envelope):
     count: int
+    match_type: str = Field(
+        default="none", description="exact when results were returned, none when empty."
+    )
     has_more: bool = Field(description="True if the pagination cursor can be advanced.")
     next_cursor: str | None = Field(
         default=None, description="Pass as `cursor` to search_procurements for the next page."
@@ -68,6 +71,9 @@ class CodeEntry(BaseModel):
 class CodeSearchResponse(Envelope):
     system: str = Field(description="cpv, bkp, npk, cpc, ebkp-h, ebkp-t or oag.")
     count: int
+    match_type: str = Field(
+        default="none", description="exact when codes were returned, none when empty."
+    )
     codes: list[CodeEntry]
 
 
@@ -80,6 +86,9 @@ class ProcurementOffice(BaseModel):
 
 class OfficeSearchResponse(Envelope):
     count: int
+    match_type: str = Field(
+        default="none", description="exact when offices matched, none when empty."
+    )
     offices: list[ProcurementOffice]
 
 
