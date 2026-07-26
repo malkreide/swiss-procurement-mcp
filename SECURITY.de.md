@@ -74,9 +74,16 @@ Produktion. Die vollständigen Finding-Dokumente liegen unter
   Input-Grenzen ergänzt; die Unit-Tiefe pro Tool liegt noch unter dem strikten
   ≥5-Ziel.
 
-**Weiterhin offen (zurückgestellte Politur):** ARCH-007 (interne Aggregation, um
-die Anchor-Query auf ≤2 Aufrufe zu bringen), CH-004 (explizite Datenlizenz nennen,
-sobald die Nutzungsbedingungen von simap bestätigt sind).
+**In 0.3.0 behoben:**
+
+- **ARCH-007** (medium) — neues aggregiertes Tool `search_procurements_detailed`,
+  das die Suche ausführt und die Top-*n*-Detaildatensätze parallel abruft
+  (`asyncio.gather`) — die Anchor-Query ist so in einem Call beantwortbar.
+- **CH-004** (medium) — die Attribution nennt jetzt Quelle, Betreiber und
+  Bedingungen und benennt die Nutzungsgrundlage. simap.ch veröffentlicht **keine
+  explizite Open-Data-Lizenz**, daher wird keine behauptet; die Ausschreibungen
+  sind amtliche Bekanntmachungen, die Nutzung folgt den simap.ch-Bedingungen
+  (dokumentiert in `ATTRIBUTION`, README-Credits und im `source`-Feld jeder Antwort).
 
 **Akzeptiertes Risiko (profilbedingt zurückgestellt):** ARCH-008 (tools-only),
 OBS-003 (strukturiertes Logging), SCALE-002 (Stateful-LB), SEC-007

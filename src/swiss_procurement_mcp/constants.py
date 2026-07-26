@@ -21,11 +21,14 @@ ALLOWED_HOSTS = frozenset({"www.simap.ch"})
 # /api calls work. A cookie jar / persistent client is therefore mandatory.
 COOKIE_SEED_URL = "https://www.simap.ch/api/cantons/v1?lang=de"
 
-USER_AGENT = "swiss-procurement-mcp/0.2.0 (+https://github.com/malkreide/swiss-procurement-mcp)"
+USER_AGENT = "swiss-procurement-mcp/0.3.0 (+https://github.com/malkreide/swiss-procurement-mcp)"
 
 ATTRIBUTION = (
-    "Data: simap.ch (Swiss public procurement platform), read API v1.5.1. "
-    "Operated by the simap.ch association. Unofficial client; publications remain "
+    "Data: simap.ch (Swiss public procurement platform), read API v1.5.1, operated "
+    "by the simap.ch association (www.simap.ch). The underlying tenders are official "
+    "public-procurement announcements by Swiss public bodies. simap.ch publishes no "
+    "explicit open-data licence; reuse is subject to the simap.ch terms "
+    "(www.simap.ch/de/about/legal). Unofficial client; publications remain "
     "authoritative on the platform itself."
 )
 

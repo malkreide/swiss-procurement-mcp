@@ -72,9 +72,16 @@ Full per-finding docs are under
 - **OPS-001** (high) — added tests for the three previously-uncovered tools and
   the new input bounds; per-tool unit depth is still below the strict ≥5 target.
 
-**Still open (deferred polish):** ARCH-007 (internal aggregation to cut the anchor
-query to ≤2 calls), CH-004 (name an explicit data licence once simap's reuse terms
-are confirmed).
+**Resolved in 0.3.0:**
+
+- **ARCH-007** (medium) — added the aggregated `search_procurements_detailed` tool,
+  which runs the search and fetches the top-*n* detail records in parallel
+  (`asyncio.gather`), so the anchor query is answered in one call.
+- **CH-004** (medium) — attribution now names the source, operator and terms and
+  states the reuse basis. simap.ch publishes **no explicit open-data licence**, so
+  none is asserted; the tenders are official public-procurement announcements and
+  reuse follows the simap.ch terms (documented in `ATTRIBUTION`, README Credits and
+  every response's `source` field).
 
 **Accepted risk (deferred by profile):** ARCH-008 (tools-only), OBS-003
 (structured logging), SCALE-002 (stateful LB), SEC-007 (container sandboxing),
