@@ -42,13 +42,34 @@ from .models import (
 
 mcp = FastMCP("swiss-procurement-mcp")
 
+# ARCH-009: every tool is read-only, idempotent, and reaches the live simap.ch
+# API (open world). Shared so the hints stay consistent across all tools.
+READ_TOOL = {"readOnlyHint": True, "idempotentHint": True, "openWorldHint": True}
+
+# SEC-018: bound inputs at the tool boundary so out-of-range or oversized
+# arguments fail fast with a clear error instead of being passed upstream.
+MAX_LIMIT = 100
+MAX_TEXT_LEN = 200
+
+
+def _check_limit(limit: int) -> None:
+    if not 1 <= limit <= MAX_LIMIT:
+        raise ValueError(f"limit must be between 1 and {MAX_LIMIT}.")
+
+
+def _check_text(value: str | None, field: str) -> None:
+    if value is not None and len(value) > MAX_TEXT_LEN:
+        raise ValueError(f"{field} must be at most {MAX_TEXT_LEN} characters.")
+
 
 def _degraded(exc: Exception) -> dict[str, Any]:
+    # OBS-002: surface a fixed, sanitised note — never the raw exception or the
+    # upstream response body — to the model.
     return {
         "source": ATTRIBUTION,
         "provenance": "degraded",
         "retrieved_at": utc_now_iso(),
-        "note": f"simap.ch is currently unreachable ({exc}). Please retry shortly.",
+        "note": "simap.ch is currently unreachable or returned an error. Please retry shortly.",
     }
 
 
@@ -89,7 +110,7 @@ def _to_summary(entry: dict[str, Any], lang: str) -> ProcurementSummary:
     )
 
 
-@mcp.tool(annotations={"readOnlyHint": True})
+@mcp.tool(annotations=READ_TOOL)
 async def search_procurements(
     query: str | None = None,
     canton: str | None = None,
@@ -121,6 +142,7 @@ async def search_procurements(
         language: de, fr, it or en.
     """
     lang = normalise_language(language)
+    _check_text(query, "query")
 
     if canton and canton.upper() not in CANTON_IDS:
         raise ValueError(f"Unknown canton {canton!r}. Use a bare id like ZH, not CH-ZH.")
@@ -170,13 +192,14 @@ async def search_procurements(
         retrieved_at=stamp,
         note=note,
         count=len(results),
+        match_type="exact" if results else "none",
         has_more=has_more,
         next_cursor=next_cursor if has_more else None,
         results=results,
     )
 
 
-@mcp.tool(annotations={"readOnlyHint": True})
+@mcp.tool(annotations=READ_TOOL)
 async def search_awards(
     canton: str | None = None,
     published_from: str | None = None,
@@ -222,13 +245,14 @@ async def search_awards(
         provenance=provenance,
         retrieved_at=stamp,
         count=len(results),
+        match_type="exact" if results else "none",
         has_more=has_more,
         next_cursor=next_cursor if has_more else None,
         results=results,
     )
 
 
-@mcp.tool(annotations={"readOnlyHint": True})
+@mcp.tool(annotations=READ_TOOL)
 async def get_procurement_details(
     project_id: str, publication_id: str, language: str = "de"
 ) -> ProcurementDetail:
@@ -281,7 +305,7 @@ async def get_procurement_details(
     )
 
 
-@mcp.tool(annotations={"readOnlyHint": True})
+@mcp.tool(annotations=READ_TOOL)
 async def get_publication_history(publication_id: str, language: str = "de") -> HistoryResponse:
     """Return earlier publications of the same procurement project.
 
@@ -316,7 +340,7 @@ async def get_publication_history(publication_id: str, language: str = "de") -> 
     )
 
 
-@mcp.tool(annotations={"readOnlyHint": True})
+@mcp.tool(annotations=READ_TOOL)
 async def search_cpv_codes(query: str, limit: int = 10, language: str = "de") -> CodeSearchResponse:
     """Search CPV classification codes by keyword.
 
@@ -325,6 +349,8 @@ async def search_cpv_codes(query: str, limit: int = 10, language: str = "de") ->
     its code here, then pass the code to `search_procurements(cpv_codes=[...])`.
     """
     lang = normalise_language(language)
+    _check_limit(limit)
+    _check_text(query, "query")
     async with SimapClient() as client:
         try:
             payload, provenance, stamp = await client.code_search("cpv", query, lang, limit)
@@ -341,11 +367,12 @@ async def search_cpv_codes(query: str, limit: int = 10, language: str = "de") ->
         retrieved_at=stamp,
         system="cpv",
         count=len(codes),
+        match_type="exact" if codes else "none",
         codes=codes,
     )
 
 
-@mcp.tool(annotations={"readOnlyHint": True})
+@mcp.tool(annotations=READ_TOOL)
 async def search_construction_codes(
     system: str, query: str, limit: int = 10, language: str = "de"
 ) -> CodeSearchResponse:
@@ -359,6 +386,8 @@ async def search_construction_codes(
     katalog) used in building tenders — relevant for school-building procurement.
     """
     lang = normalise_language(language)
+    _check_limit(limit)
+    _check_text(query, "query")
     sys_norm = system.lower()
     allowed = tuple(s for s in CODE_SYSTEMS if s != "cpv")
     if sys_norm not in allowed:
@@ -380,11 +409,12 @@ async def search_construction_codes(
         retrieved_at=stamp,
         system=sys_norm,
         count=len(codes),
+        match_type="exact" if codes else "none",
         codes=codes,
     )
 
 
-@mcp.tool(annotations={"readOnlyHint": True})
+@mcp.tool(annotations=READ_TOOL)
 async def find_procurement_office(
     name_contains: str, limit: int = 20, language: str = "de"
 ) -> OfficeSearchResponse:
@@ -395,6 +425,8 @@ async def find_procurement_office(
     the linked institution id.
     """
     lang = normalise_language(language)
+    _check_limit(limit)
+    _check_text(name_contains, "name_contains")
     needle = name_contains.lower().strip()
     async with SimapClient() as client:
         try:
@@ -430,11 +462,12 @@ async def find_procurement_office(
         provenance=provenance,
         retrieved_at=stamp,
         count=len(matched),
+        match_type="exact" if matched else "none",
         offices=matched,
     )
 
 
-@mcp.tool(annotations={"readOnlyHint": True})
+@mcp.tool(annotations=READ_TOOL)
 async def source_status() -> StatusResponse:
     """Report reachability and latency of the simap.ch read API."""
     async with SimapClient() as client:

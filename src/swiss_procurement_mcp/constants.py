@@ -11,12 +11,17 @@ from __future__ import annotations
 # probing it was the reason for an earlier, wrong "no API" conclusion.
 SIMAP_BASE = "https://www.simap.ch/api"
 
+# SEC-021: explicit egress allow-list. Every outbound request is asserted
+# against this set before it is sent, so even a future refactor cannot widen
+# egress beyond the simap.ch host without changing this line.
+ALLOWED_HOSTS = frozenset({"www.simap.ch"})
+
 # FINDING: The host enforces a session cookie ("cookie-check"). The very first
 # request is redirected to a cookie-check page; once the cookie is stored, all
 # /api calls work. A cookie jar / persistent client is therefore mandatory.
 COOKIE_SEED_URL = "https://www.simap.ch/api/cantons/v1?lang=de"
 
-USER_AGENT = "swiss-procurement-mcp/0.1.0 (+https://github.com/malkreide/swiss-procurement-mcp)"
+USER_AGENT = "swiss-procurement-mcp/0.2.0 (+https://github.com/malkreide/swiss-procurement-mcp)"
 
 ATTRIBUTION = (
     "Data: simap.ch (Swiss public procurement platform), read API v1.5.1. "

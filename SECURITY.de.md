@@ -31,7 +31,7 @@ umgesetzte Härtung:
 
 | Bereich | Kontrolle |
 |---|---|
-| Egress | Jede Anfrage geht an eine einzige, fest verdrahtete HTTPS-Basis-URL (`https://www.simap.ch/api`, `SIMAP_BASE`); der Aufrufer gibt nie einen Host an |
+| Egress | Jede Anfrage geht an eine einzige, fest verdrahtete HTTPS-Basis-URL (`https://www.simap.ch/api`, `SIMAP_BASE`); der Aufrufer gibt nie einen Host an, und jede Anfrage wird vor dem Senden gegen eine `ALLOWED_HOSTS`-Allow-List geprüft (SEC-021, siehe `docs/network-egress.md`) |
 | TLS | Zertifikatsprüfung standardmässig aktiv (httpx-Standard; nie deaktiviert) |
 | Transport | Standardmässig stdio — stdout für den JSON-RPC-Stream reserviert; HTTP-Transporte (`MCP_TRANSPORT=sse\|streamable-http`) binden an Loopback (`127.0.0.1`), ausser `MCP_HOST`/`HOST=0.0.0.0` wird explizit gesetzt (SEC-016) |
 | Input | Pydantic-v2-Validierung für jedes Tool-Input; Kantons-IDs, Verfahrens- und Publikationstypen werden gegen feste Allow-Lists geprüft und mit umsetzbarem Fehler abgewiesen (z. B. `ZH` statt `CH-ZH`) |
@@ -43,31 +43,60 @@ umgesetzte Härtung:
 
 ## Audit-Findings (26.07.2026)
 
-17 Findings wurden dokumentiert (Policy `fail-or-partial`). Keines blockiert die
-Produktion. Sie fallen in zwei Gruppen; die vollständigen Finding-Dokumente
-liegen unter `audits/2026-07-26T131630-Z-swiss-procurement-mcp/findings/`.
+17 Findings wurden dokumentiert (Policy `fail-or-partial`). Keines blockierte die
+Produktion. Die vollständigen Finding-Dokumente liegen unter
+`audits/2026-07-26T131630-Z-swiss-procurement-mcp/findings/`.
 
-**Geplante Härtung (geringer Impact, umsetzbar):**
+**In 0.2.0 behoben:**
 
-- **ARCH-012** (fail, medium) — MCP-Protokoll-Version pinnen/festhalten,
-  SDK-Update-Policy und Dependabot-Konfiguration ergänzen.
-- **ARCH-009** (high) — `openWorldHint: true` an jedem Tool ergänzen (alle rufen
-  live simap.ch auf).
-- **OBS-002** (high) — FastMCP mit `mask_error_details=True` initialisieren und
-  den rohen Upstream-Body aus der degraded-Note entfernen.
-- **SEC-018** (high) — numerische `limit`-Parameter und Freitext-Länge begrenzen.
-- **SEC-021** (high) — expliziten `assert_host_allowed`-Guard + `docs/network-egress.md`
-  ergänzen (Egress ist bereits auf einen Host fest verdrahtet).
-- **SEC-019** (critical, strukturell sicher) — die Lethal-Trifecta-Bewertung
-  schriftlich festhalten (nur der External-Fetch-Zweig ist vorhanden).
-- **ARCH-005** (critical, keine Secrets vorhanden) — CI-Secret-Scanning als
-  Regressions-Guard ergänzen.
-- Dazu **ARCH-003 / ARCH-007 / CH-004 / OPS-001 / OPS-003** — Doku-, Test-Tiefe-
-  und Attributions-Politur.
+- **ARCH-012** (war fail, medium) — `.github/dependabot.yml` (pip + actions) und
+  ein README-Abschnitt „Reifegrad & Updates" mit MCP-Protokoll-/SDK-Update-Policy.
+- **ARCH-009** (high) — jedes Tool setzt jetzt `readOnlyHint`, `idempotentHint`
+  und `openWorldHint` (gemeinsame `READ_TOOL`-Annotation).
+- **SEC-018** (high) — `limit`-Parameter begrenzt (1–100) und Freitext
+  längenbegrenzt (`_check_limit` / `_check_text`), mit Tests.
+- **SEC-021** (high) — expliziter `_assert_host_allowed`-Guard gegen ein
+  `ALLOWED_HOSTS`-frozenset vor jeder Anfrage, plus `docs/network-egress.md`.
+- **SEC-019** (critical, strukturell sicher) — Lethal-Trifecta-Bewertung
+  schriftlich festgehalten (siehe unten).
+- **ARCH-005** (critical, keine Secrets vorhanden) — gitleaks-CI-Workflow
+  (`.github/workflows/security.yml`).
+- **ARCH-003** (medium) — Such-/Code-/Office-Antworten tragen jetzt `match_type`
+  (`exact` / `none`).
+- **OPS-003** (high) — explizite Deklaration „Phase 1 — rein lesend" im README.
+
+**In 0.2.0 teilweise adressiert:**
+
+- **OBS-002** (high) — die degraded-Note ist jetzt ein fester, bereinigter String
+  (keine rohe Exception / kein Upstream-Body). `mask_error_details=True` wird
+  **nicht** gesetzt, da das gepinnte `mcp`-SDK diese Einstellung nicht bietet.
+- **OPS-001** (high) — Tests für die drei zuvor ungetesteten Tools und die neuen
+  Input-Grenzen ergänzt; die Unit-Tiefe pro Tool liegt noch unter dem strikten
+  ≥5-Ziel.
+
+**Weiterhin offen (zurückgestellte Politur):** ARCH-007 (interne Aggregation, um
+die Anchor-Query auf ≤2 Aufrufe zu bringen), CH-004 (explizite Datenlizenz nennen,
+sobald die Nutzungsbedingungen von simap bestätigt sind).
 
 **Akzeptiertes Risiko (profilbedingt zurückgestellt):** ARCH-008 (tools-only),
 OBS-003 (strukturiertes Logging), SCALE-002 (Stateful-LB), SEC-007
 (Container-Sandboxing), SEC-009 (Session-Binding) — siehe unten.
+
+## Lethal-Trifecta-Bewertung (SEC-019)
+
+Die „Lethal Trifecta" ist die gefährliche Kombination aus (1) Zugriff auf private
+Daten, (2) Exposition gegenüber nicht vertrauenswürdigem Inhalt und (3) der
+Fähigkeit zur Exfiltration. Dieser Server hat **höchstens einen** der drei Zweige:
+
+| Zweig | Vorhanden? | Begründung |
+|---|---|---|
+| Zugriff auf private/sensible Daten | **Nein** | Nur öffentliche simap.ch-Publikationen werden gelesen; keine Auth, keine PII, keine benutzerbezogenen Daten |
+| Exposition gegenüber nicht vertrauenswürdigem Inhalt | Teilweise | Tool-Resultate enthalten Upstream-Text, den das Modell aufnimmt — aber öffentliche Beschaffungsdaten, kein angreifergewählter privater Inhalt |
+| Fähigkeit zur Exfiltration / Aktion | **Nein** | Egress ist auf einen Allow-List-Host (`www.simap.ch`) fixiert; keine Send-/Schreib-/Beliebig-Anfrage-Fähigkeit, alle Tools rein lesend |
+
+Da der Privatdaten- und der Exfiltrations-Zweig beide fehlen, kann sich die
+Trifecta nicht schliessen. Neu zu bewerten, falls der Server je Schreibzugriff
+erhält, private Daten verarbeitet oder Egress zu beliebigen Hosts erlaubt.
 
 ## Akzeptierte Risiken
 

@@ -21,7 +21,13 @@ from typing import Any
 
 import httpx
 
-from .constants import DEFAULT_LANGUAGE, SIMAP_BASE, SUPPORTED_LANGUAGES, USER_AGENT
+from .constants import (
+    ALLOWED_HOSTS,
+    DEFAULT_LANGUAGE,
+    SIMAP_BASE,
+    SUPPORTED_LANGUAGES,
+    USER_AGENT,
+)
 
 MAX_ATTEMPTS = 4
 CACHE_TTL_SECONDS = 60 * 30  # publications change intraday; keep it short
@@ -33,6 +39,17 @@ class UpstreamError(RuntimeError):
 
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _assert_host_allowed(url: str) -> None:
+    """SEC-021: refuse any egress outside the simap.ch allow-list.
+
+    The base URL is hardcoded, so this can only trip on a future refactor that
+    lets a foreign host reach here — exactly the regression this guards against.
+    """
+    host = httpx.URL(url).host
+    if host not in ALLOWED_HOSTS:
+        raise UpstreamError(f"Refusing request to non-allow-listed host {host!r}.")
 
 
 def normalise_language(language: str | None) -> str:
@@ -83,6 +100,7 @@ class SimapClient:
     async def _fetch_with_retry(self, path: str, params: dict[str, Any] | None = None) -> Any:
         assert self._http is not None, "SimapClient must be used as an async context manager"
         url = f"{SIMAP_BASE}{path}"
+        _assert_host_allowed(url)
         last_error: Exception | None = None
 
         for attempt in range(MAX_ATTEMPTS):
@@ -151,6 +169,7 @@ class SimapClient:
 
     async def probe(self, name: str, path: str) -> dict[str, Any]:
         assert self._http is not None
+        _assert_host_allowed(f"{SIMAP_BASE}{path}")
         started = time.perf_counter()
         try:
             response = await self._http.get(f"{SIMAP_BASE}{path}", timeout=10.0)

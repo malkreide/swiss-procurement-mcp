@@ -198,6 +198,18 @@ swiss-procurement-mcp/
 
 ---
 
+## Reifegrad & Updates
+
+**Phase 1 — rein lesend.** Dieser Server kapselt nur die öffentlichen
+Lese-Endpoints; die schreibenden / OIDC-geschützten simap-Endpoints sind bewusst
+ausserhalb des Umfangs. Die Bedingungen für einen Übergang zu einer Schreib-Phase
+stehen als Re-Evaluierungs-Auslöser in [SECURITY.de.md](SECURITY.de.md).
+
+Der Server zielt auf die vom gepinnten `mcp`-SDK ausgehandelte MCP-Protokoll-Version.
+SDK- und Abhängigkeits-Updates kommen als [Dependabot](.github/dependabot.yml)-PRs,
+damit eine brechende Protokoll- oder SDK-Änderung bewusst geprüft wird statt still
+zu driften.
+
 ## Mitwirken
 
 Beiträge sind willkommen — siehe [CONTRIBUTING.de.md](CONTRIBUTING.de.md), wie Sie
