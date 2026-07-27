@@ -211,12 +211,24 @@ under `--read-only --cap-drop ALL`.
 
 No API keys — the wrapped simap.ch read endpoints are fully public.
 
-Each tool call emits one `tool_call` record with its name, status and latency;
-upstream failures add a `upstream_degraded` record at `WARNING`. Neither carries
-the exception message or any upstream response body.
+Built on [structlog](https://www.structlog.org/). Every event emitted during a
+tool call carries that call's `correlation_id`, bound via `contextvars` — so a
+failure logged deep inside the HTTP client can be joined to the request that
+caused it without threading context through every function.
+
+| Level | Emitted when |
+|---|---|
+| `DEBUG` | a tool call was entered (`tool_call_started`) — tells you whether a hung call ever started |
+| `INFO` | a tool call finished cleanly, with latency |
+| `WARNING` | simap.ch was unreachable or errored (`upstream_degraded`) |
+| `ERROR` | a tool call raised |
+
+Records carry the exception *type* only — never its message and never an
+upstream response body (OBS-002).
 
 ```json
-{"ts":"2026-07-27T15:50:25","level":"INFO","logger":"swiss_procurement_mcp","msg":"tool_call","tool":"search_procurements","status":"ok","latency_ms":312}
+{"event":"tool_call_started","tool":"search_procurements","correlation_id":"23221af26ae640c7","level":"debug","timestamp":"2026-07-27T22:20:07.494276Z"}
+{"status":"ok","latency_ms":312,"event":"tool_call","tool":"search_procurements","correlation_id":"23221af26ae640c7","level":"info","timestamp":"2026-07-27T22:20:07.806Z"}
 ```
 
 ---
