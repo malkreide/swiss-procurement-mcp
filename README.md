@@ -261,6 +261,10 @@ MIT License — see [LICENSE](LICENSE). The tenders are official public-procurem
 announcements; simap.ch publishes no explicit open-data licence, so reuse follows
 the simap.ch terms (see Credits).
 
+## Author
+
+**Hayal Oezkan** · [github.com/malkreide](https://github.com/malkreide)
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).
