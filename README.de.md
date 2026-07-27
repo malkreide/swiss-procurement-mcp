@@ -271,6 +271,10 @@ MIT-Lizenz — siehe [LICENSE](LICENSE). Die Ausschreibungen sind amtliche
 Beschaffungspublikationen; simap.ch veröffentlicht keine explizite Open-Data-Lizenz,
 die Weiterverwendung richtet sich daher nach den simap.ch-Bedingungen (siehe Credits).
 
+## Autor
+
+**Hayal Oezkan** · [github.com/malkreide](https://github.com/malkreide)
+
 ## Changelog
 
 Siehe [CHANGELOG.md](CHANGELOG.md).
