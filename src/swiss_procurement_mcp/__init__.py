@@ -1,7 +1,6 @@
 """Swiss Procurement MCP — read access to the simap.ch public procurement API."""
 
-__version__ = "0.1.0"
-
+from .constants import VERSION as __version__
 from .server import mcp
 
 __all__ = ["__version__", "mcp"]

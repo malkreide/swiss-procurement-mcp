@@ -99,7 +99,7 @@ stillschweigend leere Liste.
 
 | Tool | Zweck |
 |---|---|
-| `search_procurements` | Publikationen nach Kanton, CPV, Verfahrensart, Datum, Text |
+| `search_procurements` | Projekte nach Kanton, CPV, Verfahrensart, Datum, Text |
 | `search_procurements_detailed` | Suche + vollständige Details der Top-*n*-Treffer in einem Call (aggregiert) |
 | `search_awards` | Nur Zuschläge (alle vier Zuschlagsarten zusammen) |
 | `get_procurement_details` | Vollständiger Datensatz einer Publikation |
@@ -111,6 +111,29 @@ stillschweigend leere Liste.
 
 Alle Tools tragen `readOnlyHint`, `idempotentHint` und `openWorldHint` (sie fragen
 die Live-simap.ch-API ab).
+
+### Was `canton=` bedeutet
+
+simap kennt genau einen geografischen Filter, `orderAddressCantons`, und der
+selektiert nach dem **Leistungsort** — nicht nach der Vergabestelle. Erfasst eine
+Vergabestelle die Adresse als Freitext, ist der strukturierte Kanton `null` und
+die Publikation für diesen Filter unsichtbar. CH-weit gemessen über 500 seit
+2026-07-01 publizierte Projekte: **303 (60,6 %) ohne Kanton**, darunter das Amt
+für Hochbauten Zürich, Grün Stadt Zürich, das USZ, das BBL und die SBB.
+
+`canton_match` macht die Frage deshalb explizit:
+
+| Wert | Trifft | Zürich, 2026-07-01…27 |
+|---|---|---|
+| `procuring_body` *(Standard)* | Beschaffung durch die öffentliche Hand dieses Kantons, inkl. kommunaler und untergeordneter Stellen (`issuedByOrganizations`) | **410** Projekte |
+| `place_of_delivery` | Leistung wird dort erbracht (`orderAddressCantons`) | 263 Projekte |
+| `both` | Vereinigung beider; zwei Upstream-Calls, keine Pagination | 441 Projekte |
+
+Die 31 Projekte, die nur `place_of_delivery` findet, sind bundesnahe Träger, die
+in Zürich beschaffen (ETH, Empa, Flughafen Zürich AG) — eine andere Frage, keine
+Lücke. Genau deshalb drei explizite Semantiken statt einer stillen Vereinigung.
+
+Jede Antwort nennt im `note`-Feld, welche Semantik angewendet wurde.
 
 ---
 
@@ -177,6 +200,15 @@ Siehe [EXAMPLES.md](EXAMPLES.md) für Anwendungsfälle nach Zielgruppe (Schule,
 
 ## Bekannte Einschränkungen
 
+- **Projekte, nicht Publikationen.** `project-search` indexiert Projekte und
+  vertritt jedes durch seine *neueste* Publikation. Ein im März ausgeschriebenes
+  und im Juli zugeschlagenes Projekt erscheint einmal, als Juli-Zuschlag;
+  ebenso findet `search_awards` nur Projekte, deren neueste Publikation ein
+  Zuschlag ist — eine spätere Berichtigung verdeckt ihn.
+  `get_publication_history` erreicht die früheren Publikationen.
+- **Mindestens ein Filter ist nötig.** simap beantwortet eine filterlose Abfrage
+  mit nichts statt mit allem; die Tools weisen sie deshalb mit genau dieser
+  Begründung ab, statt ein leeres Ergebnis zu melden.
 - **Bewusst rein lesend.** Publikations- und Einreiche-Endpoints existieren in der
   simap-API, werden aber bewusst nicht gekapselt.
 - **Zuschlagsabdeckung ist ungleich** über die Kantone; einige publizieren
@@ -237,7 +269,7 @@ Siehe [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits
 
-- Daten: [simap.ch](https://www.simap.ch) Lese-API v1.5.1, betrieben vom Verein simap.ch. API-Doku: [simap.ch/api-doc](https://www.simap.ch/api-doc), Anleitungen: [kissimap.ch](https://www.kissimap.ch/de/anleitungen).
+- Daten: [simap.ch](https://www.simap.ch) Lese-API v1.5.1, betrieben vom Verein simap.ch. API-Doku: [simap.ch/api-doc](https://www.simap.ch/api-doc) — maschinenlesbare OpenAPI-Spec unter [`/api/specifications/simap.yaml`](https://www.simap.ch/api/specifications/simap.yaml), gegen die ein Live-Test die Enum-Konstanten prüft. Anleitungen: [kissimap.ch](https://www.kissimap.ch/de/anleitungen).
 - Die zugrunde liegenden Ausschreibungen sind amtliche Beschaffungs-Bekanntmachungen Schweizer öffentlicher Stellen. simap.ch veröffentlicht **keine explizite Open-Data-Lizenz**; die Nutzung unterliegt den [simap.ch-Bedingungen](https://www.simap.ch/de/about/legal). Quelle als *simap.ch (Verein simap.ch)* angeben.
 - Gebaut nach der Methodik `mcp-data-source-probe`.
 
