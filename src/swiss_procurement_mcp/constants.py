@@ -25,7 +25,9 @@ COOKIE_SEED_URL = "https://www.simap.ch/api/cantons/v1?lang=de"
 # the User-Agent cannot drift from the packaged version again (it said 0.3.0
 # while the package was already 0.3.1).
 VERSION = "0.4.0"
-USER_AGENT = f"swiss-procurement-mcp/{VERSION} (+https://github.com/malkreide/swiss-procurement-mcp)"
+USER_AGENT = (
+    f"swiss-procurement-mcp/{VERSION} (+https://github.com/malkreide/swiss-procurement-mcp)"
+)
 
 ATTRIBUTION = (
     "Data: simap.ch (Swiss public procurement platform), read API v1.5.1, operated "

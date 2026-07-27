@@ -70,8 +70,10 @@ async def test_live_canton_institution_ids_still_resolve():
     async with SimapClient() as client:
         payload, _prov, _stamp = await client.institutions()
 
-    rows = payload if isinstance(payload, list) else next(
-        (v for v in payload.values() if isinstance(v, list)), []
+    rows = (
+        payload
+        if isinstance(payload, list)
+        else next((v for v in payload.values() if isinstance(v, list)), [])
     )
     roots = {r["id"] for r in rows if not r.get("parentInstitutionId")}
 

@@ -174,9 +174,7 @@ class SimapClient:
         Public, no authentication. Used to verify `CANTON_INSTITUTION_IDS`
         against the live taxonomy rather than trusting the pinned ids forever.
         """
-        return await self._cached(
-            f"inst:{language}", INSTITUTIONS_PATH, {"lang": language}
-        )
+        return await self._cached(f"inst:{language}", INSTITUTIONS_PATH, {"lang": language})
 
     async def probe(self, name: str, path: str) -> dict[str, Any]:
         assert self._http is not None
