@@ -10,8 +10,14 @@ in `constants.py`.
 import httpx
 import pytest
 import respx
+from pydantic import ValidationError
 
 from swiss_procurement_mcp.constants import CANTON_IDS, CANTON_INSTITUTION_IDS, SIMAP_BASE
+from swiss_procurement_mcp.inputs import (
+    AwardSearchInput,
+    DetailedSearchInput,
+    SearchInput,
+)
 from swiss_procurement_mcp.server import (
     search_awards,
     search_procurements,
@@ -31,7 +37,7 @@ def test_every_canton_has_an_institution_id():
 @respx.mock
 async def test_default_matches_the_procuring_body(search_payload):
     route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json=search_payload))
-    result = await search_procurements(canton="ZH", published_from="2026-07-01")
+    result = await search_procurements(SearchInput(canton="ZH", published_from="2026-07-01"))
 
     sent = str(route.calls.last.request.url)
     assert ZH_INSTITUTION in sent
@@ -43,7 +49,7 @@ async def test_default_matches_the_procuring_body(search_payload):
 async def test_place_of_delivery_keeps_the_address_filter(search_payload):
     route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json=search_payload))
     result = await search_procurements(
-        canton="ZH", canton_match="place_of_delivery", published_from="2026-07-01"
+        SearchInput(canton="ZH", canton_match="place_of_delivery", published_from="2026-07-01")
     )
 
     sent = str(route.calls.last.request.url)
@@ -76,7 +82,7 @@ async def test_both_unions_two_queries_and_dedupes_by_project_id(search_payload)
         ]
     )
     result = await search_procurements(
-        canton="ZH", canton_match="both", published_from="2026-07-01"
+        SearchInput(canton="ZH", canton_match="both", published_from="2026-07-01")
     )
 
     assert route.call_count == 2
@@ -92,18 +98,21 @@ async def test_both_unions_two_queries_and_dedupes_by_project_id(search_payload)
 async def test_both_rejects_a_cursor(search_payload):
     respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json=search_payload))
     with pytest.raises(ValueError, match="pagination is unavailable"):
-        await search_procurements(canton="ZH", canton_match="both", cursor="20260726|41694")
+        await search_procurements(
+            SearchInput(canton="ZH", canton_match="both", cursor="20260726|41694")
+        )
 
 
 async def test_unknown_canton_match_is_rejected():
-    with pytest.raises(ValueError, match="canton_match must be one of"):
-        await search_procurements(canton="ZH", canton_match="by_vibes")
+    with pytest.raises(ValidationError) as exc:
+        SearchInput(canton="ZH", canton_match="by_vibes")
+    assert exc.value.errors()[0]["type"] == "literal_error"
 
 
 @respx.mock
 async def test_awards_use_the_same_semantics(search_payload):
     route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json=search_payload))
-    await search_awards(canton="ZH", published_from="2026-07-01")
+    await search_awards(AwardSearchInput(canton="ZH", published_from="2026-07-01"))
 
     sent = str(route.calls.last.request.url)
     assert ZH_INSTITUTION in sent
@@ -116,7 +125,7 @@ async def test_detailed_search_uses_the_same_semantics(search_payload, detail_pa
     respx.get(url__regex=rf"{SIMAP_BASE}/publications/v1/project/.*/publication-details/.*").mock(
         return_value=httpx.Response(200, json=detail_payload)
     )
-    result = await search_procurements_detailed(canton="ZH", top_n=1)
+    result = await search_procurements_detailed(DetailedSearchInput(canton="ZH", top_n=1))
 
     assert ZH_INSTITUTION in str(route.calls[0].request.url)
     assert "PROCURING BODY" in (result.note or "")
@@ -130,11 +139,11 @@ async def test_detailed_search_uses_the_same_semantics(search_payload, detail_pa
 async def test_filterless_search_is_refused_with_the_real_reason():
     """simap returns 0 projects for an unfiltered query — not "no matches"."""
     with pytest.raises(ValueError, match="requires at least one filter"):
-        await search_procurements()
+        await search_procurements(SearchInput())
 
 
 @respx.mock
 async def test_a_single_filter_is_enough(search_payload):
     respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json=search_payload))
-    assert (await search_procurements(query="Schulhaus")).count == 1
-    assert (await search_procurements(canton="ZH")).count == 1
+    assert (await search_procurements(SearchInput(query="Schulhaus"))).count == 1
+    assert (await search_procurements(SearchInput(canton="ZH"))).count == 1

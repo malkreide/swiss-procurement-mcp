@@ -3,6 +3,97 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.0] — 2026-07-27
+
+Closes the last two open `high` findings, SEC-018 and SEC-007. **Breaking: every
+tool now takes a single argument object.**
+
+### Breaking — tool arguments move into one validated object
+
+Tools used to take flat keyword arguments. They now take one input model each:
+
+```diff
+- search_procurements(canton="ZH", query="Schulhaus", limit=20)
++ search_procurements({"canton": "ZH", "query": "Schulhaus", "limit": 20})
+```
+
+This is the shape SEC-018 requires and the shape the companion `amtsblatt-mcp`
+already uses, so the two servers now read the same way. No tool was renamed, no
+argument was renamed, removed or given a different meaning, and no return shape
+changed — only the nesting.
+
+### SEC-018 — validation moves from the tool body to the boundary
+
+Bounds used to be enforced imperatively inside the tools by `_check_limit` and
+`_check_text`, which meant the model could not see them: the tool schema
+advertised a bare `integer` and the rejection only happened after the call.
+
+`inputs.py` now declares them, so they appear in the tool list:
+
+| | before | after |
+|---|---|---|
+| `limit` | `{"type": "integer"}` | `{"type": "integer", "minimum": 1, "maximum": 100}` |
+| `query` | `{"type": "string"}` | `minLength` 2, `maxLength` 200, whitelist `pattern` |
+| `canton` | `{"type": "string"}` | enum of the 26 ids |
+
+Every model sets `strict=True` and `extra="forbid"`:
+
+- **`strict=True`** — no coercion. `limit="10"` is now an error rather than
+  silently becoming `10`, so type confusion is reported instead of hidden.
+- **`extra="forbid"`** — an unknown field is rejected rather than dropped. A
+  silently-ignored field looks accepted, which is prompt-injection surface.
+
+The allow-lists (cantons, process types, publication types, code systems,
+languages) are **derived from `constants.py`** rather than restated, so a probe
+that updates those tables cannot leave a stale copy behind in the schema. A
+parametrised test asserts the derivation still holds.
+
+`_check_limit` and `_check_text` are gone; the schema does their work.
+
+#### One deliberate tightening
+
+Under `strict=True`, `language="DE"` is now rejected instead of being
+lower-cased to `"de"`. Silent normalisation is exactly what strict mode exists
+to prevent, so this is intended rather than incidental.
+
+#### One thing the new tests caught
+
+The first draft of the free-text whitelist used `\s` for whitespace. `\s`
+matches CR and LF, so `query="a\r\nX-Injected: 1"` passed the filter — a
+whitelist with a hole in it. The pattern now uses a literal space; a
+procurement keyword never needs a line break. The test that found it is in
+`tests/test_input_models.py` and is still there.
+
+#### Where validation now happens
+
+Schema violations are rejected *before* the tool body runs, so they no longer
+produce a `tool_call` log record — there is no call to account for. Errors
+raised inside a tool body still log with `status="error"` as before. Both
+behaviours are pinned by tests.
+
+### SEC-007 — hardened container
+
+Ported from `amtsblatt-mcp`: multi-stage `Dockerfile`, non-root system user,
+plus a `compose.yaml` with a read-only root filesystem, `cap_drop: [ALL]`,
+`no-new-privileges`, and memory/CPU/PID limits. No runtime secret — the wrapped
+endpoints are public.
+
+Pinned to `python:3.12-slim` rather than the newest interpreter, because CI
+tests 3.10–3.12; shipping an image on a version no test runs against would put
+the container outside the evidence the rest of this repo relies on.
+
+CI gained a `Docker build` job that does more than build: it asserts the image
+does not run as uid 0, and that the server still imports under
+`--read-only --cap-drop ALL`. A Dockerfile that builds but runs as root would
+otherwise pass silently while failing the check it was written for.
+
+### Added
+
+- `src/swiss_procurement_mcp/inputs.py` — nine strict input models
+- `tests/test_input_models.py` — 40 tests, one group per SEC-018 pass criterion,
+  including the allow-list drift guard and the whitelist-pattern cases
+- `Dockerfile`, `compose.yaml`, `.dockerignore`, and the `Docker build` CI job
+
 ## [0.5.0] — 2026-07-27
 
 Closes OBS-003, the only `fail` in either server's audit. No behaviour changes.

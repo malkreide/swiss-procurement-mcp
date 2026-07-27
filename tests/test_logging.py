@@ -19,11 +19,16 @@ import sys
 import httpx
 import pytest
 import respx
+from pydantic import ValidationError
 
 from swiss_procurement_mcp._log import configure_logging, log_event, logged_tool, logger
 from swiss_procurement_mcp.client import UpstreamError
 from swiss_procurement_mcp.constants import SIMAP_BASE
-from swiss_procurement_mcp.server import mcp, search_cpv_codes
+from swiss_procurement_mcp.inputs import (
+    CpvSearchInput,
+    SearchInput,
+)
+from swiss_procurement_mcp.server import mcp, search_cpv_codes, search_procurements
 
 
 @pytest.fixture
@@ -143,7 +148,7 @@ async def test_successful_tool_call_logs_name_status_and_latency(caplog_json):
     respx.get(f"{SIMAP_BASE}/codes/v1/cpv/search").mock(
         return_value=httpx.Response(200, json={"codes": []})
     )
-    await search_cpv_codes("metall", limit=5)
+    await search_cpv_codes(CpvSearchInput(query="metall", limit=5))
 
     calls = [e for e in _events(caplog_json) if e["msg"] == "tool_call"]
     assert len(calls) == 1
@@ -153,14 +158,29 @@ async def test_successful_tool_call_logs_name_status_and_latency(caplog_json):
 
 
 async def test_failed_tool_call_logs_status_error(caplog_json):
-    """A rejected input still produces exactly one accounted call."""
+    """An error raised inside the tool body is accounted as one errored call.
+
+    Schema violations no longer reach this path: since v0.6.0 the input model
+    rejects them before the tool is entered, so they produce no `tool_call`
+    record at all — see the test below.
+    """
     with pytest.raises(ValueError):
-        await search_cpv_codes("metall", limit=0)
+        await search_procurements(
+            SearchInput(canton="ZH", canton_match="both", cursor="20260726|41694")
+        )
 
     calls = [e for e in _events(caplog_json) if e["msg"] == "tool_call"]
     assert len(calls) == 1
-    assert calls[0]["tool"] == "search_cpv_codes"
+    assert calls[0]["tool"] == "search_procurements"
     assert calls[0]["status"] == "error"
+
+
+async def test_schema_violation_is_rejected_before_the_tool_runs(caplog_json):
+    """The boundary rejects invalid input, so no tool call is ever accounted."""
+    with pytest.raises(ValidationError):
+        CpvSearchInput(query="metall", limit=0)
+
+    assert [e for e in _events(caplog_json) if e["msg"] == "tool_call"] == []
 
 
 def test_every_registered_tool_is_wrapped():
@@ -195,13 +215,17 @@ async def test_decorator_preserves_the_tool_argument_schema():
     tools = {t.name: t for t in await mcp.list_tools()}
     assert len(tools) == 9
 
-    params = set(tools["search_procurements"].inputSchema.get("properties", {}))
-    assert {"query", "canton", "canton_match", "cpv_codes", "language"} <= params
+    # Since v0.6.0 each tool takes one input model, so the real fields live in
+    # the referenced $def rather than at the top level.
+    search = tools["search_procurements"].inputSchema
+    assert list(search["properties"]) == ["args"]
+    fields = set(search["$defs"]["SearchInput"]["properties"])
+    assert {"query", "canton", "canton_match", "cpv_codes", "language"} <= fields
 
-    required = tools["get_procurement_details"].inputSchema.get("required", [])
-    assert {"project_id", "publication_id"} <= set(required)
+    detail = tools["get_procurement_details"].inputSchema["$defs"]["ProcurementDetailInput"]
+    assert {"project_id", "publication_id"} <= set(detail["required"])
 
-    assert tools["source_status"].inputSchema.get("properties", {}) == {}
+    assert tools["source_status"].inputSchema["$defs"]["StatusInput"]["properties"] == {}
 
 
 async def test_decorator_preserves_return_values():
@@ -210,7 +234,7 @@ async def test_decorator_preserves_return_values():
         respx.get(f"{SIMAP_BASE}/codes/v1/cpv/search").mock(
             return_value=httpx.Response(200, json={"codes": []})
         )
-        result = await search_cpv_codes("metall", limit=5)
+        result = await search_cpv_codes(CpvSearchInput(query="metall", limit=5))
     assert result.system == "cpv"
     assert result.codes == []
 
