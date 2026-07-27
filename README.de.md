@@ -28,6 +28,10 @@ ausschreibenden Stellen — in **einem** Call (optional ergänzt um
 `get_procurement_details` und verbindet die Beschaffung über die BKP-Codes mit
 der Schulraumplanung.
 
+### Demo
+
+![Demo: Claude nutzt search_procurements_detailed und search_construction_codes](docs/assets/demo.svg)
+
 ---
 
 ## Warum dieser Server
@@ -260,6 +264,12 @@ Portfolio-MCP-Best-Practice-Katalog (**15 pass / 16 partial / 1 fail** über 32
 anwendbare Checks, produktionsreif). Siehe [SECURITY.de.md](SECURITY.de.md) für
 die Sicherheitslage und die Meldung von Schwachstellen sowie [`audits/`](audits/)
 für den vollständigen Bericht.
+
+## Lizenz
+
+MIT-Lizenz — siehe [LICENSE](LICENSE). Die Ausschreibungen sind amtliche
+Beschaffungspublikationen; simap.ch veröffentlicht keine explizite Open-Data-Lizenz,
+die Weiterverwendung richtet sich daher nach den simap.ch-Bedingungen (siehe Credits).
 
 ## Changelog
 
