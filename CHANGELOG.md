@@ -3,6 +3,24 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.1] — 2026-07-27
+
+Release-plumbing only — no functional change to the server or its tools.
+
+### Fixed
+
+- **MCP Registry publish.** The registry rejected `server.json` with a `422`
+  because `description` exceeded the 100-character limit (it was 217). Shortened
+  to 97 characters, keeping the searchable domain terms and the scope claim
+  (all cantons + federal).
+- **PyPI package ownership validation.** The registry verifies ownership of a
+  PyPI package by looking for an `mcp-name: <server-name>` marker in the
+  published package README. It was missing, so the registry could not attribute
+  the package to `io.github.malkreide/swiss-procurement-mcp`. Added as an HTML
+  comment at the top of `README.md` (the package `long_description`), which
+  keeps it invisible in the rendered README. Because PyPI releases are
+  immutable, the marker can only reach PyPI via a new version — hence 0.3.1.
+
 ## [0.3.0] — 2026-07-26
 
 Closes the last two open audit findings from the 0.2.0 hardening pass.
