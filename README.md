@@ -1,3 +1,5 @@
+<!-- mcp-name: io.github.malkreide/swiss-procurement-mcp -->
+
 > **Part of the [Swiss Public Data MCP Portfolio](https://github.com/malkreide/swiss-public-data-mcp)** — open-source MCP servers connecting AI agents to Swiss public and open data.
 >
 > This is a **private project**. It is independent of any employer or institutional affiliation and represents no official position of any authority.
