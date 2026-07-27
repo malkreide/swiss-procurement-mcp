@@ -88,9 +88,7 @@ def test_configure_logging_is_idempotent():
 def test_records_format_as_single_line_json():
     configure_logging()
     formatter = logger.handlers[0].formatter
-    record = logger.makeRecord(
-        logger.name, logging.INFO, __file__, 0, "tool_call", (), None
-    )
+    record = logger.makeRecord(logger.name, logging.INFO, __file__, 0, "tool_call", (), None)
     record.extra_fields = {"tool": "search_procurements", "status": "ok", "latency_ms": 7}
     line = formatter.format(record)
 
