@@ -7,10 +7,12 @@ endpoints (publishing tenders, submitting offers); none of them are wrapped here
 from __future__ import annotations
 
 import asyncio
+import logging
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
+from ._log import configure_logging, log_event, logged_tool
 from .client import (
     SimapClient,
     UpstreamError,
@@ -47,6 +49,9 @@ from .models import (
 
 mcp = FastMCP("swiss-procurement-mcp")
 
+# OBS-003: structured JSON to stderr. stdout carries the MCP protocol.
+configure_logging()
+
 # ARCH-009: every tool is read-only, idempotent, and reaches the live simap.ch
 # API (open world). Shared so the hints stay consistent across all tools.
 READ_TOOL = {"readOnlyHint": True, "idempotentHint": True, "openWorldHint": True}
@@ -71,6 +76,14 @@ def _check_text(value: str | None, field: str) -> None:
 
 
 def _degraded(exc: Exception) -> dict[str, Any]:
+    # OBS-003: the operator gets the exception type at WARNING; the model gets
+    # the sanitised note below. This is the single funnel for every upstream
+    # failure path, so one call site covers all of them.
+    log_event(
+        logging.WARNING,
+        "upstream_degraded",
+        error_type=type(exc).__name__,
+    )
     # OBS-002: surface a fixed, sanitised note — never the raw exception or the
     # upstream response body — to the model.
     return {
@@ -299,6 +312,7 @@ def _combine_notes(*notes: str | None) -> str | None:
 
 
 @mcp.tool(annotations=READ_TOOL)
+@logged_tool("search_procurements")
 async def search_procurements(
     query: str | None = None,
     canton: str | None = None,
@@ -397,6 +411,7 @@ async def search_procurements(
 
 
 @mcp.tool(annotations=READ_TOOL)
+@logged_tool("search_procurements_detailed")
 async def search_procurements_detailed(
     query: str | None = None,
     canton: str | None = None,
@@ -479,6 +494,7 @@ async def search_procurements_detailed(
 
 
 @mcp.tool(annotations=READ_TOOL)
+@logged_tool("search_awards")
 async def search_awards(
     canton: str | None = None,
     canton_match: str = DEFAULT_CANTON_MATCH,
@@ -543,6 +559,7 @@ async def search_awards(
 
 
 @mcp.tool(annotations=READ_TOOL)
+@logged_tool("get_procurement_details")
 async def get_procurement_details(
     project_id: str, publication_id: str, language: str = "de"
 ) -> ProcurementDetail:
@@ -568,6 +585,7 @@ async def get_procurement_details(
 
 
 @mcp.tool(annotations=READ_TOOL)
+@logged_tool("get_publication_history")
 async def get_publication_history(publication_id: str, language: str = "de") -> HistoryResponse:
     """Return earlier publications of the same procurement project.
 
@@ -603,6 +621,7 @@ async def get_publication_history(publication_id: str, language: str = "de") -> 
 
 
 @mcp.tool(annotations=READ_TOOL)
+@logged_tool("search_cpv_codes")
 async def search_cpv_codes(query: str, limit: int = 10, language: str = "de") -> CodeSearchResponse:
     """Search CPV classification codes by keyword.
 
@@ -635,6 +654,7 @@ async def search_cpv_codes(query: str, limit: int = 10, language: str = "de") ->
 
 
 @mcp.tool(annotations=READ_TOOL)
+@logged_tool("search_construction_codes")
 async def search_construction_codes(
     system: str, query: str, limit: int = 10, language: str = "de"
 ) -> CodeSearchResponse:
@@ -677,6 +697,7 @@ async def search_construction_codes(
 
 
 @mcp.tool(annotations=READ_TOOL)
+@logged_tool("find_procurement_office")
 async def find_procurement_office(
     name_contains: str, limit: int = 20, language: str = "de"
 ) -> OfficeSearchResponse:
@@ -730,6 +751,7 @@ async def find_procurement_office(
 
 
 @mcp.tool(annotations=READ_TOOL)
+@logged_tool("source_status")
 async def source_status() -> StatusResponse:
     """Report reachability and latency of the simap.ch read API."""
     async with SimapClient() as client:

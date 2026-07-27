@@ -177,8 +177,17 @@ MCP_TRANSPORT=sse HOST=0.0.0.0 PORT=8000 python -m swiss_procurement_mcp
 | `MCP_TRANSPORT` | `stdio` | `stdio` \| `sse` \| `streamable-http` |
 | `MCP_HOST` / `HOST` | `127.0.0.1` | HTTP binding (cloud transports only). Defaults to loopback; set `0.0.0.0` explicitly to expose all interfaces in a cloud deployment. |
 | `PORT` / `MCP_PORT` | `8000` | HTTP port (cloud transports only) |
+| `LOG_LEVEL` | `INFO` | `DEBUG` \| `INFO` \| `WARNING` \| `ERROR`. Structured JSON, one object per line, always on **stderr** — stdout carries the MCP protocol on a stdio transport. |
 
 No API keys — the wrapped simap.ch read endpoints are fully public.
+
+Each tool call emits one `tool_call` record with its name, status and latency;
+upstream failures add a `upstream_degraded` record at `WARNING`. Neither carries
+the exception message or any upstream response body.
+
+```json
+{"ts":"2026-07-27T15:50:25","level":"INFO","logger":"swiss_procurement_mcp","msg":"tool_call","tool":"search_procurements","status":"ok","latency_ms":312}
+```
 
 ---
 
@@ -223,6 +232,7 @@ swiss-procurement-mcp/
 │   ├── client.py      # simap.ch HTTP client + retry + normalisation
 │   ├── constants.py   # probe-derived lookup tables (cantons, pub types, codes)
 │   ├── models.py      # Pydantic v2 envelopes (source + provenance)
+│   ├── _log.py        # structured JSON logging to stderr + @logged_tool
 │   └── __main__.py    # Dual-transport entry point (stdio / SSE / streamable-http)
 ├── tests/             # respx-mocked + @pytest.mark.live
 └── .github/workflows/ # CI + OIDC PyPI/MCP-registry publish
