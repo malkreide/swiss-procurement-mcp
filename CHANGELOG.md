@@ -3,6 +3,61 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.0] — 2026-07-27
+
+Closes OBS-003, the only `fail` in either server's audit. No behaviour changes.
+
+### The gap
+
+The 2026-07-27 re-audit graded OBS-003 down from `partial` to `fail` on unchanged
+code: this server had no logging at all — no mechanism, no output format, no
+severity levels, no per-call context. Exactly one of five criteria was met, and
+that one was "does not use `print()`", which it met by having no output at all.
+
+An operator running this server could not answer "is it being called, is it
+slow, is simap.ch up" from anything the process emitted.
+
+### Added
+
+- **`_log.py`** — structured JSON to stderr, ported from the companion
+  `amtsblatt-mcp`. One change was needed: the tools here take ordinary keyword
+  arguments and return Pydantic models, where the original assumed a single
+  `params` model and a `str` return, so `logged_tool` now wraps
+  `*args, **kwargs` generically.
+- **One `tool_call` record per call** on all nine tools, carrying tool name,
+  `ok`/`error` status and latency in milliseconds. Rejected inputs count as
+  `error` rather than going unrecorded.
+- **`upstream_degraded` at `WARNING`** on simap.ch failures, carrying the
+  exception *type*. `_degraded()` is the single funnel for all eight upstream
+  failure paths, so one call site covers every one of them.
+- **`LOG_LEVEL`** (default `INFO`), documented in the README's configuration
+  table alongside a sample record.
+
+### Why stderr, specifically
+
+On a stdio transport stdout carries the MCP protocol; one stray line there
+corrupts the session. The logger writes to stderr and sets `propagate = False`
+so records cannot reach root handlers, which commonly target stdout.
+`tests/test_logging.py` asserts both, and asserts them against the constructor
+path rather than the import-time handle that pytest's capture replaces.
+
+### The risk this port carried
+
+`logged_tool` wraps `*args, **kwargs`, and FastMCP derives each tool's argument
+schema from the function signature. Had `functools.wraps` not set `__wrapped__`
+for `inspect.signature` to follow, every tool would have silently degraded to
+"no arguments" — a regression no existing test would have caught, since the
+functions stay directly callable and the whole suite calls them directly.
+`test_decorator_preserves_the_tool_argument_schema` goes through
+`mcp.list_tools()` and pins the real parameters instead of assuming.
+
+### Not changed
+
+OBS-002 still holds: the sanitised note the model sees never carries the
+exception message or an upstream response body, and the new `WARNING` record
+carries only the exception type — asserted by a test that feeds a URL with a
+token in it and checks it does not appear in the log.
+
 ## [0.4.0] — 2026-07-27
 
 Correctness release. The canton filter was measurably wrong, and the fix changes
