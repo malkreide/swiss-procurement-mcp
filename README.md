@@ -27,6 +27,10 @@ returns the leading tenders already expanded with their BKP construction codes a
 procuring offices — connecting procurement to school-building planning in one call
 (optionally paired with `search_construction_codes` to resolve a category).
 
+### Demo
+
+![Demo: Claude using search_procurements_detailed and search_construction_codes](docs/assets/demo.svg)
+
 ---
 
 ## Why this server exists
@@ -250,6 +254,12 @@ portfolio MCP best-practice catalogue (**15 pass / 16 partial / 1 fail** across
 32 applicable checks, production-ready). See [SECURITY.md](SECURITY.md) for the
 posture and how to report a vulnerability, and [`audits/`](audits/) for the full
 report.
+
+## License
+
+MIT License — see [LICENSE](LICENSE). The tenders are official public-procurement
+announcements; simap.ch publishes no explicit open-data licence, so reuse follows
+the simap.ch terms (see Credits).
 
 ## Changelog
 
