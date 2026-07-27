@@ -3,6 +3,81 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.0] — 2026-07-27
+
+Closes the two findings the 2026-07-27 re-audit left open. No tool, argument or
+return shape changed.
+
+### SEC-007 — container hardening
+
+`useradd --system` picked a UID from the 100–999 range, which the check rejects.
+That range is reserved for host system accounts, so under a bind mount the
+container user can inherit a real host user's ownership — and the exact number
+depends on package install order, so it moved between rebuilds. Now an explicit
+`10001`, with a numeric `USER 10001:10001` and a matching `user:` in compose.
+
+**seccomp:** Docker already applies its built-in profile — the equivalent of
+Kubernetes' `RuntimeDefault` — and Compose has no syntax that names it. The
+obvious-looking line is actively harmful:
+
+```yaml
+security_opt: [seccomp:unconfined]   # WRONG — this DISABLES seccomp
+```
+
+So the posture is stated in a comment and in `docs/container-hardening.md`
+rather than "fixed" with a line that makes things worse.
+
+CI asserts both rather than trusting the Dockerfile: uid ≥ 10000 (not merely
+non-zero) and `Seccomp: 2` in `/proc/self/status`. The probe runs through
+`python` rather than `grep -oP`, because PCRE support in the base image is an
+assumption and the interpreter is not.
+
+### OBS-003 — structured logging
+
+Moved to [structlog](https://www.structlog.org/). The previous implementation
+was stdlib `logging` with a hand-rolled JSON formatter: structured output, but
+no logging library in `dependencies`, only two severity levels ever emitted, and
+nothing correlating the events of one call.
+
+This was flagged before starting as the one item where the obvious fix would be
+cosmetic — adding a dependency for a checkbox, emitting `DEBUG` to reach a
+count. What settled it was the third gap. `structlog.contextvars` binds context
+to the async task, so an event emitted deep inside the HTTP client carries the
+surrounding call's `correlation_id` without being threaded through every
+signature. That is a capability, not a formality, and it is the one gap that
+could not be closed by hand.
+
+The four levels sit where they carry operational meaning:
+
+| Level | Emitted when |
+|---|---|
+| `DEBUG` | tool entry — tells you whether a hung call was ever entered |
+| `INFO` | tool finished cleanly, with latency |
+| `WARNING` | upstream degraded |
+| `ERROR` | the tool raised; exception **type** only, never the message |
+
+`log_event` keeps its int-based signature, so no call site outside `_log.py`
+changed.
+
+#### What the tests had to work around
+
+`structlog.testing.capture_logs` replaces the entire processor chain, which
+silently drops `merge_contextvars`. Every correlation assertion would have
+passed vacuously, and the context-leak test would have proven nothing at all —
+the id it checks for absence of is *always* absent under `capture_logs`.
+
+So `configure_logging` grew test-only keyword arguments and the chain is exposed
+as `processor_chain()`, letting the tests drive the production pipeline into a
+`StringIO` rather than a copy of it. The stdout test runs in a subprocess for
+the same reason: in-process, pytest replaces the streams, so a logger holding
+the wrong one would still look correct.
+
+### Added
+
+- `docs/container-hardening.md` — incl. the Kubernetes `securityContext`
+  equivalent and how to verify seccomp on a running container
+- `structlog>=24.1` dependency
+
 ## [0.6.0] — 2026-07-27
 
 Closes the last two open `high` findings, SEC-018 and SEC-007. **Breaking: every
