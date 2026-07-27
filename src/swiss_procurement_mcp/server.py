@@ -27,10 +27,21 @@ from .constants import (
     CANTON_INSTITUTION_IDS,
     CANTON_MATCH_MODES,
     CODE_SYSTEMS,
-    DEFAULT_CANTON_MATCH,
     PROCESS_TYPES,
     PROJECT_SUB_TYPES,
     PUB_TYPES,
+)
+from .inputs import (
+    MAX_DETAIL_N,
+    AwardSearchInput,
+    ConstructionCodeInput,
+    CpvSearchInput,
+    DetailedSearchInput,
+    HistoryInput,
+    OfficeSearchInput,
+    ProcurementDetailInput,
+    SearchInput,
+    StatusInput,
 )
 from .models import (
     CodeEntry,
@@ -56,23 +67,10 @@ configure_logging()
 # API (open world). Shared so the hints stay consistent across all tools.
 READ_TOOL = {"readOnlyHint": True, "idempotentHint": True, "openWorldHint": True}
 
-# SEC-018: bound inputs at the tool boundary so out-of-range or oversized
-# arguments fail fast with a clear error instead of being passed upstream.
-MAX_LIMIT = 100
-MAX_TEXT_LEN = 200
-# ARCH-007: cap how many hits the aggregated tool expands to full detail, so one
-# call fans out to a bounded number of parallel upstream requests.
-MAX_DETAIL_N = 5
-
-
-def _check_limit(limit: int) -> None:
-    if not 1 <= limit <= MAX_LIMIT:
-        raise ValueError(f"limit must be between 1 and {MAX_LIMIT}.")
-
-
-def _check_text(value: str | None, field: str) -> None:
-    if value is not None and len(value) > MAX_TEXT_LEN:
-        raise ValueError(f"{field} must be at most {MAX_TEXT_LEN} characters.")
+# SEC-018: bounds, allow-lists and patterns are declared on the input models in
+# inputs.py and enforced by Pydantic before a tool body runs. MAX_LIMIT,
+# MAX_TEXT_LEN and MAX_DETAIL_N are re-exported here because the tool docstrings
+# and notes quote them.
 
 
 def _degraded(exc: Exception) -> dict[str, Any]:
@@ -200,7 +198,6 @@ def _build_search_params(
     The canton filter is added separately by `_canton_filters`, because it can
     expand into two upstream queries.
     """
-    _check_text(query, "query")
     if process_type and process_type not in PROCESS_TYPES:
         raise ValueError(f"process_type must be one of {PROCESS_TYPES}.")
     if pub_type and pub_type not in PUB_TYPES:
@@ -313,18 +310,7 @@ def _combine_notes(*notes: str | None) -> str | None:
 
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_procurements")
-async def search_procurements(
-    query: str | None = None,
-    canton: str | None = None,
-    canton_match: str = DEFAULT_CANTON_MATCH,
-    cpv_codes: list[str] | None = None,
-    process_type: str | None = None,
-    pub_type: str | None = None,
-    published_from: str | None = None,
-    published_until: str | None = None,
-    cursor: str | None = None,
-    language: str = "de",
-) -> SearchResponse:
+async def search_procurements(args: SearchInput) -> SearchResponse:
     """Search Swiss public procurement projects on simap.ch.
 
     Covers all cantons and the Confederation, updated intraday. This is the
@@ -361,6 +347,11 @@ async def search_procurements(
         cursor: Pagination cursor from a previous response's `next_cursor`.
         language: de, fr, it or en.
     """
+    query, canton, canton_match = args.query, args.canton, args.canton_match
+    cpv_codes, process_type, pub_type = args.cpv_codes, args.process_type, args.pub_type
+    published_from, published_until = args.published_from, args.published_until
+    cursor, language = args.cursor, args.language
+
     lang = normalise_language(language)
     filters = _canton_filters(canton, canton_match)
     if canton_match == "both" and cursor:
@@ -412,18 +403,7 @@ async def search_procurements(
 
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_procurements_detailed")
-async def search_procurements_detailed(
-    query: str | None = None,
-    canton: str | None = None,
-    canton_match: str = DEFAULT_CANTON_MATCH,
-    cpv_codes: list[str] | None = None,
-    process_type: str | None = None,
-    pub_type: str | None = None,
-    published_from: str | None = None,
-    published_until: str | None = None,
-    top_n: int = 3,
-    language: str = "de",
-) -> EnrichedSearchResponse:
+async def search_procurements_detailed(args: DetailedSearchInput) -> EnrichedSearchResponse:
     """Search publications and return the FULL record for the top matches at once.
 
     Aggregated entry point for the common "find tenders and show me their details"
@@ -442,6 +422,11 @@ async def search_procurements_detailed(
         `search_procurements` — including the `canton_match` semantics, which
         default to matching the procuring body.
     """
+    query, canton, canton_match = args.query, args.canton, args.canton_match
+    cpv_codes, process_type, pub_type = args.cpv_codes, args.process_type, args.pub_type
+    published_from, published_until = args.published_from, args.published_until
+    top_n, language = args.top_n, args.language
+
     lang = normalise_language(language)
     if not 1 <= top_n <= MAX_DETAIL_N:
         raise ValueError(f"top_n must be between 1 and {MAX_DETAIL_N}.")
@@ -495,14 +480,7 @@ async def search_procurements_detailed(
 
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_awards")
-async def search_awards(
-    canton: str | None = None,
-    canton_match: str = DEFAULT_CANTON_MATCH,
-    published_from: str | None = None,
-    published_until: str | None = None,
-    cursor: str | None = None,
-    language: str = "de",
-) -> SearchResponse:
+async def search_awards(args: AwardSearchInput) -> SearchResponse:
     """Search only awarded contracts (who won).
 
     Convenience wrapper over `search_procurements` that queries all four award
@@ -518,6 +496,10 @@ async def search_awards(
     `canton_match` works exactly as in `search_procurements` and defaults to
     matching the procuring body.
     """
+    canton, canton_match = args.canton, args.canton_match
+    published_from, published_until = args.published_from, args.published_until
+    cursor, language = args.cursor, args.language
+
     lang = normalise_language(language)
     filters = _canton_filters(canton, canton_match)
     if canton_match == "both" and cursor:
@@ -560,9 +542,7 @@ async def search_awards(
 
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("get_procurement_details")
-async def get_procurement_details(
-    project_id: str, publication_id: str, language: str = "de"
-) -> ProcurementDetail:
+async def get_procurement_details(args: ProcurementDetailInput) -> ProcurementDetail:
     """Return the full record for one procurement publication.
 
     Both ids come from a `search_procurements` result. The record includes the
@@ -570,6 +550,9 @@ async def get_procurement_details(
     the procurement office — the BKP codes make this joinable with construction
     cost data and school-building planning.
     """
+    project_id, publication_id = args.project_id, args.publication_id
+    language = args.language
+
     lang = normalise_language(language)
     async with SimapClient() as client:
         try:
@@ -586,12 +569,14 @@ async def get_procurement_details(
 
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("get_publication_history")
-async def get_publication_history(publication_id: str, language: str = "de") -> HistoryResponse:
+async def get_publication_history(args: HistoryInput) -> HistoryResponse:
     """Return earlier publications of the same procurement project.
 
     Traces a project's lifecycle: tender → correction → award. An empty list is
     normal for a first publication.
     """
+    publication_id, language = args.publication_id, args.language
+
     lang = normalise_language(language)
     async with SimapClient() as client:
         try:
@@ -622,16 +607,16 @@ async def get_publication_history(publication_id: str, language: str = "de") -> 
 
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_cpv_codes")
-async def search_cpv_codes(query: str, limit: int = 10, language: str = "de") -> CodeSearchResponse:
+async def search_cpv_codes(args: CpvSearchInput) -> CodeSearchResponse:
     """Search CPV classification codes by keyword.
 
     CPV (Common Procurement Vocabulary) is the international code system used to
     filter `search_procurements` by category. Resolve a keyword like "Metall" to
     its code here, then pass the code to `search_procurements(cpv_codes=[...])`.
     """
+    query, limit, language = args.query, args.limit, args.language
+
     lang = normalise_language(language)
-    _check_limit(limit)
-    _check_text(query, "query")
     async with SimapClient() as client:
         try:
             payload, provenance, stamp = await client.code_search("cpv", query, lang, limit)
@@ -655,9 +640,7 @@ async def search_cpv_codes(query: str, limit: int = 10, language: str = "de") ->
 
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_construction_codes")
-async def search_construction_codes(
-    system: str, query: str, limit: int = 10, language: str = "de"
-) -> CodeSearchResponse:
+async def search_construction_codes(args: ConstructionCodeInput) -> CodeSearchResponse:
     """Search Swiss construction classification codes by keyword.
 
     Args:
@@ -667,9 +650,10 @@ async def search_construction_codes(
     These are the Swiss construction cost standards (Baukostenplan, Normpositionen-
     katalog) used in building tenders — relevant for school-building procurement.
     """
+    system, query = args.system, args.query
+    limit, language = args.limit, args.language
+
     lang = normalise_language(language)
-    _check_limit(limit)
-    _check_text(query, "query")
     sys_norm = system.lower()
     allowed = tuple(s for s in CODE_SYSTEMS if s != "cpv")
     if sys_norm not in allowed:
@@ -698,18 +682,16 @@ async def search_construction_codes(
 
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("find_procurement_office")
-async def find_procurement_office(
-    name_contains: str, limit: int = 20, language: str = "de"
-) -> OfficeSearchResponse:
+async def find_procurement_office(args: OfficeSearchInput) -> OfficeSearchResponse:
     """Find public procurement offices by (partial) name.
 
     The public office list is large (~1 MB), so this fetches it once and filters
     client-side. Returns the office id, type (cantonal / federal / communal) and
     the linked institution id.
     """
+    name_contains, limit, language = args.name_contains, args.limit, args.language
+
     lang = normalise_language(language)
-    _check_limit(limit)
-    _check_text(name_contains, "name_contains")
     needle = name_contains.lower().strip()
     async with SimapClient() as client:
         try:
@@ -752,7 +734,7 @@ async def find_procurement_office(
 
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("source_status")
-async def source_status() -> StatusResponse:
+async def source_status(args: StatusInput | None = None) -> StatusResponse:
     """Report reachability and latency of the simap.ch read API."""
     async with SimapClient() as client:
         probe = await client.probe("simap.ch read API", "/cantons/v1?lang=de")

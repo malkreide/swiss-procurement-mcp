@@ -15,6 +15,13 @@ from swiss_procurement_mcp.constants import (
     PROJECT_SUB_TYPES,
     PUB_TYPES,
 )
+from swiss_procurement_mcp.inputs import (
+    AwardSearchInput,
+    CpvSearchInput,
+    ProcurementDetailInput,
+    SearchInput,
+    StatusInput,
+)
 from swiss_procurement_mcp.server import (
     get_procurement_details,
     search_awards,
@@ -30,7 +37,7 @@ SPEC_URL = "https://www.simap.ch/api/specifications/simap.yaml"
 
 
 async def test_live_search_zurich():
-    result = await search_procurements(canton="ZH", published_from="2026-01-01")
+    result = await search_procurements(SearchInput(canton="ZH", published_from="2026-01-01"))
     assert result.count > 0
     # Deliberately NOT asserting r.canton == "ZH": the default semantics match
     # the procuring body, and a Zurich body may have work delivered elsewhere —
@@ -46,7 +53,9 @@ async def test_live_procuring_body_reaches_projects_without_an_order_address():
     ~60% that `orderAddressCantons` can never match.
     """
     window = {"published_from": "2026-06-01", "published_until": "2026-07-27"}
-    by_body = await search_procurements(canton="ZH", canton_match="procuring_body", **window)
+    by_body = await search_procurements(
+        SearchInput(canton="ZH", canton_match="procuring_body", **window)
+    )
     assert by_body.count > 0
     assert any(not r.canton for r in by_body.results), (
         "expected at least one project with no structured order canton — those "
@@ -57,9 +66,13 @@ async def test_live_procuring_body_reaches_projects_without_an_order_address():
 async def test_live_both_is_a_superset_of_each_single_semantics():
     """`both` unions two upstream pages, so it cannot be smaller than either."""
     window = {"published_from": "2026-07-20", "published_until": "2026-07-27"}
-    by_body = await search_procurements(canton="ZH", canton_match="procuring_body", **window)
-    by_place = await search_procurements(canton="ZH", canton_match="place_of_delivery", **window)
-    both = await search_procurements(canton="ZH", canton_match="both", **window)
+    by_body = await search_procurements(
+        SearchInput(canton="ZH", canton_match="procuring_body", **window)
+    )
+    by_place = await search_procurements(
+        SearchInput(canton="ZH", canton_match="place_of_delivery", **window)
+    )
+    both = await search_procurements(SearchInput(canton="ZH", canton_match="both", **window))
     assert both.count >= max(by_body.count, by_place.count)
     assert both.has_more is False and both.next_cursor is None
 
@@ -117,21 +130,23 @@ async def test_live_constants_match_the_openapi_spec(schema_name, ours):
 
 
 async def test_live_details_roundtrip():
-    search = await search_procurements(canton="ZH", published_from="2026-01-01")
+    search = await search_procurements(SearchInput(canton="ZH", published_from="2026-01-01"))
     first = search.results[0]
-    detail = await get_procurement_details(first.project_id, first.publication_id)
+    detail = await get_procurement_details(
+        ProcurementDetailInput(project_id=first.project_id, publication_id=first.publication_id)
+    )
     assert detail.title
 
 
 async def test_live_cpv_search():
-    result = await search_cpv_codes("Metall")
+    result = await search_cpv_codes(CpvSearchInput(query="Metall"))
     assert result.count > 0
 
 
 async def test_live_awards():
-    result = await search_awards(canton="ZH", published_from="2026-01-01")
+    result = await search_awards(AwardSearchInput(canton="ZH", published_from="2026-01-01"))
     assert result.provenance == "live_api"
 
 
 async def test_live_status():
-    assert (await source_status()).all_healthy is True
+    assert (await source_status(StatusInput())).all_healthy is True

@@ -4,9 +4,17 @@ coverage for the three tools the first audit flagged as untested (OPS-001)."""
 import httpx
 import pytest
 import respx
+from pydantic import ValidationError
 
 from swiss_procurement_mcp.client import UpstreamError, _assert_host_allowed
 from swiss_procurement_mcp.constants import SIMAP_BASE
+from swiss_procurement_mcp.inputs import (
+    ConstructionCodeInput,
+    CpvSearchInput,
+    HistoryInput,
+    OfficeSearchInput,
+    SearchInput,
+)
 from swiss_procurement_mcp.server import (
     find_procurement_office,
     get_publication_history,
@@ -19,18 +27,21 @@ from swiss_procurement_mcp.server import (
 
 
 async def test_limit_below_range_rejected():
-    with pytest.raises(ValueError, match="limit must be between"):
-        await search_cpv_codes("metall", limit=0)
+    # Rejected at the boundary now: the model refuses before the tool body runs.
+    with pytest.raises(ValidationError) as exc:
+        CpvSearchInput(query="metall", limit=0)
+    assert exc.value.errors()[0]["type"] == "greater_than_equal"
 
 
 async def test_limit_above_range_rejected():
-    with pytest.raises(ValueError, match="limit must be between"):
-        await find_procurement_office("zurich", limit=1000)
+    with pytest.raises(ValidationError) as exc:
+        OfficeSearchInput(name_contains="zurich", limit=1000)
+    assert exc.value.errors()[0]["type"] == "less_than_equal"
 
 
 async def test_overlong_text_rejected():
     with pytest.raises(ValueError, match="at most"):
-        await search_cpv_codes("x" * 201)
+        await search_cpv_codes(CpvSearchInput(query="x" * 201))
 
 
 # --- SEC-021: egress allow-list guard -------------------------------------
@@ -54,7 +65,7 @@ async def test_match_type_exact_on_results(search_payload):
     respx.get(f"{SIMAP_BASE}/publications/v2/project/project-search").mock(
         return_value=httpx.Response(200, json=search_payload)
     )
-    result = await search_procurements(canton="ZH")
+    result = await search_procurements(SearchInput(canton="ZH"))
     assert result.match_type == "exact"
 
 
@@ -63,7 +74,7 @@ async def test_match_type_none_on_empty():
     respx.get(f"{SIMAP_BASE}/publications/v2/project/project-search").mock(
         return_value=httpx.Response(200, json={"projects": [], "pagination": {}})
     )
-    result = await search_procurements(canton="ZH")
+    result = await search_procurements(SearchInput(canton="ZH"))
     assert result.match_type == "none"
     assert result.count == 0
 
@@ -89,7 +100,7 @@ async def test_publication_history():
             },
         )
     )
-    result = await get_publication_history("pub-1")
+    result = await get_publication_history(HistoryInput(publication_id="pub-1"))
     assert result.count == 1
     assert result.publications[0].pub_type == "tender"
     assert result.publications[0].title == "Erstausschreibung"
@@ -102,7 +113,7 @@ async def test_construction_code_search():
             200, json={"codes": [{"code": "215.2", "label": {"de": "Fassadenbau"}}]}
         )
     )
-    result = await search_construction_codes("bkp", "Fassade")
+    result = await search_construction_codes(ConstructionCodeInput(system="bkp", query="Fassade"))
     assert result.system == "bkp"
     assert result.match_type == "exact"
     assert result.codes[0].code == "215.2"
@@ -110,7 +121,7 @@ async def test_construction_code_search():
 
 async def test_construction_code_rejects_cpv():
     with pytest.raises(ValueError, match="search_cpv_codes"):
-        await search_construction_codes("cpv", "metall")
+        await search_construction_codes(ConstructionCodeInput(system="cpv", query="metall"))
 
 
 @respx.mock
@@ -131,7 +142,7 @@ async def test_find_procurement_office_filters_client_side():
             },
         )
     )
-    result = await find_procurement_office("liegenschaften")
+    result = await find_procurement_office(OfficeSearchInput(name_contains="liegenschaften"))
     assert result.count == 1
     assert result.offices[0].id == "po1"
     assert result.match_type == "exact"

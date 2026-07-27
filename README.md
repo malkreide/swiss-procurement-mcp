@@ -110,6 +110,21 @@ list.
 All tools carry `readOnlyHint`, `idempotentHint` and `openWorldHint` (they query
 the live simap.ch API).
 
+Every tool takes a single validated argument object. Bounds, allow-lists and
+patterns are declared on the input models in
+[`inputs.py`](src/swiss_procurement_mcp/inputs.py) — so an out-of-range limit or
+an unknown canton is rejected before any upstream request, and the constraints
+are visible to the model in the tool schema rather than buried in the tool body:
+
+```python
+search_procurements({"canton": "ZH", "query": "Schulhaus", "limit": 20})
+```
+
+The models set `strict=True` (no silent `"10"` → `10` coercion) and
+`extra="forbid"` (unknown fields are rejected, not ignored). The canton, process
+type, publication type, code system and language allow-lists are derived from
+`constants.py`, so they cannot drift from the probe-verified tables.
+
 ### What `canton=` means
 
 simap offers exactly one geographic filter, `orderAddressCantons`, and it selects
@@ -169,6 +184,21 @@ uvx swiss-procurement-mcp
 ```bash
 MCP_TRANSPORT=sse HOST=0.0.0.0 PORT=8000 python -m swiss_procurement_mcp
 ```
+
+### Container
+
+```bash
+docker compose up --build        # SSE on :8000
+```
+
+The image is multi-stage and runs as a non-root system user. `compose.yaml`
+adds a read-only root filesystem, drops all capabilities, sets
+`no-new-privileges`, and caps memory, CPU and PIDs. No secret is needed at
+runtime — the wrapped simap.ch endpoints are public.
+
+CI builds the image on every push and asserts both properties that matter:
+that the container does not run as uid 0, and that the server still imports
+under `--read-only --cap-drop ALL`.
 
 ### Configuration
 
@@ -233,6 +263,7 @@ swiss-procurement-mcp/
 │   ├── constants.py   # probe-derived lookup tables (cantons, pub types, codes)
 │   ├── models.py      # Pydantic v2 envelopes (source + provenance)
 │   ├── _log.py        # structured JSON logging to stderr + @logged_tool
+│   ├── inputs.py      # strict Pydantic tool-input models (bounds, allow-lists)
 │   └── __main__.py    # Dual-transport entry point (stdio / SSE / streamable-http)
 ├── tests/             # respx-mocked + @pytest.mark.live
 └── .github/workflows/ # CI + OIDC PyPI/MCP-registry publish

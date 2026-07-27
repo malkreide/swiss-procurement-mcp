@@ -61,6 +61,48 @@ jobs:
 
       - run: ruff format --check src/ tests/
 
+  docker:
+    name: Docker build
+    runs-on: ubuntu-latest
+    needs: [test]
+    # The GHA cache backend (`type=gha`) writes to the Actions cache and so
+    # needs `actions: write`; the top-level `contents: read` would otherwise
+    # strip it and make build-push-action fail while initialising the exporter.
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false
+          load: true
+          tags: swiss-procurement-mcp:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          sbom: false
+
+      # SEC-007: a Dockerfile that builds but runs as root would still fail the
+      # check, so assert the hardening rather than trusting the instructions.
+      - name: Image runs as a non-root user
+        run: |
+          uid=$(docker run --rm swiss-procurement-mcp:ci id -u)
+          test "$uid" != "0" || { echo "image runs as root (uid $uid)"; exit 1; }
+          echo "runs as uid $uid"
+
+      - name: Server imports under a read-only root filesystem
+        run: |
+          docker run --rm --read-only --cap-drop ALL \
+            --security-opt no-new-privileges:true \
+            swiss-procurement-mcp:ci \
+            python -c "import swiss_procurement_mcp.server; print('ok')"
+
   live:
     # Only on the nightly schedule or manual dispatch — never on PR/push so the
     # mainline build is not held hostage to simap.ch availability.
