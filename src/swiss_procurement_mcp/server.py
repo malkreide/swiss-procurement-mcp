@@ -22,7 +22,10 @@ from .constants import (
     ATTRIBUTION,
     AWARD_PUB_TYPES,
     CANTON_IDS,
+    CANTON_INSTITUTION_IDS,
+    CANTON_MATCH_MODES,
     CODE_SYSTEMS,
+    DEFAULT_CANTON_MATCH,
     PROCESS_TYPES,
     PROJECT_SUB_TYPES,
     PUB_TYPES,
@@ -115,6 +118,59 @@ def _to_summary(entry: dict[str, Any], lang: str) -> ProcurementSummary:
     )
 
 
+def _canton_filters(canton: str | None, canton_match: str) -> list[dict[str, Any]]:
+    """Translate `canton` + `canton_match` into one or two upstream filters.
+
+    Two filters exist and they answer different questions (see the measurement
+    in `constants.py`): `issuedByOrganizations` selects by procuring body,
+    `orderAddressCantons` by where the work is delivered. The latter silently
+    drops the ~60% of publications whose order address is free text.
+
+    Returns a list because `both` needs two upstream calls; the caller unions
+    the results.
+    """
+    if canton_match not in CANTON_MATCH_MODES:
+        raise ValueError(f"canton_match must be one of {CANTON_MATCH_MODES}.")
+    if not canton:
+        return [{}]
+    code = canton.upper()
+    if code not in CANTON_IDS:
+        raise ValueError(f"Unknown canton {canton!r}. Use a bare id like ZH, not CH-ZH.")
+
+    by_body = {"issuedByOrganizations": CANTON_INSTITUTION_IDS[code]}
+    by_place = {"orderAddressCantons": code}
+    if canton_match == "procuring_body":
+        return [by_body]
+    if canton_match == "place_of_delivery":
+        return [by_place]
+    return [by_body, by_place]
+
+
+def _canton_note(canton: str | None, canton_match: str) -> str | None:
+    """State which canton semantics were applied — the counts differ a lot."""
+    if not canton:
+        return None
+    if canton_match == "procuring_body":
+        return (
+            f"canton={canton.upper()} matched on the PROCURING BODY (simap "
+            "`issuedByOrganizations`, incl. subordinate offices). Publications "
+            "procured by federal bodies but delivered in this canton (e.g. ETH, "
+            "SBB) are not included — use canton_match='both' for those."
+        )
+    if canton_match == "place_of_delivery":
+        return (
+            f"canton={canton.upper()} matched on the PLACE OF DELIVERY (simap "
+            "`orderAddressCantons`). Around 60% of publications carry no "
+            "structured order address and are invisible to this filter — "
+            "canton_match='procuring_body' (the default) does not have that gap."
+        )
+    return (
+        f"canton={canton.upper()} matched on BOTH the procuring body and the "
+        "place of delivery; results are the union of two upstream queries, so "
+        "pagination is unavailable in this mode."
+    )
+
+
 def _build_search_params(
     lang: str,
     query: str | None,
@@ -126,10 +182,12 @@ def _build_search_params(
     published_until: str | None,
     cursor: str | None,
 ) -> dict[str, Any]:
-    """Validate the shared search filters and build the project-search params."""
+    """Validate the shared search filters and build the project-search params.
+
+    The canton filter is added separately by `_canton_filters`, because it can
+    expand into two upstream queries.
+    """
     _check_text(query, "query")
-    if canton and canton.upper() not in CANTON_IDS:
-        raise ValueError(f"Unknown canton {canton!r}. Use a bare id like ZH, not CH-ZH.")
     if process_type and process_type not in PROCESS_TYPES:
         raise ValueError(f"process_type must be one of {PROCESS_TYPES}.")
     if pub_type and pub_type not in PUB_TYPES:
@@ -138,8 +196,6 @@ def _build_search_params(
     params: dict[str, Any] = {"lang": lang}
     if query:
         params["search"] = query
-    if canton:
-        params["orderAddressCantons"] = canton.upper()
     if cpv_codes:
         params["cpvCodes"] = cpv_codes
     if process_type:
@@ -153,6 +209,25 @@ def _build_search_params(
     if cursor:
         params["lastItem"] = cursor
     return params
+
+
+def _assert_filtered(params: dict[str, Any], canton: str | None) -> None:
+    """simap returns 0 projects when NO filter is set — not "no matches".
+
+    Without this the tool answers a filterless call with an empty result and the
+    note "widen the date range", which misdiagnoses the cause: nothing was
+    narrowed in the first place.
+    """
+    if canton:
+        return
+    if any(k != "lang" for k in params):
+        return
+    raise ValueError(
+        "simap's project-search requires at least one filter — a filterless "
+        "query returns nothing rather than everything. Pass at least one of "
+        "query, canton, cpv_codes, process_type, pub_type, published_from or "
+        "published_until."
+    )
 
 
 def _detail_from_payload(
@@ -193,10 +268,41 @@ def _detail_from_payload(
     )
 
 
+async def _run_search(
+    client: SimapClient, base: dict[str, Any], filters: list[dict[str, Any]]
+) -> tuple[list[dict[str, Any]], dict[str, Any], str, str]:
+    """Run one project-search per canton filter and union the hits by project id.
+
+    A single filter keeps the upstream pagination; `both` cannot, because the
+    two queries carry independent cursors.
+    """
+    seen: dict[str, dict[str, Any]] = {}
+    pagination: dict[str, Any] = {}
+    provenance = "cached"
+    stamp = utc_now_iso()
+    for extra in filters:
+        payload, prov, st = await client.project_search({**base, **extra})
+        for project in payload.get("projects", []):
+            key = project.get("id") or project.get("publicationId") or repr(project)
+            seen.setdefault(key, project)
+        if len(filters) == 1:
+            pagination = payload.get("pagination") or {}
+        if prov == "live_api":
+            provenance = prov
+        stamp = st
+    return list(seen.values()), pagination, provenance, stamp
+
+
+def _combine_notes(*notes: str | None) -> str | None:
+    present = [n for n in notes if n]
+    return " ".join(present) if present else None
+
+
 @mcp.tool(annotations=READ_TOOL)
 async def search_procurements(
     query: str | None = None,
     canton: str | None = None,
+    canton_match: str = DEFAULT_CANTON_MATCH,
     cpv_codes: list[str] | None = None,
     process_type: str | None = None,
     pub_type: str | None = None,
@@ -205,26 +311,50 @@ async def search_procurements(
     cursor: str | None = None,
     language: str = "de",
 ) -> SearchResponse:
-    """Search Swiss public procurement publications on simap.ch.
+    """Search Swiss public procurement projects on simap.ch.
 
     Covers all cantons and the Confederation, updated intraday. This is the
     entry point; use `get_procurement_details` with the returned ids for the
     full record.
 
+    Note that simap indexes PROJECTS, not publications: one hit is one project,
+    represented by its NEWEST publication. A project tendered in March and
+    awarded in July appears once, as the July award. Use
+    `get_publication_history` to see the earlier publications of a project.
+
+    At least one filter is required — simap answers a filterless query with
+    nothing rather than everything.
+
     Args:
         query: Free-text search over titles and descriptions.
         canton: Bare canton id, e.g. `ZH` (NOT `CH-ZH`). See `CANTON_IDS`.
+        canton_match: How `canton` is interpreted.
+            `procuring_body` (default) — procured by that canton's public
+            bodies, including communal and subordinate offices.
+            `place_of_delivery` — the work is delivered there. Beware: ~60% of
+            publications carry no structured order address and are invisible to
+            this filter.
+            `both` — the union of the two. Costs two upstream calls and does
+            not support `cursor`.
         cpv_codes: One or more CPV classification codes. Resolve names to codes
             with `search_cpv_codes` first.
         process_type: One of open, selective, invitation, direct, no_process.
         pub_type: Publication type. For awarded contracts use one of
             award_tender, award_study_contract, award_competition, direct_award —
             a plain "award" is rejected by the API.
-        published_from / published_until: ISO dates `YYYY-MM-DD`.
+        published_from / published_until: ISO dates `YYYY-MM-DD`. These filter on
+            the NEWEST publication date of a project.
         cursor: Pagination cursor from a previous response's `next_cursor`.
         language: de, fr, it or en.
     """
     lang = normalise_language(language)
+    filters = _canton_filters(canton, canton_match)
+    if canton_match == "both" and cursor:
+        raise ValueError(
+            "canton_match='both' unions two upstream queries with independent "
+            "cursors, so pagination is unavailable. Narrow the date range, or "
+            "paginate each semantics separately."
+        )
     params = _build_search_params(
         lang,
         query,
@@ -236,29 +366,28 @@ async def search_procurements(
         published_until,
         cursor,
     )
+    _assert_filtered(params, canton)
 
     async with SimapClient() as client:
         try:
-            payload, provenance, stamp = await client.project_search(params)
+            projects, pagination, provenance, stamp = await _run_search(client, params, filters)
         except UpstreamError as exc:
             return SearchResponse(
                 **_degraded(exc), count=0, has_more=False, next_cursor=None, results=[]
             )
 
-    projects = payload.get("projects", [])
-    pagination = payload.get("pagination") or {}
     next_cursor = pagination.get("lastItem")
     results = [_to_summary(e, lang) for e in projects]
     has_more = bool(next_cursor) and len(results) >= pagination.get("itemsPerPage", 20)
 
-    note = None
+    empty_note = None
     if not results:
-        note = "No publications matched. Widen the date range or check canton/CPV filters."
+        empty_note = "No projects matched. Widen the date range or check the canton/CPV filters."
     return SearchResponse(
         source=ATTRIBUTION,
         provenance=provenance,
         retrieved_at=stamp,
-        note=note,
+        note=_combine_notes(empty_note, _canton_note(canton, canton_match)),
         count=len(results),
         match_type="exact" if results else "none",
         has_more=has_more,
@@ -271,6 +400,7 @@ async def search_procurements(
 async def search_procurements_detailed(
     query: str | None = None,
     canton: str | None = None,
+    canton_match: str = DEFAULT_CANTON_MATCH,
     cpv_codes: list[str] | None = None,
     process_type: str | None = None,
     pub_type: str | None = None,
@@ -292,12 +422,15 @@ async def search_procurements_detailed(
 
     Args:
         top_n: How many of the top hits to expand to full detail (1-5).
-        query, canton, cpv_codes, process_type, pub_type, published_from,
-        published_until, language: identical to `search_procurements`.
+        query, canton, canton_match, cpv_codes, process_type, pub_type,
+        published_from, published_until, language: identical to
+        `search_procurements` — including the `canton_match` semantics, which
+        default to matching the procuring body.
     """
     lang = normalise_language(language)
     if not 1 <= top_n <= MAX_DETAIL_N:
         raise ValueError(f"top_n must be between 1 and {MAX_DETAIL_N}.")
+    filters = _canton_filters(canton, canton_match)
     params = _build_search_params(
         lang,
         query,
@@ -309,14 +442,14 @@ async def search_procurements_detailed(
         published_until,
         None,
     )
+    _assert_filtered(params, canton)
 
     async with SimapClient() as client:
         try:
-            payload, provenance, stamp = await client.project_search(params)
+            projects, _pagination, provenance, stamp = await _run_search(client, params, filters)
         except UpstreamError as exc:
             return EnrichedSearchResponse(**_degraded(exc), count=0, total_matched=0, results=[])
 
-        projects = payload.get("projects", [])
         total = len(projects)
         pairs = [(p.get("id", ""), p.get("publicationId", "")) for p in projects[:top_n]]
 
@@ -330,14 +463,14 @@ async def search_procurements_detailed(
         details = await asyncio.gather(*(_fetch(pid, pubid) for pid, pubid in pairs))
 
     results = [d for d in details if d is not None]
-    note = None
+    empty_note = None
     if not total:
-        note = "No publications matched. Widen the date range or check canton/CPV filters."
+        empty_note = "No projects matched. Widen the date range or check the canton/CPV filters."
     return EnrichedSearchResponse(
         source=ATTRIBUTION,
         provenance=provenance,
         retrieved_at=stamp,
-        note=note,
+        note=_combine_notes(empty_note, _canton_note(canton, canton_match)),
         count=len(results),
         match_type="exact" if results else "none",
         total_matched=total,
@@ -348,6 +481,7 @@ async def search_procurements_detailed(
 @mcp.tool(annotations=READ_TOOL)
 async def search_awards(
     canton: str | None = None,
+    canton_match: str = DEFAULT_CANTON_MATCH,
     published_from: str | None = None,
     published_until: str | None = None,
     cursor: str | None = None,
@@ -356,16 +490,27 @@ async def search_awards(
     """Search only awarded contracts (who won).
 
     Convenience wrapper over `search_procurements` that queries all four award
-    publication types at once. Note that award coverage is uneven across
-    cantons — some publish awards diligently, others rarely.
+    publication types at once.
+
+    Two coverage caveats. First, award coverage is uneven across cantons — some
+    publish awards diligently, others rarely, so absence is not proof that no
+    award happened. Second, the filter matches a project's NEWEST publication:
+    a project awarded in May and corrected in June is no longer an "award" to
+    this filter and drops out. Use `get_publication_history` on a project to see
+    whether an award exists further back.
+
+    `canton_match` works exactly as in `search_procurements` and defaults to
+    matching the procuring body.
     """
     lang = normalise_language(language)
-    if canton and canton.upper() not in CANTON_IDS:
-        raise ValueError(f"Unknown canton {canton!r}. Use a bare id like ZH.")
+    filters = _canton_filters(canton, canton_match)
+    if canton_match == "both" and cursor:
+        raise ValueError(
+            "canton_match='both' unions two upstream queries with independent "
+            "cursors, so pagination is unavailable."
+        )
 
     params: dict[str, Any] = {"lang": lang, "newestPubTypes": list(AWARD_PUB_TYPES)}
-    if canton:
-        params["orderAddressCantons"] = canton.upper()
     if published_from:
         params["newestPublicationFrom"] = published_from
     if published_until:
@@ -375,14 +520,12 @@ async def search_awards(
 
     async with SimapClient() as client:
         try:
-            payload, provenance, stamp = await client.project_search(params)
+            projects, pagination, provenance, stamp = await _run_search(client, params, filters)
         except UpstreamError as exc:
             return SearchResponse(
                 **_degraded(exc), count=0, has_more=False, next_cursor=None, results=[]
             )
 
-    projects = payload.get("projects", [])
-    pagination = payload.get("pagination") or {}
     next_cursor = pagination.get("lastItem")
     results = [_to_summary(e, lang) for e in projects]
     has_more = bool(next_cursor) and len(results) >= pagination.get("itemsPerPage", 20)
@@ -390,6 +533,7 @@ async def search_awards(
         source=ATTRIBUTION,
         provenance=provenance,
         retrieved_at=stamp,
+        note=_canton_note(canton, canton_match),
         count=len(results),
         match_type="exact" if results else "none",
         has_more=has_more,

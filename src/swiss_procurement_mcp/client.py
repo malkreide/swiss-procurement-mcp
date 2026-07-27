@@ -24,6 +24,7 @@ import httpx
 from .constants import (
     ALLOWED_HOSTS,
     DEFAULT_LANGUAGE,
+    INSTITUTIONS_PATH,
     SIMAP_BASE,
     SUPPORTED_LANGUAGES,
     USER_AGENT,
@@ -166,6 +167,14 @@ class SimapClient:
 
     async def procurement_offices_public(self, language: str) -> tuple[Any, str, str]:
         return await self._cached(f"po:{language}", "/procoffices/v1/po/public", {"lang": language})
+
+    async def institutions(self, language: str = DEFAULT_LANGUAGE) -> tuple[Any, str, str]:
+        """The institution tree: 28 roots (26 cantons + Bund + Ausland).
+
+        Public, no authentication. Used to verify `CANTON_INSTITUTION_IDS`
+        against the live taxonomy rather than trusting the pinned ids forever.
+        """
+        return await self._cached(f"inst:{language}", INSTITUTIONS_PATH, {"lang": language})
 
     async def probe(self, name: str, path: str) -> dict[str, Any]:
         assert self._http is not None

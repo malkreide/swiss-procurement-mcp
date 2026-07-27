@@ -93,7 +93,7 @@ list.
 
 | Tool | Purpose |
 |---|---|
-| `search_procurements` | Search publications by canton, CPV, process type, date, text |
+| `search_procurements` | Search projects by canton, CPV, process type, date, text |
 | `search_procurements_detailed` | Search + full detail for the top *n* hits in one call (aggregated) |
 | `search_awards` | Awarded contracts only (all four award types at once) |
 | `get_procurement_details` | Full record for one publication |
@@ -105,6 +105,29 @@ list.
 
 All tools carry `readOnlyHint`, `idempotentHint` and `openWorldHint` (they query
 the live simap.ch API).
+
+### What `canton=` means
+
+simap offers exactly one geographic filter, `orderAddressCantons`, and it selects
+by **where the work is delivered** — not by who is procuring. When a procuring
+office files a free-text address, the structured canton is `null` and the
+publication is invisible to that filter. Measured CH-wide over 500 projects
+published since 2026-07-01: **303 (60.6%) carry no canton**, among them the Amt
+für Hochbauten Zürich, Grün Stadt Zürich, USZ, BBL and SBB.
+
+`canton_match` therefore makes the question explicit:
+
+| Value | Matches | Zurich, 2026-07-01…27 |
+|---|---|---|
+| `procuring_body` *(default)* | procured by that canton's public bodies, incl. communal and subordinate offices (`issuedByOrganizations`) | **410** projects |
+| `place_of_delivery` | the work is delivered there (`orderAddressCantons`) | 263 projects |
+| `both` | union of the two; two upstream calls, no pagination | 441 projects |
+
+The 31 projects only `place_of_delivery` finds are federal bodies procuring in
+Zurich (ETH, Empa, Flughafen Zürich AG) — a different question, not a gap, which
+is why this is three explicit semantics rather than a silent union.
+
+Every response states in `note` which semantics were applied.
 
 ---
 
@@ -169,6 +192,14 @@ public, administration, developers) and a tool-selection reference table.
 
 ## Known limitations
 
+- **Projects, not publications.** `project-search` indexes projects and
+  represents each by its *newest* publication. A project tendered in March and
+  awarded in July appears once, as the July award; `search_awards` likewise only
+  finds projects whose newest publication is an award, so a later correction
+  hides it. `get_publication_history` reaches the earlier publications.
+- **At least one filter is required.** simap answers a filterless query with
+  nothing rather than everything, so the tools refuse it with that reason
+  instead of reporting an empty result.
 - **Read-only by design.** Publishing and submission endpoints exist in the
   simap API but are deliberately not wrapped.
 - **Award coverage is uneven** across cantons; some publish awards diligently,
@@ -228,7 +259,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits
 
-- Data: [simap.ch](https://www.simap.ch) read API v1.5.1, operated by the simap.ch association. API docs: [simap.ch/api-doc](https://www.simap.ch/api-doc), guides: [kissimap.ch](https://www.kissimap.ch/de/anleitungen).
+- Data: [simap.ch](https://www.simap.ch) read API v1.5.1, operated by the simap.ch association. API docs: [simap.ch/api-doc](https://www.simap.ch/api-doc) — machine-readable OpenAPI spec at [`/api/specifications/simap.yaml`](https://www.simap.ch/api/specifications/simap.yaml), which a live test checks the enum constants against. Guides: [kissimap.ch](https://www.kissimap.ch/de/anleitungen).
 - The underlying tenders are official public-procurement announcements by Swiss public bodies. simap.ch publishes **no explicit open-data licence**; reuse is subject to the [simap.ch terms](https://www.simap.ch/de/about/legal). Attribute the source as *simap.ch (Verein simap.ch)*.
 - Built following the `mcp-data-source-probe` methodology.
 

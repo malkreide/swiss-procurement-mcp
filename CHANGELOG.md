@@ -3,6 +3,78 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] — 2026-07-27
+
+Correctness release. The canton filter was measurably wrong, and the fix changes
+what `canton=` means — see *Breaking* below.
+
+### Breaking
+
+- **`canton=` now matches the PROCURING BODY, not the place of delivery.**
+
+  simap offers exactly one geographic filter, `orderAddressCantons`, and the
+  OpenAPI spec describes it as the canton the project *takes place* in. When a
+  procuring office files a free-text address (`orderAddressOnlyDescription:
+  "yes"`) the structured `orderAddress.cantonId` is `null` and the publication is
+  invisible to that filter. Measured CH-wide over 500 projects published since
+  2026-07-01: **303 (60.6%) carry no canton** — among them the Amt für Hochbauten
+  Zürich, Grün Stadt Zürich, Universitätsspital Zürich, BBL and SBB.
+
+  `issuedByOrganizations` is the remedy: the spec states it matches publications
+  issued by an organisation *or as a child of it*, so one root institution id
+  covers a canton's whole tree of procurement offices. `/institutions/v1/institutions`
+  is public and returns 28 roots — the 26 cantons plus Bund and Ausland.
+
+  Measured for ZH over 2026-07-01…27, both filters fully paginated:
+
+  | Filter | Projects |
+  |---|---|
+  | `orderAddressCantons=ZH` (old behaviour) | 263 |
+  | `issuedByOrganizations=<Zürich>` (new default) | **410** |
+  | union | 441 |
+
+  The 31 projects only the address filter finds are federal bodies procuring in
+  Zurich (ETH, Empa, Flughafen Zürich AG) — a different question, not a gap.
+  Hence three explicit semantics via the new `canton_match` argument
+  (`procuring_body` default, `place_of_delivery`, `both`) rather than a silent
+  union, and every response states in `note` which one was applied.
+
+  To keep the previous behaviour, pass `canton_match="place_of_delivery"`.
+
+- **A filterless `search_procurements()` now raises instead of returning empty.**
+  simap answers an unfiltered project-search with zero projects, not with
+  everything. The old code reported that as "No publications matched. Widen the
+  date range" — a misdiagnosis, since nothing had been narrowed. It now says
+  that at least one filter is required.
+
+### Fixed
+
+- **`mcp>=1.28.1`** (was `>=1.2.0`), matching the CVE-2026-59950 floor already
+  set in the companion server `amtsblatt-mcp`.
+- **User-Agent no longer drifts from the package version.** It advertised 0.3.0
+  while the package was 0.3.1; `VERSION` in `constants.py` is now the single
+  source and `__init__.__version__` re-exports it (it had been pinned at 0.1.0).
+
+### Added
+
+- `canton_match` on `search_procurements`, `search_procurements_detailed` and
+  `search_awards`; `CANTON_INSTITUTION_IDS` (26 pinned root institution ids) and
+  `SimapClient.institutions()`.
+- **Live drift guards.** One verifies all 26 pinned institution ids are still
+  root institutions and that exactly 28 roots exist; another checks
+  `PUB_TYPES`, `PROCESS_TYPES` and `PROJECT_SUB_TYPES` against the machine-readable
+  spec at `https://www.simap.ch/api/specifications/simap.yaml` (13/13, 5/5, 10/10
+  — currently exact). A third asserts `procuring_body` keeps finding at least as
+  much as `place_of_delivery`.
+
+### Changed
+
+- Documented that `project-search` indexes **projects**, not publications: each
+  hit is a project represented by its newest publication. `search_awards`
+  consequently only finds projects whose *newest* publication is an award — a
+  later correction hides it, and `get_publication_history` is the way back.
+  Tool descriptions and README updated; no behavioural change.
+
 ## [0.3.1] — 2026-07-27
 
 Release-plumbing only — no functional change to the server or its tools.
