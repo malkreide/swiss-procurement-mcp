@@ -89,6 +89,14 @@ a browser-based MCP client lost its session immediately after initialize.
 `MCP_CORS_ORIGINS` is unset by default, so no cross-origin browser access is
 permitted until an operator lists origins explicitly.
 
+**Closed in 0.12.0, not yet re-measured.** `ARCH-005` (a `.env.example` now
+documents the seven environment variables the server honours; it holds no
+secrets and `docs/secret-management.md` records why), `SEC-013`
+(`docs/secret-management.md`), `OPS-003` (`ROADMAP.md`), `SDK-002`
+(`match_type` is a `Literal`, not a bare `str`) and `OPS-002` (README.de parity
+at 19 sections). `SEC-004` improved but stays `partial`: HTTPS is now enforced
+before egress, while the resolved-IP blocklist and DNS pinning remain open.
+
 **Still `partial`, and worth naming:** `ARCH-012` — README's "MCP Protocol
 Version" section states the version is pinned as an explicit constant, while the
 "Maturity & updates" section still says it is "negotiated by the pinned `mcp`

@@ -3,6 +3,61 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.12.0] — 2026-07-28
+
+Tier-A audit remediation: **ARCH-005, SEC-004, SEC-013, OPS-003, SDK-002,
+OPS-002**.
+
+### ARCH-005 — `.env.example`
+
+The server holds no secrets, but it does honour seven environment variables, and
+they were documented nowhere as a set. The file is the configuration surface in
+one place. `test_env_example_documents_every_environment_variable` scans `src/`
+for `environ.get(...)` and fails on anything the template omits — a stale
+`.env.example` is worse than none, because it reads as authoritative.
+
+### SEC-004 — HTTPS is now enforced, not assumed
+
+`_assert_host_allowed` checked the host and not the scheme, which left a gap
+that read as covered: `http://www.simap.ch/...` passes a hostname allow-list
+while sending the request in the clear. Checked first, so a plaintext URL
+reports the scheme rather than the host.
+
+Still open: resolved-IP blocklist and DNS pinning. `SEC-004` stays `partial`.
+
+### SDK-002 — `match_type` is a `Literal`
+
+Typed as `str`, the schema advertised "any string" for a field that only ever
+takes `exact` or `none`, so a model had no way to know what to expect back —
+the same class of mismatch as a tool schema advertising a value the tool
+rejects. Now `MatchType = Literal["exact", "none"]`, derived once and used by
+all four response models.
+
+### SEC-013 — `docs/secret-management.md`
+
+Records the Stufe-1 position and, more usefully, that there is nothing to
+protect: the wrapped endpoints are public and the server holds no credential.
+An absence of secret-handling code looks identical to an oversight unless it is
+written down. Also states that the simap session cookie is not a credential —
+it authenticates nothing — because "a cookie is involved" invites the opposite
+assumption.
+
+### OPS-003 — `ROADMAP.md`
+
+Phase-specific backlog, linked from both READMEs. `ARCH-003` is recorded as
+needing a design decision before code: fuzzy matching is right for the code
+lookups and questionable for tender search, where silently widening terms can
+imply a tender exists when none does.
+
+### OPS-002 — README parity
+
+`README.de.md` gains *MCP Protocol Version* and *Primitive: nur Tools*. Both
+files now carry 19 top-level sections.
+
+All new guards mutation-tested: dropping the scheme check fails 4 tests,
+deleting `.env.example` fails 3, adding an undocumented environment variable to
+the code fails 1.
+
 ## [0.11.1] — 2026-07-28
 
 Closes **ARCH-012**: the README no longer contradicts itself about the protocol

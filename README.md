@@ -348,7 +348,9 @@ swiss-procurement-mcp/
 
 ## Maturity & updates
 
-**Phase 1 — read-only.** This server wraps only the public read endpoints; the
+**Phase 1 — read-only** (see [ROADMAP.md](ROADMAP.md) for the phase-specific
+backlog and what a phase transition would require). This server wraps only the
+public read endpoints; the
 write / OIDC-protected simap endpoints are deliberately out of scope. See the
 [SECURITY.md](SECURITY.md) re-evaluation triggers for the conditions that would
 move it to a write phase.

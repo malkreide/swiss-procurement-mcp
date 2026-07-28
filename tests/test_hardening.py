@@ -1,6 +1,8 @@
 """Tests for the 0.2.0 hardening: input bounds, egress guard, match_type, and
 coverage for the three tools the first audit flagged as untested (OPS-001)."""
 
+import pathlib
+
 import httpx
 import pytest
 import respx
@@ -22,6 +24,8 @@ from swiss_procurement_mcp.server import (
     search_cpv_codes,
     search_procurements,
 )
+
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 # --- SEC-018: input bounds ------------------------------------------------
 
@@ -154,3 +158,92 @@ async def test_find_procurement_office_filters_client_side():
     assert result.count == 1
     assert result.offices[0].id == "po1"
     assert result.match_type == "exact"
+
+
+# ---------------------------------------------------------------------------
+# Tier-A audit remediation: SEC-004, ARCH-005, SEC-013, OPS-003
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://www.simap.ch/api/publications/v2/project/project-search",
+        "ftp://www.simap.ch/api",
+        "//www.simap.ch/api",
+    ],
+)
+def test_non_https_egress_is_refused(url: str) -> None:
+    """SEC-004: the host allow-list alone left plaintext reachable.
+
+    `http://www.simap.ch/...` passes an allow-list keyed on hostname while
+    sending the request in the clear — a gap that reads as covered.
+    """
+    with pytest.raises(UpstreamError, match="non-HTTPS"):
+        _assert_host_allowed(url)
+
+
+def test_https_to_an_allowed_host_still_passes() -> None:
+    """The scheme check must not have broken the normal path."""
+    _assert_host_allowed(f"{SIMAP_BASE}/publications/v2/project/project-search")
+
+
+def test_scheme_is_checked_before_the_host() -> None:
+    """A plaintext URL to a foreign host should name the scheme, not the host.
+
+    Ordering matters for the error message: reporting "host not allow-listed"
+    for an `http://` URL sends the reader after the wrong problem.
+    """
+    with pytest.raises(UpstreamError, match="non-HTTPS"):
+        _assert_host_allowed("http://evil.example/api")
+
+
+@pytest.mark.parametrize(
+    "path",
+    [".env.example", "docs/secret-management.md", "ROADMAP.md"],
+)
+def test_required_document_exists(path: str) -> None:
+    """ARCH-005 / SEC-013 / OPS-003 each require a specific file on disk.
+
+    Asserted rather than assumed: all three were reported missing by an audit
+    and are the kind of file that quietly disappears in a refactor.
+    """
+    assert (REPO_ROOT / path).is_file(), f"{path} is required by the audit catalogue"
+
+
+def test_env_example_documents_every_environment_variable() -> None:
+    """An `.env.example` that has drifted from the code is worse than none.
+
+    It reads as the authoritative configuration surface, so a variable the code
+    honours but the file omits is invisible to whoever is deploying.
+    """
+    import re
+
+    example = (REPO_ROOT / ".env.example").read_text(encoding="utf-8")
+    referenced = set()
+    for src in (REPO_ROOT / "src").rglob("*.py"):
+        referenced |= set(
+            re.findall(r'environ\.get\(\s*"([A-Z_]+)"', src.read_text(encoding="utf-8"))
+        )
+    missing = sorted(v for v in referenced if v not in example)
+    assert not missing, f".env.example does not mention: {missing}"
+
+
+def test_env_example_assigns_no_credential_value() -> None:
+    """The checked-in template must never hold a real credential.
+
+    Checks the assignments, not the prose: any `*KEY`, `*TOKEN`, `*SECRET` or
+    `*PASSWORD` variable must be absent, commented out, or assigned an empty
+    value. A template is exactly the file where a real key gets committed by
+    accident, because it looks like documentation rather than configuration.
+    """
+    import re
+
+    example = (REPO_ROOT / ".env.example").read_text(encoding="utf-8")
+    offenders = [
+        line
+        for line in example.splitlines()
+        if not line.lstrip().startswith("#")
+        and re.match(r"^\s*\w*(KEY|TOKEN|SECRET|PASSWORD)\s*=\s*\S", line, re.I)
+    ]
+    assert not offenders, f".env.example assigns a credential value: {offenders}"

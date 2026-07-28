@@ -43,14 +43,23 @@ def utc_now_iso() -> str:
 
 
 def _assert_host_allowed(url: str) -> None:
-    """SEC-021: refuse any egress outside the simap.ch allow-list.
+    """SEC-021 / SEC-004: refuse egress outside the allow-list, and refuse plaintext.
 
     The base URL is hardcoded, so this can only trip on a future refactor that
-    lets a foreign host reach here — exactly the regression this guards against.
+    lets a foreign host or a plaintext scheme reach here — exactly the
+    regression this guards against.
+
+    The scheme is checked as well as the host (SEC-004). Checking only the host
+    left a gap that reads as covered: `http://www.simap.ch/...` passes an
+    allow-list keyed on hostname while sending the request in the clear.
     """
-    host = httpx.URL(url).host
-    if host not in ALLOWED_HOSTS:
-        raise UpstreamError(f"Refusing request to non-allow-listed host {host!r}.")
+    parsed = httpx.URL(url)
+    if parsed.scheme != "https":
+        raise UpstreamError(
+            f"Refusing non-HTTPS request to {parsed.host!r} (scheme {parsed.scheme!r})."
+        )
+    if parsed.host not in ALLOWED_HOSTS:
+        raise UpstreamError(f"Refusing request to non-allow-listed host {parsed.host!r}.")
 
 
 def normalise_language(language: str | None) -> str:
