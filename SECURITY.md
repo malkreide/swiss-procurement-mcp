@@ -9,12 +9,21 @@ controls deliberately deferred for this server profile.
 
 It was audited against the internal MCP best-practice catalogue (the portfolio
 `mcp-audit` methodology, 68 checks / 8 categories). The latest measured run
-(`audits/2026-07-28T052316-Z-swiss-procurement-mcp/`) scored **23 pass / 9
-partial / 0 fail** across the 32 applicable checks — **production-ready, no
-open fail**. See `audits/` for the full report and per-finding docs.
+(`audits/2026-07-28T062517-Z-swiss-procurement-mcp/`) scored **17 pass / 15
+partial / 4 fail** across **36** applicable checks — **not production-ready**:
+four `high`/`critical` checks fail. See `audits/` for the full report and
+per-finding docs.
 
-Four runs against the same catalogue hash and the same applicable set make the
-trend meaningful: 15/16/1 → 20/11/1 → 21/11/0 → 23/9/0.
+**The applicable set changed in this run, so the numbers are not comparable to
+earlier ones.** Every previous run carried `sdk_language: python` in the audit
+profile while the catalogue matches on `"Python"`. The comparison is an exact
+string match, so `SDK-001` … `SDK-004` were silently filtered out of all four
+earlier audits — they were never evaluated, and their absence read as a smaller
+applicable set rather than as a gap. With the casing corrected the applicable
+set is 36, not 32, and two of the four newly-evaluated checks fail.
+
+Earlier runs, for the record and against the narrower 32-check set:
+15/16/1 → 20/11/1 → 21/11/0 → 23/9/0.
 
 ## Reporting a vulnerability
 
@@ -41,10 +50,22 @@ path, no user authentication, and no personal data. Hardening in place:
 
 ## Audit findings
 
-The history below records what each release closed. The current open set is 9
-`partial` findings, documented under
-`audits/2026-07-28T052316-Z-swiss-procurement-mcp/findings/` (`fail-or-partial`
-policy). None blocks production.
+The history below records what each release closed. The current open set is 19
+findings — 15 `partial` and 4 `fail` — documented under
+`audits/2026-07-28T062517-Z-swiss-procurement-mcp/findings/` (`fail-or-partial`
+policy).
+
+Four of them block production: `SDK-001` and `SDK-004` (newly evaluated, see the
+profile correction above), plus `SEC-009` and `SCALE-002`, which are accepted
+risks below but are still recorded as `fail` because the control is genuinely
+absent — an accepted risk is a decision, not a passing check.
+
+**`SDK-001` is the substantive one.** Every tool opens its own
+`httpx.AsyncClient` via `async with SimapClient()`, and the server passes no
+`lifespan` to `FastMCP`. That is a TCP and TLS handshake per tool call, and it
+makes `SimapClient._cache` dead code: the cache is per-instance, so it is
+discarded the moment the tool returns. The sister server (`amtsblatt-mcp`)
+pools one shared client behind a lifespan and passes this check.
 
 **Resolved in 0.2.0:**
 
