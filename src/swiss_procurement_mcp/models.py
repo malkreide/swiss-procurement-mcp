@@ -128,3 +128,19 @@ class SourceStatus(BaseModel):
 class StatusResponse(Envelope):
     sources: list[SourceStatus]
     all_healthy: bool
+
+
+class ProvenanceObservation(BaseModel):
+    source_url: str
+    observed_at: str
+    retrieval_method: Literal["https_get"]
+    http_status: int | None = None
+    latency_ms: int
+    reachable: bool
+    bounded_confidence: float = Field(ge=0, le=1)
+    freshness: str
+    unknowns: list[str]
+
+
+class ProvenanceObservationResponse(Envelope):
+    observation: ProvenanceObservation

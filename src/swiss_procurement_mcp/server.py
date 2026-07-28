@@ -8,7 +8,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from typing import Any
+
+import httpx
 
 from mcp.server.fastmcp import FastMCP
 from mcp.types import LATEST_PROTOCOL_VERSION
@@ -41,6 +44,7 @@ from .inputs import (
     HistoryInput,
     OfficeSearchInput,
     ProcurementDetailInput,
+    ProvenanceObservationInput,
     SearchInput,
     StatusInput,
 )
@@ -54,6 +58,8 @@ from .models import (
     ProcurementDetail,
     ProcurementOffice,
     ProcurementSummary,
+    ProvenanceObservation,
+    ProvenanceObservationResponse,
     SearchResponse,
     SourceStatus,
     StatusResponse,
@@ -765,6 +771,60 @@ async def find_procurement_office(args: OfficeSearchInput) -> OfficeSearchRespon
         count=len(matched),
         match_type="exact" if matched else "none",
         offices=matched,
+    )
+
+
+@mcp.tool(annotations=READ_TOOL)
+@logged_tool("observe_public_url")
+async def observe_public_url(args: ProvenanceObservationInput) -> ProvenanceObservationResponse:
+    """Observe one public URL once and return bounded reachability evidence.
+
+    This companion is deliberately separate from simap provenance. A successful
+    page fetch does not prove stock, fulfillment, seller identity, willingness to
+    transact, or negotiation authority.
+    """
+    started = time.perf_counter()
+    observed_at = utc_now_iso()
+    status: int | None = None
+    reachable = False
+    note: str | None = None
+    try:
+        async with httpx.AsyncClient(
+            timeout=httpx.Timeout(float(args.timeout_seconds)),
+            follow_redirects=True,
+            headers={"User-Agent": "swiss-procurement-mcp/0.9.0"},
+        ) as client:
+            response = await client.get(args.url)
+        status = response.status_code
+        reachable = 200 <= status < 400
+        if not reachable:
+            note = "The URL responded but did not provide a successful 2xx/3xx page response."
+    except (httpx.HTTPError, OSError) as exc:
+        note = f"Observation failed with {type(exc).__name__}; page state is unknown."
+    latency_ms = round((time.perf_counter() - started) * 1000)
+    unknowns = [
+        "configuration-specific stock",
+        "fulfillment or delivery",
+        "seller identity",
+        "willingness to transact",
+        "negotiation authority",
+    ]
+    return ProvenanceObservationResponse(
+        source=ATTRIBUTION,
+        provenance="live_api" if reachable else "degraded",
+        retrieved_at=observed_at,
+        note=note,
+        observation=ProvenanceObservation(
+            source_url=args.url,
+            observed_at=observed_at,
+            retrieval_method="https_get",
+            http_status=status,
+            latency_ms=latency_ms,
+            reachable=reachable,
+            bounded_confidence=0.9 if reachable else 0.1,
+            freshness="point-in-time; recheck required",
+            unknowns=unknowns,
+        ),
     )
 
 

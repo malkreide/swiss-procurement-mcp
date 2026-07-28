@@ -299,3 +299,18 @@ class OfficeSearchInput(_LanguageMixin):
 
 class StatusInput(_StrictInput):
     """`source_status` takes no arguments; the model still forbids extras."""
+
+
+class ProvenanceObservationInput(_StrictInput):
+    """Bounded read-only observation of one public procurement or supplier URL."""
+
+    url: str = Field(
+        description=(
+            "Public HTTP(S) URL to observe once. The result describes page reachability "
+            "only; it does not establish stock, fulfillment, identity, or willingness to transact."
+        ),
+        min_length=12,
+        max_length=2048,
+        pattern=r"^https://[^\\s]+$",
+    )
+    timeout_seconds: int = Field(default=10, ge=1, le=20)
