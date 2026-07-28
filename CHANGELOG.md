@@ -3,6 +3,229 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.14.0] — 2026-07-28
+
+Closes **ARCH-002**: every tool description carries a `<use_case>` tag.
+
+The description is what the model reads when choosing between tools, and naming
+the *function* is not the same as naming the *occasion*. All 9 tools now
+open with a `<use_case>` block stating when to reach for them — including the
+distinctions that are invisible from the name, such as when the aggregated
+search is preferable to a search followed by N detail calls.
+
+`test_tools_carry_a_use_case_tag` enforces the 80% floor and
+`test_no_description_is_too_short` a 100-character minimum. Mutation-tested:
+stripping the tag from three tools fails the coverage guard.
+
+## [0.13.0] — 2026-07-28
+
+Closes **SEC-004** and **SEC-005**: resolved-address blocklist and DNS pinning.
+
+### What the host allow-list could not do
+
+The allow-list answers "is this the name we meant?". It cannot answer "is this
+the *machine* we meant?" — a name resolves to an address, and nothing about an
+allow-listed hostname stops that address being `169.254.169.254` or `127.0.0.1`.
+DNS is controlled by whoever runs the zone.
+
+`_net.py` adds both halves, and they only work together:
+
+- **Blocklist** — the resolved address is checked against loopback, private,
+  CGNAT, link-local, unique-local, benchmarking and unspecified ranges, IPv4 and
+  IPv6. A name resolving to a *mix* of public and internal addresses is refused
+  rather than filtered: a zone answering both is not a configuration to paper
+  over by picking the good one.
+- **Pinning** — validating an address and then connecting *by hostname* is a
+  time-of-check/time-of-use bug. The second lookup can answer differently; that
+  is DNS rebinding, and it defeats a blocklist entirely.
+
+### Pinned via a custom resolver, not by rewriting the URL
+
+The first implementation rewrote the request URL to the literal IP and carried
+the hostname in `Host` and `sni_hostname`. It worked against the live API — but
+it changes what every layer above the socket sees, and it broke 66 respx-based
+tests whose routes match on the URL.
+
+Gating that on a test flag would have been the "control that holds in one path
+but not the other" problem this codebase keeps finding. The check catalogue
+names a *custom resolver* as an accepted implementation, so pinning now happens
+in a network backend: only the address the socket opens to is substituted, and
+the hostname stays intact all the way down. `Host` and TLS SNI are derived from
+the name as usual, so certificate validation still runs against it — verified
+against the live API, not assumed.
+
+### Tests
+
+`tests/test_ssrf.py`. The load-bearing one is
+`test_rebinding_second_lookup_is_never_used`: a zone answering public once and
+internal immediately after must never reach the internal address. It is the only
+test that fails if an address is validated and the connection then made by
+hostname anyway.
+
+`test_resolution_happens_exactly_once_per_connect` covers the "1 DNS call per
+request" criterion directly.
+
+Mutation-tested: connecting by hostname fails 2 tests, removing link-local from
+the blocklist fails 3, filtering a mixed answer instead of refusing it fails 2,
+and dropping the backend installation fails 1.
+
+## [0.12.0] — 2026-07-28
+
+Tier-A audit remediation: **ARCH-005, SEC-004, SEC-013, OPS-003, SDK-002,
+OPS-002**.
+
+### ARCH-005 — `.env.example`
+
+The server holds no secrets, but it does honour seven environment variables, and
+they were documented nowhere as a set. The file is the configuration surface in
+one place. `test_env_example_documents_every_environment_variable` scans `src/`
+for `environ.get(...)` and fails on anything the template omits — a stale
+`.env.example` is worse than none, because it reads as authoritative.
+
+### SEC-004 — HTTPS is now enforced, not assumed
+
+`_assert_host_allowed` checked the host and not the scheme, which left a gap
+that read as covered: `http://www.simap.ch/...` passes a hostname allow-list
+while sending the request in the clear. Checked first, so a plaintext URL
+reports the scheme rather than the host.
+
+Still open: resolved-IP blocklist and DNS pinning. `SEC-004` stays `partial`.
+
+### SDK-002 — `match_type` is a `Literal`
+
+Typed as `str`, the schema advertised "any string" for a field that only ever
+takes `exact` or `none`, so a model had no way to know what to expect back —
+the same class of mismatch as a tool schema advertising a value the tool
+rejects. Now `MatchType = Literal["exact", "none"]`, derived once and used by
+all four response models.
+
+### SEC-013 — `docs/secret-management.md`
+
+Records the Stufe-1 position and, more usefully, that there is nothing to
+protect: the wrapped endpoints are public and the server holds no credential.
+An absence of secret-handling code looks identical to an oversight unless it is
+written down. Also states that the simap session cookie is not a credential —
+it authenticates nothing — because "a cookie is involved" invites the opposite
+assumption.
+
+### OPS-003 — `ROADMAP.md`
+
+Phase-specific backlog, linked from both READMEs. `ARCH-003` is recorded as
+needing a design decision before code: fuzzy matching is right for the code
+lookups and questionable for tender search, where silently widening terms can
+imply a tender exists when none does.
+
+### OPS-002 — README parity
+
+`README.de.md` gains *MCP Protocol Version* and *Primitive: nur Tools*. Both
+files now carry 19 top-level sections.
+
+All new guards mutation-tested: dropping the scheme check fails 4 tests,
+deleting `.env.example` fails 3, adding an undocumented environment variable to
+the code fails 1.
+
+## [0.11.1] — 2026-07-28
+
+Closes **ARCH-012**: the README no longer contradicts itself about the protocol
+version.
+
+Two consecutive audits reported this and it went unfixed both times. The *MCP
+Protocol Version* section stated the version is pinned as an explicit constant,
+while *Maturity & updates* further down still said it was "negotiated by the
+pinned `mcp` SDK" — the opposite claim, and the one a reader skimming for the
+update policy hits first. `README.de.md` carried the same contradiction.
+
+Both now point at the pinned constant. `test_readme_does_not_contradict_the_pin`
+is parametrised over both files, so the sentence cannot come back in either
+language: prose drifts away from the code it describes unless something fails
+when it does. Mutation-tested by restoring the sentence.
+
+## [0.11.0] — 2026-07-28
+
+Closes **SDK-004**: CORS exposing and accepting `Mcp-Session-Id`.
+
+### The defect
+
+MCP over Streamable HTTP or SSE carries the session in the `Mcp-Session-Id`
+header. A browser cannot *read* a response header the server does not name in
+`Access-Control-Expose-Headers`, and cannot *send* it back unless the server
+names it in `Access-Control-Allow-Headers`. There was no CORS layer at all, so a
+browser-based MCP client completed the initialize handshake and then lost the
+session on the very next call — a failure that looks like a broken server rather
+than a missing header.
+
+### The change
+
+`FastMCP.run(transport=...)` offers no hook for adding middleware, so
+`__main__.py` now builds the Starlette app itself and runs uvicorn. That is
+exactly what the SDK does internally — see `FastMCP.run_sse_async`, which builds
+the same app and passes host, port and log level to uvicorn — so no part of the
+session-manager lifecycle changes.
+
+`_cors.py` attaches `CORSMiddleware` with `Mcp-Session-Id` in both
+`expose_headers` and `allow_headers`, `Last-Event-ID` for SSE stream resumption,
+and `DELETE` among the allowed methods so a browser client can terminate a
+session rather than only opening them.
+
+### Origins are fail-closed
+
+`MCP_CORS_ORIGINS` is unset by default, meaning no cross-origin browser access.
+That is the right default for a server whose primary transport is stdio. `*` is
+honoured but logs a WARNING and forces `allow_credentials=False` — browsers
+reject a wildcard origin together with credentials, so accepting both would ship
+a config that fails at request time rather than at startup.
+
+`tests/test_cors.py`, 10 tests, driving real requests through the assembled app
+rather than inspecting the middleware stack — asserting that a `CORSMiddleware`
+object exists would pass with an empty `expose_headers`, which is the defect
+itself. Mutation-tested against five reversions; each is caught by the test
+written for it.
+
+`starlette` and `uvicorn` are now declared dependencies. Both arrived
+transitively via `mcp`, but this module imports them directly.
+
+## [0.10.0] — 2026-07-28
+
+Closes **SDK-001**: one pooled HTTP client behind the server lifespan.
+
+### The defect
+
+Every one of the nine tools opened its own `httpx.AsyncClient` through
+`async with SimapClient()`, and `FastMCP` was constructed with no `lifespan`.
+
+The connection cost was the obvious half — a TCP handshake and TLS negotiation
+on every tool call. The half that made this a correctness bug is that `_cache`
+and the session cookie jar live on the `SimapClient` instance. A client that is
+discarded when the tool returns can never serve a cache hit and re-acquires the
+session cookie every time, so `_cached` was dead code wearing the shape of a
+working cache. The 30-minute TTL had never once been reached.
+
+### The change
+
+- `client.get_client()` returns a process-wide `SimapClient`, built lazily on
+  first use and rebuilt if the underlying client was closed.
+- `client.close_client()` releases it; a `_lifespan` async context manager
+  passed to `FastMCP` calls it on shutdown.
+- The nine tool bodies take `client = get_client()` instead of opening one.
+- `SimapClient.__aenter__` / `__aexit__` are unchanged, so the context-manager
+  form still works for the live tests and for any caller that wants an
+  isolated client.
+
+`tests/test_client_pooling.py` (8 tests) covers it. The one that would have
+caught the original defect is `test_repeat_search_hits_the_api_once`: two
+identical searches must produce exactly one upstream request, and the second
+response must report `provenance == "cached"`. Both halves of the fix were
+mutation-tested — restoring per-call construction fails 4 tests, dropping the
+`lifespan=` argument fails the lifespan assertion.
+
+### Test isolation
+
+A shared cache across tool calls is also a shared cache across *tests*: one
+case could serve another case's assertion out of `_cache` and pass without
+touching the API. `tests/conftest.py` gains an autouse fixture that drops the
+shared client around every test. Autouse rather than opt-in, because the
+failure mode is silent.
+
 ## [0.9.0] — 2026-07-28
 
 Closes OPS-001. Two real bugs surfaced while writing the tests — which is the

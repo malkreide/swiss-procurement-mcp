@@ -15,6 +15,7 @@ from __future__ import annotations
 import pathlib
 import re
 
+import pytest
 from mcp.types import LATEST_PROTOCOL_VERSION
 
 from swiss_procurement_mcp.server import MCP_PROTOCOL_VERSION
@@ -54,4 +55,27 @@ def test_readme_documents_an_update_policy() -> None:
     section = readme.split("MCP Protocol Version", 1)[1][:2000].lower()
     assert "update" in section or "policy" in section, (
         "the protocol section states a version but no update policy"
+    )
+
+
+@pytest.mark.parametrize(
+    ("doc", "phrase"),
+    [
+        ("README.md", "version negotiated by the pinned"),
+        ("README.de.md", "ausgehandelte mcp-protokoll-version"),
+    ],
+)
+def test_readme_does_not_contradict_the_pin(doc: str, phrase: str) -> None:
+    """Two audits reported this: the README said both things at once.
+
+    One section stated the version is pinned as an explicit constant, while
+    "Maturity & updates" further down still said it was *negotiated by the SDK*
+    — the opposite claim, and the one a reader skimming for the update policy
+    would hit first. Prose drifts away from the code it describes unless
+    something fails when it does.
+    """
+    text = (REPO / doc).read_text(encoding="utf-8").lower()
+    assert phrase not in text, (
+        f"{doc} claims the protocol version is negotiated by the SDK; it is "
+        f"pinned as MCP_PROTOCOL_VERSION = {MCP_PROTOCOL_VERSION}"
     )

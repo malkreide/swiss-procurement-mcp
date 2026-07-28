@@ -184,13 +184,77 @@ MCP_TRANSPORT=sse HOST=0.0.0.0 PORT=8000 python -m swiss_procurement_mcp
 |---|---|---|
 | `MCP_TRANSPORT` | `stdio` | `stdio` \| `sse` \| `streamable-http` |
 | `MCP_HOST` / `HOST` | `127.0.0.1` | HTTP-Binding (nur Cloud-Transporte). Standardmässig Loopback; für ein Cloud-Deployment `0.0.0.0` explizit setzen, um alle Interfaces freizugeben. |
+| `MCP_CORS_ORIGINS` | _(nicht gesetzt)_ | Kommagetrennte Origins, die die HTTP-Transporte aus dem Browser aufrufen dürfen. Nicht gesetzt heisst: kein Cross-Origin-Zugriff aus dem Browser — stdio und Nicht-Browser-Clients sind nicht betroffen. Für die gelisteten Origins wird `Mcp-Session-Id` exponiert und akzeptiert, damit ein Browser-Client eine Session halten kann. `*` wird akzeptiert, loggt aber eine Warnung und deaktiviert Credentials, weil Browser eine Wildcard-Origin zusammen mit Credentials ablehnen. |
 | `PORT` / `MCP_PORT` | `8000` | HTTP-Port (nur Cloud-Transporte) |
 
 Keine API-Keys — die gekapselten simap.ch-Lese-Endpoints sind vollständig öffentlich.
 
 ---
 
-## Testing
+## MCP Protocol Version
+
+| | |
+|---|---|
+| **Unterstützte Spec-Version** | `2025-11-25` |
+| **Gepinnt in** | `MCP_PROTOCOL_VERSION` in [`server.py`](src/swiss_procurement_mcp/server.py) |
+| **SDK** | `mcp>=1.28.1` |
+
+Das MCP-Python-SDK handelt die Protokollversion in der Session-Schicht aus und
+bietet dafür keinen Konstruktor-Parameter — die Version lässt sich also nicht
+per Konfiguration pinnen. Sie ist als deklarierte Konstante gepinnt und wird
+durch Erkennung durchgesetzt:
+
+- **Zur Laufzeit** loggt eine Abweichung zwischen Konstante und SDK ein
+  `protocol_version_drift`-Event auf `WARNING`. Der Server läuft weiter.
+- **In der CI** schlägt `tests/test_protocol_version.py` fehl.
+
+Diese Trennung ist Absicht: ein SDK-Bump soll *unseren* Build brechen, nicht die
+Laufzeit von jemandem, der `mcp` in seiner eigenen Umgebung aktualisiert hat.
+
+### Update-Policy
+
+- Dependabot öffnet monatlich SDK-Update-PRs (`.github/dependabot.yml`).
+- Verschiebt ein SDK-Update die Protokollversion, schlägt der CI-Test fehl. Die
+  Lösung ist **nicht**, die Konstante blind anzupassen: erst das Spec-Changelog
+  auf die Unterschiede zwischen den Versionen lesen, das Serververhalten prüfen,
+  dann Konstante, diesen Abschnitt und `CHANGELOG.md` in einem Commit anheben.
+- Protokollversions-Bumps stehen explizit im `CHANGELOG.md` und werden nicht in
+  eine Dependency-Bump-Zeile gefaltet.
+
+---
+
+## Primitive: nur Tools
+
+Dieser Server exponiert **Tools** und weder Resources noch Prompts. Das ist eine
+Entscheidung, kein Versäumnis — hier die Begründung (ARCH-008).
+
+**Warum keine Resources.** Resources adressieren *identifizierbare, auflistbare*
+Inhalte — `GET`-artige Zugriffe, die ein Client aufzählen und cachen kann. Die
+simap-Endpunkte sind das Gegenteil: jeder nützliche Aufruf ist eine Abfrage mit
+Filtern über einen Korpus von ~200k Publikationen, der sich untertägig ändert.
+Eine Resource-URI müsste entweder etwas Unbegrenztes aufzählen oder eine
+vollständige Query in die URI kodieren — also ein Tool mit Umweg.
+
+Zwei Tools wurden konkret auf Migrationspotenzial geprüft und aus spezifischen
+Gründen verworfen, nicht per Pauschalregel:
+
+| Kandidat | Warum es ein Tool bleibt |
+|---|---|
+| `source_status` | Tatsächlich resource-förmig — ein festes, cachebares Dokument. Es existiert aber, um *aufgerufen* zu werden, wenn ein Ergebnis merkwürdig aussieht; eine Resource, die das Modell aktiv erneut lesen müsste, erfüllt diese Aufgabe schlechter als ein Tool, das es bei Verdacht aufrufen kann. |
+| `search_cpv_codes` | Der CPV-Katalog ist endlich und stabil genug zum Aufzählen. Er hat aber ~10k Einträge; als Resource würde die ganze Klassifikation ins Kontextfenster wandern — obwohl der Sinn des Tools gerade ist, dass der *Server* die Suche übernimmt. |
+
+**Warum keine Prompts.** Eine kuratierte Prompt-Liste würde Fragevorlagen
+kodieren («welche Ausschreibungen im Kanton X …»). Die Tool-Docstrings tragen
+diese Anleitung bereits dort, wo das Modell sie tatsächlich liest; Prompts
+würden sie an einer zweiten Stelle duplizieren, die driften kann — genau diese
+Art von Duplikation hat dieses Repo schon zweimal eingeholt.
+
+Das wird neu bewertet, falls der Server je einen wirklich aufzählbaren,
+langsam veränderlichen Datensatz bekommt.
+
+---
+
+## Tests
 
 ```bash
 PYTHONPATH=src pytest tests/ -m "not live"   # offline, respx-gemockt
@@ -242,15 +306,18 @@ swiss-procurement-mcp/
 
 ## Reifegrad & Updates
 
-**Phase 1 — rein lesend.** Dieser Server kapselt nur die öffentlichen
+**Phase 1 — rein lesend** (siehe [ROADMAP.md](ROADMAP.md) für den
+phasenspezifischen Backlog und die Voraussetzungen eines Phasenwechsels).
+Dieser Server kapselt nur die öffentlichen
 Lese-Endpoints; die schreibenden / OIDC-geschützten simap-Endpoints sind bewusst
 ausserhalb des Umfangs. Die Bedingungen für einen Übergang zu einer Schreib-Phase
 stehen als Re-Evaluierungs-Auslöser in [SECURITY.de.md](SECURITY.de.md).
 
-Der Server zielt auf die vom gepinnten `mcp`-SDK ausgehandelte MCP-Protokoll-Version.
-SDK- und Abhängigkeits-Updates kommen als [Dependabot](.github/dependabot.yml)-PRs,
-damit eine brechende Protokoll- oder SDK-Änderung bewusst geprüft wird statt still
-zu driften.
+Der Server zielt auf die als `MCP_PROTOCOL_VERSION` gepinnte MCP-Spec-Version —
+der aktuelle Wert und die Durchsetzung des Pins stehen oben im Abschnitt
+[MCP Protocol Version](#mcp-protocol-version). SDK- und Abhängigkeits-Updates
+kommen als [Dependabot](.github/dependabot.yml)-PRs, damit eine brechende
+Protokoll- oder SDK-Änderung bewusst geprüft wird statt still zu driften.
 
 ## Mitwirken
 

@@ -8,6 +8,12 @@ from pydantic import BaseModel, Field
 
 Provenance = Literal["live_api", "cached", "degraded"]
 
+# SDK-002: enumerable values get a Literal, not a bare `str`. Typed as `str` the
+# schema advertised "any string" for a field that only ever takes two values, so
+# a model had no way to know what to expect back — the same class of mismatch as
+# a tool schema advertising a value the tool rejects.
+MatchType = Literal["exact", "none"]
+
 
 class Envelope(BaseModel):
     source: str
@@ -35,7 +41,7 @@ class ProcurementSummary(BaseModel):
 
 class SearchResponse(Envelope):
     count: int
-    match_type: str = Field(
+    match_type: MatchType = Field(
         default="none", description="exact when results were returned, none when empty."
     )
     has_more: bool = Field(description="True if the pagination cursor can be advanced.")
@@ -65,7 +71,7 @@ class ProcurementDetail(Envelope):
 
 class EnrichedSearchResponse(Envelope):
     count: int = Field(description="Number of full detail records returned (<= top_n).")
-    match_type: str = Field(
+    match_type: MatchType = Field(
         default="none", description="exact when results were returned, none when empty."
     )
     total_matched: int = Field(
@@ -82,7 +88,7 @@ class CodeEntry(BaseModel):
 class CodeSearchResponse(Envelope):
     system: str = Field(description="cpv, bkp, npk, cpc, ebkp-h, ebkp-t or oag.")
     count: int
-    match_type: str = Field(
+    match_type: MatchType = Field(
         default="none", description="exact when codes were returned, none when empty."
     )
     codes: list[CodeEntry]
@@ -97,7 +103,7 @@ class ProcurementOffice(BaseModel):
 
 class OfficeSearchResponse(Envelope):
     count: int
-    match_type: str = Field(
+    match_type: MatchType = Field(
         default="none", description="exact when offices matched, none when empty."
     )
     offices: list[ProcurementOffice]

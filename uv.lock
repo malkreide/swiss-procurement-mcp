@@ -997,13 +997,15 @@ wheels = [
 
 [[package]]
 name = "swiss-procurement-mcp"
-version = "0.9.0"
+version = "0.14.0"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
     { name = "mcp" },
     { name = "pydantic" },
+    { name = "starlette" },
     { name = "structlog" },
+    { name = "uvicorn" },
 ]
 
 [package.optional-dependencies]
@@ -1023,7 +1025,9 @@ requires-dist = [
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
     { name = "respx", marker = "extra == 'dev'", specifier = ">=0.21" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5" },
+    { name = "starlette", specifier = ">=0.37" },
     { name = "structlog", specifier = ">=24.1" },
+    { name = "uvicorn", specifier = ">=0.30" },
 ]
 provides-extras = ["dev"]
 

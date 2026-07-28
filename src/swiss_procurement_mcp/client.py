@@ -21,6 +21,7 @@ from typing import Any
 
 import httpx
 
+from ._net import PinnedResolverTransport
 from .constants import (
     ALLOWED_HOSTS,
     DEFAULT_LANGUAGE,
@@ -43,14 +44,23 @@ def utc_now_iso() -> str:
 
 
 def _assert_host_allowed(url: str) -> None:
-    """SEC-021: refuse any egress outside the simap.ch allow-list.
+    """SEC-021 / SEC-004: refuse egress outside the allow-list, and refuse plaintext.
 
     The base URL is hardcoded, so this can only trip on a future refactor that
-    lets a foreign host reach here — exactly the regression this guards against.
+    lets a foreign host or a plaintext scheme reach here — exactly the
+    regression this guards against.
+
+    The scheme is checked as well as the host (SEC-004). Checking only the host
+    left a gap that reads as covered: `http://www.simap.ch/...` passes an
+    allow-list keyed on hostname while sending the request in the clear.
     """
-    host = httpx.URL(url).host
-    if host not in ALLOWED_HOSTS:
-        raise UpstreamError(f"Refusing request to non-allow-listed host {host!r}.")
+    parsed = httpx.URL(url)
+    if parsed.scheme != "https":
+        raise UpstreamError(
+            f"Refusing non-HTTPS request to {parsed.host!r} (scheme {parsed.scheme!r})."
+        )
+    if parsed.host not in ALLOWED_HOSTS:
+        raise UpstreamError(f"Refusing request to non-allow-listed host {parsed.host!r}.")
 
 
 def normalise_language(language: str | None) -> str:
@@ -77,6 +87,19 @@ def pick_lang(value: Any, language: str) -> str | None:
     return str(value)
 
 
+def _make_http_client() -> httpx.AsyncClient:
+    return httpx.AsyncClient(
+        timeout=httpx.Timeout(30.0),
+        headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
+        follow_redirects=True,
+        # SEC-004 / SEC-005: resolve once, check the address against the
+        # blocklist, then connect to the address that was checked. Installed as
+        # a transport so redirects are covered too — httpx builds a fresh
+        # request per hop and each one passes through here.
+        transport=PinnedResolverTransport(),
+    )
+
+
 class SimapClient:
     def __init__(self, http: httpx.AsyncClient | None = None) -> None:
         self._http = http
@@ -86,11 +109,7 @@ class SimapClient:
 
     async def __aenter__(self) -> SimapClient:
         if self._http is None:
-            self._http = httpx.AsyncClient(
-                timeout=httpx.Timeout(30.0),
-                headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
-                follow_redirects=True,
-            )
+            self._http = _make_http_client()
         return self
 
     async def __aexit__(self, *exc_info: object) -> None:
@@ -197,3 +216,45 @@ class SimapClient:
                 "http_status": None,
                 "latency_ms": int((time.perf_counter() - started) * 1000),
             }
+
+
+# SDK-001: one SimapClient — and with it one httpx.AsyncClient — is shared
+# across every tool call, rather than constructed per call inside the tool body.
+#
+# Two things were wrong with per-call construction. The cheap one is that each
+# call paid a fresh TCP handshake and TLS negotiation. The expensive one is that
+# `_cache` and the session cookie live on the instance: a client that dies when
+# the tool returns can never serve a cache hit and re-fetches the session cookie
+# every time, so the cache was dead code that looked like a working cache.
+#
+# Created lazily on first use so that calling a tool function directly in tests
+# works without standing up the server lifespan; closed by the lifespan in
+# server.py on shutdown.
+_shared: SimapClient | None = None
+
+
+def get_client() -> SimapClient:
+    """Return the process-wide SimapClient, (re)creating it if absent or closed."""
+    global _shared
+    if _shared is None or _shared._http is None or _shared._http.is_closed:
+        _shared = SimapClient(http=_make_http_client())
+    return _shared
+
+
+async def close_client() -> None:
+    """Close the shared client. Called by the server lifespan on shutdown."""
+    global _shared
+    if _shared is not None and _shared._http is not None and not _shared._http.is_closed:
+        await _shared._http.aclose()
+    _shared = None
+
+
+def reset_client() -> None:
+    """Drop the shared client without awaiting a close.
+
+    Tests need a clean cache and a clean cookie jar between cases; a shared
+    instance that survives a test would let one case serve another's assertion
+    out of `_cache`. Synchronous on purpose so it can run from a plain fixture.
+    """
+    global _shared
+    _shared = None

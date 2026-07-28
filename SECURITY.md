@@ -9,12 +9,36 @@ controls deliberately deferred for this server profile.
 
 It was audited against the internal MCP best-practice catalogue (the portfolio
 `mcp-audit` methodology, 68 checks / 8 categories). The latest measured run
-(`audits/2026-07-28T052316-Z-swiss-procurement-mcp/`) scored **23 pass / 9
-partial / 0 fail** across the 32 applicable checks — **production-ready, no
-open fail**. See `audits/` for the full report and per-finding docs.
+(`audits/2026-07-28T094256-Z-swiss-procurement-mcp/`) scored **19 pass / 15
+partial / 2 fail** across **36** applicable checks. See `audits/` for the full
+report and per-finding docs.
 
-Four runs against the same catalogue hash and the same applicable set make the
-trend meaningful: 15/16/1 → 20/11/1 → 21/11/0 → 23/9/0.
+**Not production-ready, and the two remaining fails are the reason — by
+decision, not by oversight.** `SEC-009` (session-to-user binding) and
+`SCALE-002` (stateful load balancing) are the accepted risks documented below.
+They stay recorded as `fail` because the controls are genuinely absent; an
+accepted risk is a decision, not a passing check. Every finding that was not a
+deliberate acceptance is now closed or `partial`.
+
+**The applicable set changed on 2026-07-28, so nothing before that date is
+comparable.** Every earlier run carried `sdk_language: python` in the audit
+profile while the catalogue matches on `"Python"`. The comparison is an exact
+string match, so `SDK-001` … `SDK-004` were silently filtered out of all four
+earlier audits — never evaluated, their absence reading as a smaller applicable
+set rather than as a gap. With the casing corrected the applicable set is 36,
+not 32, and two of the four newly-evaluated checks failed. Both are now fixed:
+
+- `SDK-001` (0.10.0) — every tool opened its own `httpx.AsyncClient` and the
+  server passed no `lifespan`. One pooled client behind a lifespan now. The
+  response cache had been dead code: per-instance, discarded on every return,
+  its 30-minute TTL never once reached.
+- `SDK-004` (0.11.0) — the HTTP transports carried no CORS layer, so
+  `Mcp-Session-Id` was neither exposed nor accepted and a browser client lost
+  its session immediately after initialize.
+
+Runs against the 36-check set: 17/15/4 → **19/15/2**.
+Earlier runs, for the record, against the narrower 32-check set:
+15/16/1 → 20/11/1 → 21/11/0 → 23/9/0.
 
 ## Reporting a vulnerability
 
@@ -41,10 +65,43 @@ path, no user authentication, and no personal data. Hardening in place:
 
 ## Audit findings
 
-The history below records what each release closed. The current open set is 9
-`partial` findings, documented under
-`audits/2026-07-28T052316-Z-swiss-procurement-mcp/findings/` (`fail-or-partial`
-policy). None blocks production.
+The history below records what each release closed. The current open set is 17
+findings — 15 `partial` and 2 `fail` — documented under
+`audits/2026-07-28T094256-Z-swiss-procurement-mcp/findings/` (`fail-or-partial`
+policy).
+
+Both fails are the accepted risks `SEC-009` and `SCALE-002`, recorded as `fail`
+because the control is genuinely absent. Nothing else in the applicable set
+fails.
+
+**Closed in 0.10.0 — `SDK-001`, confirmed by the 09:42 run.** Every tool opened
+its own `httpx.AsyncClient` via `async with SimapClient()`, and the server
+passed no `lifespan` to `FastMCP`. That was a TCP and TLS handshake per tool
+call, and it made `SimapClient._cache` dead code: the cache is per-instance, so
+it was discarded the moment the tool returned and the 30-minute TTL was never
+once reached. One pooled client now sits behind a lifespan, matching the sister
+server (`amtsblatt-mcp`).
+
+**Closed in 0.11.0 — `SDK-004`, confirmed by the same run.** The HTTP transports
+carried no CORS layer, so `Mcp-Session-Id` was neither exposed nor accepted and
+a browser-based MCP client lost its session immediately after initialize.
+`_cors.py` names the header in both directions. Origins are fail-closed:
+`MCP_CORS_ORIGINS` is unset by default, so no cross-origin browser access is
+permitted until an operator lists origins explicitly.
+
+**Closed in 0.12.0, not yet re-measured.** `ARCH-005` (a `.env.example` now
+documents the seven environment variables the server honours; it holds no
+secrets and `docs/secret-management.md` records why), `SEC-013`
+(`docs/secret-management.md`), `OPS-003` (`ROADMAP.md`), `SDK-002`
+(`match_type` is a `Literal`, not a bare `str`) and `OPS-002` (README.de parity
+at 19 sections). `SEC-004` improved but stays `partial`: HTTPS is now enforced
+before egress, while the resolved-IP blocklist and DNS pinning remain open.
+
+**Still `partial`, and worth naming:** `ARCH-012` — README's "MCP Protocol
+Version" section states the version is pinned as an explicit constant, while the
+"Maturity & updates" section still says it is "negotiated by the pinned `mcp`
+SDK". The second sentence is stale text left behind by the ARCH-012 work and
+tells the reader the opposite of what the code does.
 
 **Resolved in 0.2.0:**
 

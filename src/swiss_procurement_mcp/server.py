@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from contextlib import asynccontextmanager
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
@@ -17,6 +18,8 @@ from ._log import configure_logging, log_event, logged_tool
 from .client import (
     SimapClient,
     UpstreamError,
+    close_client,
+    get_client,
     normalise_language,
     pick_lang,
     utc_now_iso,
@@ -59,7 +62,23 @@ from .models import (
     StatusResponse,
 )
 
-mcp = FastMCP("swiss-procurement-mcp")
+
+@asynccontextmanager
+async def _lifespan(_server: FastMCP):
+    """SDK-001: release the pooled HTTP client when the server stops.
+
+    Nothing is opened here — `get_client()` builds the shared client lazily on
+    first use, so that calling a tool function directly (as the test suite does)
+    needs no server. This exists so the pooled connections are closed cleanly
+    rather than left to the garbage collector.
+    """
+    try:
+        yield {}
+    finally:
+        await close_client()
+
+
+mcp = FastMCP("swiss-procurement-mcp", lifespan=_lifespan)
 
 # OBS-003: structured JSON to stderr. stdout carries the MCP protocol.
 configure_logging()
@@ -341,7 +360,9 @@ def _combine_notes(*notes: str | None) -> str | None:
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_procurements")
 async def search_procurements(args: SearchInput) -> SearchResponse:
-    """Search Swiss public procurement projects on simap.ch.
+    """<use_case>Find open tenders matching a topic, canton, CPV code or date window — the default entry point when the question is "what is being tendered?".</use_case>
+
+    Search Swiss public procurement projects on simap.ch.
 
     Covers all cantons and the Confederation, updated intraday. This is the
     entry point; use `get_procurement_details` with the returned ids for the
@@ -403,13 +424,13 @@ async def search_procurements(args: SearchInput) -> SearchResponse:
     )
     _assert_filtered(params, canton)
 
-    async with SimapClient() as client:
-        try:
-            projects, pagination, provenance, stamp = await _run_search(client, params, filters)
-        except UpstreamError as exc:
-            return SearchResponse(
-                **_degraded(exc), count=0, has_more=False, next_cursor=None, results=[]
-            )
+    client = get_client()
+    try:
+        projects, pagination, provenance, stamp = await _run_search(client, params, filters)
+    except UpstreamError as exc:
+        return SearchResponse(
+            **_degraded(exc), count=0, has_more=False, next_cursor=None, results=[]
+        )
 
     next_cursor = pagination.get("lastItem")
     results = [_to_summary(e, lang) for e in projects]
@@ -434,7 +455,9 @@ async def search_procurements(args: SearchInput) -> SearchResponse:
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_procurements_detailed")
 async def search_procurements_detailed(args: DetailedSearchInput) -> EnrichedSearchResponse:
-    """Search publications and return the FULL record for the top matches at once.
+    """<use_case>Answer a question needing both the hit list and each hit's detail in one step, e.g. "which school-building tenders ran in ZH and what BKP codes do they carry?". Prefer this over search_procurements followed by N detail calls.</use_case>
+
+    Search publications and return the FULL record for the top matches at once.
 
     Aggregated entry point for the common "find tenders and show me their details"
     question: it runs the search and then fetches `get_procurement_details` for the
@@ -474,23 +497,23 @@ async def search_procurements_detailed(args: DetailedSearchInput) -> EnrichedSea
     )
     _assert_filtered(params, canton)
 
-    async with SimapClient() as client:
+    client = get_client()
+    try:
+        projects, _pagination, provenance, stamp = await _run_search(client, params, filters)
+    except UpstreamError as exc:
+        return EnrichedSearchResponse(**_degraded(exc), count=0, total_matched=0, results=[])
+
+    total = len(projects)
+    pairs = [(p.get("id", ""), p.get("publicationId", "")) for p in projects[:top_n]]
+
+    async def _fetch(pid: str, pubid: str) -> ProcurementDetail | None:
         try:
-            projects, _pagination, provenance, stamp = await _run_search(client, params, filters)
-        except UpstreamError as exc:
-            return EnrichedSearchResponse(**_degraded(exc), count=0, total_matched=0, results=[])
+            d_payload, d_prov, d_stamp = await client.publication_details(pid, pubid, lang)
+        except UpstreamError:
+            return None
+        return _detail_from_payload(d_payload, pid, pubid, lang, d_prov, d_stamp)
 
-        total = len(projects)
-        pairs = [(p.get("id", ""), p.get("publicationId", "")) for p in projects[:top_n]]
-
-        async def _fetch(pid: str, pubid: str) -> ProcurementDetail | None:
-            try:
-                d_payload, d_prov, d_stamp = await client.publication_details(pid, pubid, lang)
-            except UpstreamError:
-                return None
-            return _detail_from_payload(d_payload, pid, pubid, lang, d_prov, d_stamp)
-
-        details = await asyncio.gather(*(_fetch(pid, pubid) for pid, pubid in pairs))
+    details = await asyncio.gather(*(_fetch(pid, pubid) for pid, pubid in pairs))
 
     results = [d for d in details if d is not None]
     empty_note = None
@@ -511,7 +534,9 @@ async def search_procurements_detailed(args: DetailedSearchInput) -> EnrichedSea
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_awards")
 async def search_awards(args: AwardSearchInput) -> SearchResponse:
-    """Search only awarded contracts (who won).
+    """<use_case>Find who won, not what is open — all four award types at once. Use when the question is about completed procurement rather than current opportunities.</use_case>
+
+    Search only awarded contracts (who won).
 
     Convenience wrapper over `search_procurements` that queries all four award
     publication types at once.
@@ -546,13 +571,13 @@ async def search_awards(args: AwardSearchInput) -> SearchResponse:
     if cursor:
         params["lastItem"] = cursor
 
-    async with SimapClient() as client:
-        try:
-            projects, pagination, provenance, stamp = await _run_search(client, params, filters)
-        except UpstreamError as exc:
-            return SearchResponse(
-                **_degraded(exc), count=0, has_more=False, next_cursor=None, results=[]
-            )
+    client = get_client()
+    try:
+        projects, pagination, provenance, stamp = await _run_search(client, params, filters)
+    except UpstreamError as exc:
+        return SearchResponse(
+            **_degraded(exc), count=0, has_more=False, next_cursor=None, results=[]
+        )
 
     next_cursor = pagination.get("lastItem")
     results = [_to_summary(e, lang) for e in projects]
@@ -573,7 +598,9 @@ async def search_awards(args: AwardSearchInput) -> SearchResponse:
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("get_procurement_details")
 async def get_procurement_details(args: ProcurementDetailInput) -> ProcurementDetail:
-    """Return the full record for one procurement publication.
+    """<use_case>Retrieve the full record for one publication once you have its ids: criteria, deadlines, classification codes and the procuring body.</use_case>
+
+    Return the full record for one procurement publication.
 
     Both ids come from a `search_procurements` result. The record includes the
     order description, CPV and Swiss construction codes (BKP, NPK), deadlines and
@@ -584,15 +611,15 @@ async def get_procurement_details(args: ProcurementDetailInput) -> ProcurementDe
     language = args.language
 
     lang = normalise_language(language)
-    async with SimapClient() as client:
-        try:
-            payload, provenance, stamp = await client.publication_details(
-                project_id, publication_id, lang
-            )
-        except UpstreamError as exc:
-            return ProcurementDetail(
-                **_degraded(exc), project_id=project_id, publication_id=publication_id, title=""
-            )
+    client = get_client()
+    try:
+        payload, provenance, stamp = await client.publication_details(
+            project_id, publication_id, lang
+        )
+    except UpstreamError as exc:
+        return ProcurementDetail(
+            **_degraded(exc), project_id=project_id, publication_id=publication_id, title=""
+        )
 
     return _detail_from_payload(payload, project_id, publication_id, lang, provenance, stamp)
 
@@ -600,7 +627,9 @@ async def get_procurement_details(args: ProcurementDetailInput) -> ProcurementDe
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("get_publication_history")
 async def get_publication_history(args: HistoryInput) -> HistoryResponse:
-    """Return earlier publications of the same procurement project.
+    """<use_case>Trace one project through time — tender to award to correction. Use when the question is "what happened to this procurement?".</use_case>
+
+    Return earlier publications of the same procurement project.
 
     Traces a project's lifecycle: tender → correction → award. An empty list is
     normal for a first publication.
@@ -608,11 +637,11 @@ async def get_publication_history(args: HistoryInput) -> HistoryResponse:
     publication_id, language = args.publication_id, args.language
 
     lang = normalise_language(language)
-    async with SimapClient() as client:
-        try:
-            payload, provenance, stamp = await client.past_publications(publication_id, lang)
-        except UpstreamError as exc:
-            return HistoryResponse(**_degraded(exc), project_id=None, count=0, publications=[])
+    client = get_client()
+    try:
+        payload, provenance, stamp = await client.past_publications(publication_id, lang)
+    except UpstreamError as exc:
+        return HistoryResponse(**_degraded(exc), project_id=None, count=0, publications=[])
 
     past = payload.get("pastPublications", [])
     entries = [
@@ -638,7 +667,9 @@ async def get_publication_history(args: HistoryInput) -> HistoryResponse:
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_cpv_codes")
 async def search_cpv_codes(args: CpvSearchInput) -> CodeSearchResponse:
-    """Search CPV classification codes by keyword.
+    """<use_case>Translate a keyword into the CPV classification codes needed to filter a search. Call this first when the user names a subject rather than a code.</use_case>
+
+    Search CPV classification codes by keyword.
 
     CPV (Common Procurement Vocabulary) is the international code system used to
     filter `search_procurements` by category. Resolve a keyword like "Metall" to
@@ -647,11 +678,11 @@ async def search_cpv_codes(args: CpvSearchInput) -> CodeSearchResponse:
     query, limit, language = args.query, args.limit, args.language
 
     lang = normalise_language(language)
-    async with SimapClient() as client:
-        try:
-            payload, provenance, stamp = await client.code_search("cpv", query, lang, limit)
-        except UpstreamError as exc:
-            return CodeSearchResponse(**_degraded(exc), system="cpv", count=0, codes=[])
+    client = get_client()
+    try:
+        payload, provenance, stamp = await client.code_search("cpv", query, lang, limit)
+    except UpstreamError as exc:
+        return CodeSearchResponse(**_degraded(exc), system="cpv", count=0, codes=[])
 
     raw = payload.get("codes", []) if isinstance(payload, dict) else payload
     codes = [
@@ -671,7 +702,9 @@ async def search_cpv_codes(args: CpvSearchInput) -> CodeSearchResponse:
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_construction_codes")
 async def search_construction_codes(args: ConstructionCodeInput) -> CodeSearchResponse:
-    """Search Swiss construction classification codes by keyword.
+    """<use_case>Translate a keyword into Swiss construction cost codes (BKP, NPK, eBKP, OAG, CPC) — the bridge between a building topic and procurement filters.</use_case>
+
+    Search Swiss construction classification codes by keyword.
 
     Args:
         system: One of bkp, npk, ebkp-h, ebkp-t, oag, cpc.
@@ -689,11 +722,11 @@ async def search_construction_codes(args: ConstructionCodeInput) -> CodeSearchRe
     if sys_norm not in allowed:
         raise ValueError(f"system must be one of {allowed}. For CPV use search_cpv_codes.")
 
-    async with SimapClient() as client:
-        try:
-            payload, provenance, stamp = await client.code_search(sys_norm, query, lang, limit)
-        except UpstreamError as exc:
-            return CodeSearchResponse(**_degraded(exc), system=sys_norm, count=0, codes=[])
+    client = get_client()
+    try:
+        payload, provenance, stamp = await client.code_search(sys_norm, query, lang, limit)
+    except UpstreamError as exc:
+        return CodeSearchResponse(**_degraded(exc), system=sys_norm, count=0, codes=[])
 
     raw = payload.get("codes", []) if isinstance(payload, dict) else payload
     codes = [
@@ -713,7 +746,9 @@ async def search_construction_codes(args: ConstructionCodeInput) -> CodeSearchRe
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("find_procurement_office")
 async def find_procurement_office(args: OfficeSearchInput) -> OfficeSearchResponse:
-    """Find public procurement offices by (partial) name.
+    """<use_case>Resolve a partial organisation name to the procuring offices simap knows, when the user names an authority rather than a project.</use_case>
+
+    Find public procurement offices by (partial) name.
 
     The public office list is large (~1 MB), so this fetches it once and filters
     client-side. Returns the office id, type (cantonal / federal / communal) and
@@ -723,11 +758,11 @@ async def find_procurement_office(args: OfficeSearchInput) -> OfficeSearchRespon
 
     lang = normalise_language(language)
     needle = name_contains.lower().strip()
-    async with SimapClient() as client:
-        try:
-            payload, provenance, stamp = await client.procurement_offices_public(lang)
-        except UpstreamError as exc:
-            return OfficeSearchResponse(**_degraded(exc), count=0, offices=[])
+    client = get_client()
+    try:
+        payload, provenance, stamp = await client.procurement_offices_public(lang)
+    except UpstreamError as exc:
+        return OfficeSearchResponse(**_degraded(exc), count=0, offices=[])
 
     # The upstream has been observed returning the office list under two
     # different keys, so the shape is probed rather than assumed. The list case
@@ -771,9 +806,11 @@ async def find_procurement_office(args: OfficeSearchInput) -> OfficeSearchRespon
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("source_status")
 async def source_status(args: StatusInput | None = None) -> StatusResponse:
-    """Report reachability and latency of the simap.ch read API."""
-    async with SimapClient() as client:
-        probe = await client.probe("simap.ch read API", "/cantons/v1?lang=de")
+    """<use_case>Check whether simap.ch is reachable and how fast it is responding. Call this when a search returns nothing and you need to distinguish "no matching tenders" from "the source could not be asked" — the two are not the same answer.</use_case>
+
+    Report reachability and latency of the simap.ch read API."""
+    client = get_client()
+    probe = await client.probe("simap.ch read API", "/cantons/v1?lang=de")
     status = SourceStatus(**probe)
     return StatusResponse(
         source=ATTRIBUTION,

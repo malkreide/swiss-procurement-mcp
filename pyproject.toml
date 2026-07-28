@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "swiss-procurement-mcp"
-version = "0.9.0"
+version = "0.14.0"
 description = "MCP server for the simap.ch Swiss public procurement API — all cantons, read-only"
 readme = "README.md"
 license = "MIT"
@@ -25,6 +25,12 @@ dependencies = [
     "pydantic>=2.7",
     # OBS-003: structured logging with contextvars-bound correlation ids.
     "structlog>=24.1",
+    # SDK-004: the HTTP transports build their own Starlette app so CORS can be
+    # attached. Both arrive transitively via `mcp`, but this module imports them
+    # directly, and an undeclared import is one upstream dependency change away
+    # from an ImportError at startup.
+    "starlette>=0.37",
+    "uvicorn>=0.30",
 ]
 
 [project.optional-dependencies]

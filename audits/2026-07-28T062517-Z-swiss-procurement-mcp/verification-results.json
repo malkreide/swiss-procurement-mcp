@@ -1,0 +1,603 @@
+{
+  "server": "swiss-procurement-mcp",
+  "run_id": "2026-07-28T062517-Z-swiss-procurement-mcp",
+  "results": {
+    "ARCH-001": {
+      "id": "ARCH-001",
+      "status": "pass",
+      "evidence_collected": 4,
+      "findings": [
+        "All 9 tools snake_case, no special chars (server.py:343-773)",
+        "Descriptions carry use-case context, median 319 chars",
+        "tests/test_tool_coverage.py asserts naming"
+      ],
+      "gaps": [],
+      "evaluator_notes": "Consistent convention across the whole surface.",
+      "severity": "medium",
+      "title": "Tool Naming Convention",
+      "category": "ARCH"
+    },
+    "ARCH-002": {
+      "id": "ARCH-002",
+      "status": "partial",
+      "evidence_collected": 3,
+      "findings": [
+        "Median description length 319 chars, >=100 required",
+        "search_procurements (1910) vs search_procurements_detailed (990) differentiate explicitly"
+      ],
+      "gaps": [
+        "No <use_case> tag in any of 9 tools (0%, >=80% required)",
+        "source_status description is 57 chars, below the 100-char floor"
+      ],
+      "evaluator_notes": "",
+      "severity": "medium",
+      "title": "Tool-Beschreibung mit Use-Case-Tags",
+      "category": "ARCH"
+    },
+    "ARCH-003": {
+      "id": "ARCH-003",
+      "status": "partial",
+      "evidence_collected": 2,
+      "findings": [
+        "match_type field present on all 6 search-style responses (server.py:427,505,566,666,708,766)",
+        "Envelope carries an optional `note` field"
+      ],
+      "gaps": [
+        "match_type only ever takes exact|none \u2014 no fuzzy match implemented",
+        "Empty result carries no suggestions and no actionable hint"
+      ],
+      "evaluator_notes": "The field exists but the heuristic behind it does not.",
+      "severity": "medium",
+      "title": "\u00abNot Found\u00bb Anti-Pattern: Heuristiken statt leerer Antworten",
+      "category": "ARCH"
+    },
+    "ARCH-004": {
+      "id": "ARCH-004",
+      "status": "partial",
+      "evidence_collected": 2,
+      "findings": [
+        "Transport selected by MCP_TRANSPORT env var, stdio default (__main__.py)",
+        "Tool outputs are transport-independent"
+      ],
+      "gaps": [
+        "No tool uses ctx: Context",
+        "Config read via os.environ at module scope, not a Settings object",
+        "No shared lifespan \u2014 setup is not common across transports"
+      ],
+      "evaluator_notes": "",
+      "severity": "high",
+      "title": "Inversion of Control: Transport-agnostische Server-Logik",
+      "category": "ARCH"
+    },
+    "ARCH-005": {
+      "id": "ARCH-005",
+      "status": "partial",
+      "evidence_collected": 5,
+      "findings": [
+        "No secrets in source; server has no auth model at all",
+        ".gitignore excludes .env (line 6)",
+        "gitleaks runs on PRs (.github/workflows/security.yml:11)",
+        "tests/test_secrets.py present in sister server pattern"
+      ],
+      "gaps": [
+        "No .env.example in the repo"
+      ],
+      "evaluator_notes": "Nothing to leak, but the required placeholder file is absent.",
+      "severity": "critical",
+      "title": "Keine Hardcoded Secrets: Env-Vars / Secret Manager only",
+      "category": "ARCH"
+    },
+    "ARCH-006": {
+      "id": "ARCH-006",
+      "status": "pass",
+      "evidence_collected": 3,
+      "findings": [
+        "9 tools, under the 12 ceiling",
+        "No 1:1 REST mapping \u2014 tools are use-case shaped",
+        "Anchor demo answerable in 1-2 calls (README:21)"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "high",
+      "title": "Tool-Budget: High-Level-Use-Cases statt API-Mapping 1:1",
+      "category": "ARCH"
+    },
+    "ARCH-007": {
+      "id": "ARCH-007",
+      "status": "pass",
+      "evidence_collected": 3,
+      "findings": [
+        "search_procurements_detailed aggregates via asyncio.gather (server.py:436)",
+        "MAX_DETAIL_N=5 bounds the fan-out (inputs.py:62)",
+        "Description states the aggregated character"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "medium",
+      "title": "Capability-Aggregation: Composability intern, Atomarit\u00e4t extern",
+      "category": "ARCH"
+    },
+    "ARCH-008": {
+      "id": "ARCH-008",
+      "status": "pass",
+      "evidence_collected": 3,
+      "findings": [
+        "README:267 'Primitives: tools only' documents the decision",
+        "Why-not-resources and why-not-prompts both argued",
+        "Read-only tools explicitly assessed for resource migration"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "medium",
+      "title": "Drei Primitive nutzen: Tools, Resources und Prompts",
+      "category": "ARCH"
+    },
+    "ARCH-009": {
+      "id": "ARCH-009",
+      "status": "pass",
+      "evidence_collected": 4,
+      "findings": [
+        "READ_TOOL sets all four hints explicitly (server.py:94-97)",
+        "All 9 tools carry annotations=READ_TOOL",
+        "openWorldHint True \u2014 tools reach simap.ch",
+        "README:110 documents the annotations"
+      ],
+      "gaps": [],
+      "evaluator_notes": "README text lists only three hints while the code sets four \u2014 understated, not wrong.",
+      "severity": "high",
+      "title": "Tool Annotations: readOnlyHint, destructiveHint, idempotentHint, openWorldHint",
+      "category": "ARCH"
+    },
+    "ARCH-011": {
+      "id": "ARCH-011",
+      "status": "partial",
+      "evidence_collected": 4,
+      "findings": [
+        "All mandatory top-level files present",
+        "src/ layout correct, tests/ and .github/workflows/ present",
+        "ci.yml + publish.yml both present",
+        "README.de.md parallel"
+      ],
+      "gaps": [
+        "9 tools (>5) but no tools/ directory split \u2014 server.py holds all handlers",
+        "No README justification for the deviation"
+      ],
+      "evaluator_notes": "",
+      "severity": "medium",
+      "title": "Standardisierte Repo-Struktur (src-Layout, tests, README.de.md)",
+      "category": "ARCH"
+    },
+    "ARCH-012": {
+      "id": "ARCH-012",
+      "status": "partial",
+      "evidence_collected": 4,
+      "findings": [
+        "MCP_PROTOCOL_VERSION = '2025-11-25' pinned (server.py)",
+        "CHANGELOG.md in Keep-a-Changelog format",
+        "README:236 'MCP Protocol Version' section present",
+        "Dependabot active (.github/dependabot.yml)"
+      ],
+      "gaps": [
+        "README:355 contradicts README:236 \u2014 claims the version is 'negotiated by the pinned mcp SDK' when it is an explicit constant"
+      ],
+      "evaluator_notes": "Stale sentence left behind by the ARCH-012 work.",
+      "severity": "medium",
+      "title": "protocolVersion-Pinning + CHANGELOG + SDK-Update-Disziplin",
+      "category": "ARCH"
+    },
+    "CH-004": {
+      "id": "CH-004",
+      "status": "pass",
+      "evidence_collected": 3,
+      "findings": [
+        "ATTRIBUTION constant names source, operator and licence status (constants.py:32)",
+        "Every response envelope carries source= (server.py:118,290,422)",
+        "Licence position stated honestly: simap.ch publishes no explicit open-data licence"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "medium",
+      "title": "OGD-CH Lizenz-Compliance: CC BY 4.0 Attribution",
+      "category": "CH"
+    },
+    "OBS-001": {
+      "id": "OBS-001",
+      "status": "partial",
+      "evidence_collected": 2,
+      "findings": [
+        "Argument errors raise ValueError, surfaced by FastMCP as tool errors",
+        "Degraded-mode envelope tested in test_tool_coverage.py"
+      ],
+      "gaps": [
+        "No explicit isError construction or documented -326xx/-320xx protocol codes",
+        "No test distinguishes the protocol-error path from the execution-error path"
+      ],
+      "evaluator_notes": "",
+      "severity": "high",
+      "title": "Protocol vs. Execution Errors: korrekte Trennung",
+      "category": "OBS"
+    },
+    "OBS-002": {
+      "id": "OBS-002",
+      "status": "partial",
+      "evidence_collected": 2,
+      "findings": [
+        "No traceback.format_exc() or sys.exc_info() anywhere in src/",
+        "Upstream error bodies are not echoed \u2014 test_details_degraded_note_leaks_no_upstream_body asserts it"
+      ],
+      "gaps": [
+        "FastMCP is constructed without mask_error_details=True (server.py:62)"
+      ],
+      "evaluator_notes": "Criterion 1 is literally unmet; the substance it protects is covered by tests.",
+      "severity": "high",
+      "title": "Mask Error Details: keine Stacktraces / SQL ans LLM",
+      "category": "OBS"
+    },
+    "OBS-003": {
+      "id": "OBS-003",
+      "status": "pass",
+      "evidence_collected": 5,
+      "findings": [
+        "structlog>=24.1 in dependencies",
+        "JSON renderer to stderr (_log.py)",
+        "logged_tool binds tool name + 16-char correlation_id",
+        "4 severity levels in use",
+        "No print() in src/"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "medium",
+      "title": "Structured Logging mit RFC 5424 Severity-Stufen",
+      "category": "OBS"
+    },
+    "OBS-004": {
+      "id": "OBS-004",
+      "status": "pass",
+      "evidence_collected": 3,
+      "findings": [
+        "No print() statements in src/",
+        "PrintLoggerFactory(file=sys.stderr) in _log.py",
+        "Same logging config on both transports"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "critical",
+      "title": "stderr f\u00fcr stdio-Server: stdout reserviert f\u00fcr Protocol",
+      "category": "OBS"
+    },
+    "OPS-001": {
+      "id": "OPS-001",
+      "status": "pass",
+      "evidence_collected": 5,
+      "findings": [
+        "Every one of 9 tools has >=8 unit tests (measured)",
+        "Every one of 9 tools has >=1 live test in tests/test_live.py",
+        "respx used for HTTP mocking across 6 test modules",
+        "live marker registered in pyproject.toml:48",
+        "CI runs pytest -m 'not live' (ci.yml:43); separate live job at ci.yml:130"
+      ],
+      "gaps": [],
+      "evaluator_notes": "No file literally named tests/test_unit.py \u2014 the unit tests are split by concern instead. Substance met.",
+      "severity": "high",
+      "title": "Test-Strategie: Unit-Tests mocked + Live-Tests gemarkert",
+      "category": "OPS"
+    },
+    "OPS-002": {
+      "id": "OPS-002",
+      "status": "partial",
+      "evidence_collected": 5,
+      "findings": [
+        "All 8 mandatory sections present in README.md",
+        "Anchor demo query concrete and natural-language (README:21)",
+        "ASCII/Mermaid diagram present",
+        "Known limitations section explicit (README:310)",
+        "CONTRIBUTING.md + CONTRIBUTING.de.md bilingual"
+      ],
+      "gaps": [
+        "README.de.md has 17 top-level sections against README.md's 19"
+      ],
+      "evaluator_notes": "",
+      "severity": "medium",
+      "title": "Doku-Standard: bilingualer README, ASCII-Diagramm, Limits-Sektion",
+      "category": "OPS"
+    },
+    "OPS-003": {
+      "id": "OPS-003",
+      "status": "partial",
+      "evidence_collected": 2,
+      "findings": [
+        "README:350 declares 'Phase 1 \u2014 read-only'",
+        "Annotations match the declared phase (all readOnlyHint)"
+      ],
+      "gaps": [
+        "No roadmap file with phase-specific tasks",
+        "Phase-transition preconditions not documented"
+      ],
+      "evaluator_notes": "",
+      "severity": "high",
+      "title": "Phasenarchitektur: Read-only First, dann Write, dann Multi-Agent",
+      "category": "OPS"
+    },
+    "SCALE-002": {
+      "id": "SCALE-002",
+      "status": "fail",
+      "evidence_collected": 1,
+      "findings": [
+        "No sticky-session or shared-state session manager"
+      ],
+      "gaps": [
+        "Neither pattern implemented",
+        "No session TTL",
+        "No failover test"
+      ],
+      "evaluator_notes": "Documented as an accepted risk in SECURITY.md by explicit decision \u2014 recorded here as fail because the control is absent.",
+      "severity": "high",
+      "title": "Stateful Load Balancing f\u00fcr Streamable HTTP / SSE",
+      "category": "SCALE"
+    },
+    "SDK-001": {
+      "id": "SDK-001",
+      "status": "fail",
+      "evidence_collected": 1,
+      "findings": [
+        "httpx.AsyncClient constructed per tool call via 'async with SimapClient()' in all 9 tools (server.py:406,477,549,587,611,650,692,726,775)"
+      ],
+      "gaps": [
+        "No @asynccontextmanager lifespan defined",
+        "FastMCP('swiss-procurement-mcp') receives no lifespan= argument",
+        "New AsyncClient per tool call \u2014 the explicit anti-pattern in the check",
+        "SimapClient._cache is per-instance, so the response cache is discarded on every call"
+      ],
+      "evaluator_notes": "Costs a TCP+TLS handshake per tool call and makes the cache dead code.",
+      "severity": "high",
+      "title": "FastMCP Lifespan via @asynccontextmanager + AsyncExitStack",
+      "category": "SDK"
+    },
+    "SDK-002": {
+      "id": "SDK-002",
+      "status": "partial",
+      "evidence_collected": 3,
+      "findings": [
+        "pydantic>=2.7 in dependencies",
+        "All 9 tools have explicit BaseModel return annotations",
+        "Envelope carries source, provenance, retrieved_at"
+      ],
+      "gaps": [
+        "match_type typed as str, not Literal['exact','none'] (models.py:38,68,85,100)"
+      ],
+      "evaluator_notes": "",
+      "severity": "medium",
+      "title": "Pydantic v2 / TypedDict / Dataclass als Tool-Returns",
+      "category": "SDK"
+    },
+    "SDK-003": {
+      "id": "SDK-003",
+      "status": "partial",
+      "evidence_collected": 2,
+      "findings": [
+        "No tool is expected to exceed 2s \u2014 each is a single upstream call",
+        "Errors surface as tool results, not silently swallowed"
+      ],
+      "gaps": [
+        "No tool takes ctx: Context",
+        "search_procurements_detailed fans out to 5 upstream calls and reports no progress"
+      ],
+      "evaluator_notes": "",
+      "severity": "medium",
+      "title": "Context Injection f\u00fcr Progress Reports und Logging",
+      "category": "SDK"
+    },
+    "SDK-004": {
+      "id": "SDK-004",
+      "status": "fail",
+      "evidence_collected": 1,
+      "findings": [
+        "Transport is dual \u2014 SSE and streamable-http reachable via MCP_TRANSPORT"
+      ],
+      "gaps": [
+        "No CORS middleware configured anywhere in src/",
+        "expose_headers does not include Mcp-Session-Id",
+        "allow_headers not configured"
+      ],
+      "evaluator_notes": "A browser-based MCP client cannot read the session header, so HTTP transport is effectively browser-unusable.",
+      "severity": "high",
+      "title": "CORS Mcp-Session-Id Exposure bei HTTP/SSE",
+      "category": "SDK"
+    },
+    "SEC-004": {
+      "id": "SEC-004",
+      "status": "partial",
+      "evidence_collected": 2,
+      "findings": [
+        "_assert_host_allowed() runs before every request (client.py:104,181)",
+        "ALLOWED_HOSTS frozenset pins www.simap.ch (constants.py:17)"
+      ],
+      "gaps": [
+        "No explicit https scheme validation before egress",
+        "No resolved-IP blocklist \u2014 169.254.169.254, private and link-local ranges unchecked",
+        "No DNS pinning, so a TOCTOU rebind is possible"
+      ],
+      "evaluator_notes": "Base URL is a hardcoded https constant, which mitigates in practice but is not the control the check asks for.",
+      "severity": "critical",
+      "title": "SSRF-Prevention: HTTPS-Enforcement + IP-Blocklisting",
+      "category": "SEC"
+    },
+    "SEC-005": {
+      "id": "SEC-005",
+      "status": "partial",
+      "evidence_collected": 1,
+      "findings": [
+        "Single httpx request per attempt; no manual resolve-then-connect split"
+      ],
+      "gaps": [
+        "No DNS pinning implemented",
+        "No test asserting one DNS call per request"
+      ],
+      "evaluator_notes": "",
+      "severity": "high",
+      "title": "DNS-Rebinding-Prevention: DNS-Pinning gegen TOCTOU",
+      "category": "SEC"
+    },
+    "SEC-006": {
+      "id": "SEC-006",
+      "status": "pass",
+      "evidence_collected": 4,
+      "findings": [
+        "Default transport is stdio (__main__.py)",
+        "SSE/HTTP only via explicit MCP_TRANSPORT",
+        "README documents the local stdio use-case primarily",
+        "No TCP port opened on default start"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "high",
+      "title": "Lokaler Server: stdio-Transport zwingend (Netzwerk-Isolation)",
+      "category": "SEC"
+    },
+    "SEC-007": {
+      "id": "SEC-007",
+      "status": "pass",
+      "evidence_collected": 5,
+      "findings": [
+        "Dockerfile USER 10001:10001, well above the 10000 floor",
+        "compose.yaml read_only: true",
+        "cap_drop: [ALL]",
+        "security_opt: no-new-privileges:true",
+        "Docker default seccomp equals RuntimeDefault; documented in docs/container-hardening.md"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "high",
+      "title": "Container-Sandboxing: Docker / chroot mit minimalen Privilegien",
+      "category": "SEC"
+    },
+    "SEC-008": {
+      "id": "SEC-008",
+      "status": "pass",
+      "evidence_collected": 4,
+      "findings": [
+        "No pre/postinstall hooks",
+        "README shows the full install command",
+        "Trusted Publisher OIDC active (publish.yml:21)",
+        "CONTRIBUTING.md explains the build"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "medium",
+      "title": "Pre-Configuration Consent f\u00fcr Local-Server-Installation",
+      "category": "SEC"
+    },
+    "SEC-009": {
+      "id": "SEC-009",
+      "status": "fail",
+      "evidence_collected": 1,
+      "findings": [
+        "Server maintains no session layer of its own"
+      ],
+      "gaps": [
+        "No session id generation, binding, TTL or invalidation"
+      ],
+      "evaluator_notes": "Documented as an accepted risk in SECURITY.md by explicit decision \u2014 recorded as fail because the control is absent.",
+      "severity": "critical",
+      "title": "Session-ID Cryptographic Binding (user_id:session_id)",
+      "category": "SEC"
+    },
+    "SEC-013": {
+      "id": "SEC-013",
+      "status": "partial",
+      "evidence_collected": 2,
+      "findings": [
+        "Server uses no API key at all \u2014 auth_model is none",
+        "Container image carries no secrets"
+      ],
+      "gaps": [
+        "docs/secret-management.md absent, which the check requires even at Stufe 1"
+      ],
+      "evaluator_notes": "",
+      "severity": "high",
+      "title": "API-Key-Storage: Secret Manager statt Plain-Text Env-Vars",
+      "category": "SEC"
+    },
+    "SEC-016": {
+      "id": "SEC-016",
+      "status": "pass",
+      "evidence_collected": 4,
+      "findings": [
+        "Default host 127.0.0.1 (__main__.py)",
+        "0.0.0.0 only via explicit MCP_HOST/HOST",
+        "compose.yaml sets MCP_HOST=0.0.0.0 in the container only",
+        "README:208 documents the distinction"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "critical",
+      "title": "0.0.0.0-Binding-Prevention (NeighborJack)",
+      "category": "SEC"
+    },
+    "SEC-018": {
+      "id": "SEC-018",
+      "status": "pass",
+      "evidence_collected": 6,
+      "findings": [
+        "9 strict Pydantic input models in inputs.py",
+        "strict=True and extra='forbid' on the shared base",
+        "min_length/max_length plus whitelist patterns on every string field",
+        "ge/le on every numeric field",
+        "Allow-lists derived from constants.py, not restated",
+        "21 tests in tests/test_input_models.py cover long strings, out-of-range and unknown fields"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "high",
+      "title": "Input-Validation an Tool-Boundaries (Pydantic strict / Zod)",
+      "category": "SEC"
+    },
+    "SEC-019": {
+      "id": "SEC-019",
+      "status": "pass",
+      "evidence_collected": 3,
+      "findings": [
+        "Trifecta assessment documented in SECURITY.md",
+        "Server holds at most two of the three capabilities \u2014 read + external requests, no send",
+        "Egress allow-list is a frozenset in code"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "critical",
+      "title": "Lethal Trifecta vermeiden: Server-Separation Read vs Write/Send",
+      "category": "SEC"
+    },
+    "SEC-020": {
+      "id": "SEC-020",
+      "status": "pass",
+      "evidence_collected": 3,
+      "findings": [
+        "No os.system, subprocess shell=True, eval, exec or os.popen in src/",
+        "No subprocess use at all",
+        "Input reaches only httpx query parameters, whitelist-validated"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "critical",
+      "title": "Command Injection Prevention: keine os.system, shell=True, eval",
+      "category": "SEC"
+    },
+    "SEC-021": {
+      "id": "SEC-021",
+      "status": "pass",
+      "evidence_collected": 5,
+      "findings": [
+        "ALLOWED_HOSTS frozenset in constants.py:17, not config-mutable",
+        "assert_host_allowed called before every outbound request",
+        "docs/network-egress.md documents hosts and update procedure",
+        "Network-layer guidance documented",
+        "DNS path documented"
+      ],
+      "gaps": [],
+      "evaluator_notes": "",
+      "severity": "high",
+      "title": "Egress-Allow-List: Code-Layer und Network-Layer",
+      "category": "SEC"
+    }
+  }
+}

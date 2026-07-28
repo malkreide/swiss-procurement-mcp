@@ -1,0 +1,22 @@
+name: swiss-procurement-mcp
+repo: https://github.com/malkreide/swiss-procurement-mcp
+sdk_language: Python
+transport: dual
+auth_model: none
+data_class: Public Open Data
+write_capable: false
+deployment:
+  - local-stdio
+is_cloud_deployed: false
+uses_sampling: false
+uses_sequential_thinking: false
+tools_include_filesystem: false
+tools_make_external_requests: true
+stadt_zuerich_context: false
+schulamt_context: false
+volksschule_context: false
+enterprise_context: false
+data_source:
+  name: simap.ch read API v1.5.1
+  is_swiss_open_data: true
+  pii: false
