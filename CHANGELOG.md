@@ -3,6 +3,49 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.1] — 2026-07-28
+
+Documentation only. Records SEC-009 and SCALE-002 as accepted risks, and repairs
+drift in `SECURITY.md` that had been there for four audit runs.
+
+### SEC-009 and SCALE-002 — accepted, with the condition that ends each
+
+Both were going to be closed by removing the HTTP transports, which would have
+made them non-applicable. Measuring that change first showed it also drops
+**SEC-005** and **SEC-016** from the applicable set — and both of those *pass*.
+SEC-016 is `critical` and was closed with real work in v0.1.1 (the loopback
+default bind).
+
+So the scope reduction would have traded two documented partials for two earned
+passes, and made the server no safer. The transports stay; the two findings are
+recorded as accepted risks instead, each with the condition that would end the
+acceptance:
+
+- **SEC-009** becomes real the moment the server gains authentication, per-user
+  state, or any endpoint whose response depends on who is asking.
+- **SCALE-002** becomes real when multi-instance deployment and session state
+  exist *together*. Either alone is survivable.
+
+### Fixed — SECURITY.md described a server that no longer existed
+
+The document still cited **15 pass / 16 partial / 1 fail** from the first audit,
+four runs stale, and listed *container sandboxing* and *structured logging* as
+accepted risks — long after both were implemented and had flipped to `pass`.
+
+That is worse than an omission. A stale acceptance reads as a considered
+decision, so a reader auditing this server would have concluded it ships no
+container and no structured logging. Both are removed from the list rather than
+edited in place, with a note saying they were closed rather than dropped.
+
+Same corrections applied to `SECURITY.de.md`.
+
+### Added
+
+- `tests/test_security_doc.py` — asserts SECURITY.md cites the newest audit run,
+  quotes that run's counts, and never lists a check as an accepted risk while
+  the latest audit has it passing. Mutation-tested by re-adding a closed check
+  to the list.
+
 ## [0.8.0] — 2026-07-28
 
 Closes ARCH-009, ARCH-008 and ARCH-012 from the 2026-07-28 re-audit. One

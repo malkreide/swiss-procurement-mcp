@@ -10,12 +10,12 @@ für dieses Server-Profil bewusst zurückgestellt werden.
 
 Er wurde gegen den internen MCP-Best-Practice-Katalog (die Portfolio-Methodik
 `mcp-audit`, 68 Checks / 8 Kategorien) geprüft. Der jüngste Lauf
-(`audits/2026-07-26T131630-Z-swiss-procurement-mcp/`) ergab **15 pass / 16
-partial / 1 fail** über die 32 anwendbaren Checks — **produktionsreif, ohne
-offenes Finding mit Sicherheits-Impact** (das einzige Fail, ARCH-012, ist eine
-`medium`-Doku-/Tooling-Lücke; alle `critical`- und `high`-Findings sind
-`partial`, d. h. weitgehend erfüllt mit dokumentiertem Rest). Die vollständigen
-Berichte liegen unter `audits/`.
+(`audits/2026-07-28T052316-Z-swiss-procurement-mcp/`) ergab **23 pass / 9
+partial / 0 fail** über die 32 anwendbaren Checks — **produktionsreif, kein
+offenes Fail**. Die vollständigen Berichte liegen unter `audits/`.
+
+Vier Läufe gegen denselben Katalog-Hash und dieselbe Anwendbarkeit machen den
+Verlauf aussagekräftig: 15/16/1 → 20/11/1 → 21/11/0 → 23/9/0.
 
 ## Schwachstelle melden
 
@@ -85,9 +85,13 @@ Produktion. Die vollständigen Finding-Dokumente liegen unter
   sind amtliche Bekanntmachungen, die Nutzung folgt den simap.ch-Bedingungen
   (dokumentiert in `ATTRIBUTION`, README-Credits und im `source`-Feld jeder Antwort).
 
-**Akzeptiertes Risiko (profilbedingt zurückgestellt):** ARCH-008 (tools-only),
-OBS-003 (strukturiertes Logging), SCALE-002 (Stateful-LB), SEC-007
-(Container-Sandboxing), SEC-009 (Session-Binding) — siehe unten.
+**Akzeptiertes Risiko (profilbedingt zurückgestellt):** SCALE-002 (Stateful-LB)
+und SEC-009 (Session-Binding) — siehe [Akzeptierte Risiken](#akzeptierte-risiken)
+für die Begründung und die Bedingung, unter der die Akzeptanz endet.
+
+ARCH-008 (tools-only), OBS-003 (strukturiertes Logging) und SEC-007
+(Container-Sandboxing) standen hier und sind **keine akzeptierten Risiken mehr**
+— alle drei wurden geschlossen, in v0.8.0, v0.7.0 respektive v0.6.0.
 
 ## Lethal-Trifecta-Bewertung (SEC-019)
 
@@ -110,20 +114,45 @@ erhält, private Daten verarbeitet oder Egress zu beliebigen Hosts erlaubt.
 Die folgenden Kontrollen sind für einen rein lesenden Public-Open-Data-Server
 bewusst **out of scope**. Keine hat einen Sicherheits-Impact für dieses Profil.
 
-### Container-Sandboxing
+> Zwei Einträge, die hier standen — Container-Sandboxing und strukturiertes
+> Logging — sind **geschlossen** statt akzeptiert, in v0.6.0 respektive v0.7.0.
+> Der Server liefert ein gehärtetes Non-Root-Image aus (SEC-007) und
+> structlog-basiertes JSON-Logging mit Korrelations-IDs (OBS-003). Sie sind hier
+> entfernt statt stehengelassen: eine veraltete Akzeptanz liest sich wie eine
+> Entscheidung, ist aber nur ein überholter Absatz.
 
-**Status:** akzeptiertes Risiko.
-Kein `Dockerfile` ausgeliefert. Akzeptabel für einen lokalen
-stdio-Public-Data-Server — Defense-in-Depth liegt auf der OS-Benutzerebene. Ein
-gehärtetes Image ausliefern, falls sich das Deployment-Profil je auf einen
-dauerhaften Cloud-Dienst verschiebt.
+### Session-zu-Benutzer-Bindung (SEC-009)
 
-### Strukturiertes Logging
+**Status:** akzeptiertes Risiko. Severity im Katalog: `critical`.
 
-**Status:** akzeptiertes Risiko.
-Der Server nutzt das Standard-Logging des Hosts. JSON-strukturierte Logs mit
-Trace-IDs sind für einen stdio-Server nicht gerechtfertigt; neu zu bewerten,
-falls der Server auf ein Cloud-/SSE-Deployment gehoben wird.
+Es gibt keine kryptografische Bindung einer Session-ID an einen Benutzer, weil
+es weder das eine noch das andere gibt. Der Server hat keine Authentifizierung,
+keinen Per-Benutzer-Zustand und keine privaten Daten: jedes Byte, das er
+zurückgibt, stammt von einem öffentlichen simap.ch-Endpunkt, den jede und jeder
+unauthentifiziert abfragen kann. Eine Session-ID würde einen anonymen Aufrufer
+an öffentliche Daten binden.
+
+Die `critical`-Severity bezieht sich darauf, was die Kontrolle anderswo schützt,
+nicht auf eine Exposition hier. Sie ist festgehalten statt abgetan, damit die
+Begründung nachprüfbar bleibt.
+
+**Real wird das, sobald** der Server eine Authentifizierung, irgendeinen
+Per-Benutzer-Zustand oder einen Endpunkt bekommt, dessen Antwort davon abhängt,
+wer fragt. Dann ist die Bindung vor dem Ausliefern erforderlich, nicht danach.
+
+### Stateful Load Balancing (SCALE-002)
+
+**Status:** akzeptiertes Risiko. Severity im Katalog: `high`.
+
+Es gibt keine Sticky Sessions und keinen Session-Manager mit geteiltem Zustand.
+Der Server ist konstruktionsbedingt Single-Instance, das dokumentierte
+Deployment-Profil ist lokales stdio. Die HTTP-Transporte existieren und
+funktionieren, laufen aber zustandslos — eine zweite Instanz würde keine
+Sessions brechen, weil es keine gibt.
+
+**Real wird das, sobald** der Server multi-instance hinter einem Load Balancer
+läuft **und** Session-Zustand bekommt. Jedes für sich ist verkraftbar, die
+Kombination nicht.
 
 ### Rate-Limiting / Quota
 
