@@ -60,12 +60,18 @@ profile correction above), plus `SEC-009` and `SCALE-002`, which are accepted
 risks below but are still recorded as `fail` because the control is genuinely
 absent — an accepted risk is a decision, not a passing check.
 
-**`SDK-001` is the substantive one.** Every tool opens its own
-`httpx.AsyncClient` via `async with SimapClient()`, and the server passes no
-`lifespan` to `FastMCP`. That is a TCP and TLS handshake per tool call, and it
-makes `SimapClient._cache` dead code: the cache is per-instance, so it is
-discarded the moment the tool returns. The sister server (`amtsblatt-mcp`)
-pools one shared client behind a lifespan and passes this check.
+**`SDK-001` was the substantive one — closed in 0.10.0, not yet re-measured.**
+At the time of the run every tool opened its own `httpx.AsyncClient` via
+`async with SimapClient()`, and the server passed no `lifespan` to `FastMCP`.
+That was a TCP and TLS handshake per tool call, and it made `SimapClient._cache`
+dead code: the cache is per-instance, so it was discarded the moment the tool
+returned, and the 30-minute TTL was never once reached. 0.10.0 pools one shared
+client behind a lifespan, matching the sister server (`amtsblatt-mcp`), which
+passes this check.
+
+The counts above are the measured run and are left as measured. Expected after
+0.10.0 is 18 pass / 15 partial / 3 fail — **derived, not measured**; only a
+re-audit makes it a number.
 
 **Resolved in 0.2.0:**
 

@@ -3,6 +3,48 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.10.0] — 2026-07-28
+
+Closes **SDK-001**: one pooled HTTP client behind the server lifespan.
+
+### The defect
+
+Every one of the nine tools opened its own `httpx.AsyncClient` through
+`async with SimapClient()`, and `FastMCP` was constructed with no `lifespan`.
+
+The connection cost was the obvious half — a TCP handshake and TLS negotiation
+on every tool call. The half that made this a correctness bug is that `_cache`
+and the session cookie jar live on the `SimapClient` instance. A client that is
+discarded when the tool returns can never serve a cache hit and re-acquires the
+session cookie every time, so `_cached` was dead code wearing the shape of a
+working cache. The 30-minute TTL had never once been reached.
+
+### The change
+
+- `client.get_client()` returns a process-wide `SimapClient`, built lazily on
+  first use and rebuilt if the underlying client was closed.
+- `client.close_client()` releases it; a `_lifespan` async context manager
+  passed to `FastMCP` calls it on shutdown.
+- The nine tool bodies take `client = get_client()` instead of opening one.
+- `SimapClient.__aenter__` / `__aexit__` are unchanged, so the context-manager
+  form still works for the live tests and for any caller that wants an
+  isolated client.
+
+`tests/test_client_pooling.py` (8 tests) covers it. The one that would have
+caught the original defect is `test_repeat_search_hits_the_api_once`: two
+identical searches must produce exactly one upstream request, and the second
+response must report `provenance == "cached"`. Both halves of the fix were
+mutation-tested — restoring per-call construction fails 4 tests, dropping the
+`lifespan=` argument fails the lifespan assertion.
+
+### Test isolation
+
+A shared cache across tool calls is also a shared cache across *tests*: one
+case could serve another case's assertion out of `_cache` and pass without
+touching the API. `tests/conftest.py` gains an autouse fixture that drops the
+shared client around every test. Autouse rather than opt-in, because the
+failure mode is silent.
+
 ## [0.9.0] — 2026-07-28
 
 Closes OPS-001. Two real bugs surfaced while writing the tests — which is the

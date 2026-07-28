@@ -1,5 +1,23 @@
 import pytest
 
+from swiss_procurement_mcp import client as _client
+
+
+@pytest.fixture(autouse=True)
+def fresh_shared_client():
+    """Drop the process-wide SimapClient around every test.
+
+    SDK-001 made the client — and with it `_cache` and the session cookie jar —
+    shared across tool calls. That is the point of the change, but it means a
+    cache entry written by one test would still be there for the next one, and
+    a test asserting "this tool calls the API" could pass by serving a hit from
+    a previous test's payload. Autouse rather than opt-in: the failure mode is
+    silent, so the isolation must not depend on remembering to ask for it.
+    """
+    _client.reset_client()
+    yield
+    _client.reset_client()
+
 
 @pytest.fixture
 def search_payload():
