@@ -448,3 +448,53 @@ def test_every_tool_meets_the_coverage_floor():
 
     short = [f"{t}: {unit[t]} unit / {live[t]} live" for t in tools if unit[t] < 5 or live[t] < 1]
     assert not short, "tools below the OPS-001 floor (>=5 unit, >=1 live):\n  " + "\n  ".join(short)
+
+
+# ---------------------------------------------------------------------------
+# ARCH-002: every tool description carries a use-case tag
+# ---------------------------------------------------------------------------
+
+TOOL_NAMES = (
+    "search_procurements",
+    "search_procurements_detailed",
+    "search_awards",
+    "get_procurement_details",
+    "get_publication_history",
+    "search_cpv_codes",
+    "search_construction_codes",
+    "find_procurement_office",
+    "source_status",
+)
+USE_CASE_COVERAGE = 0.8
+MIN_DESCRIPTION_CHARS = 100
+
+
+def _tool_descriptions() -> dict[str, str]:
+    import inspect
+
+    import swiss_procurement_mcp.server as srv
+
+    return {name: inspect.getdoc(getattr(srv, name)) or "" for name in TOOL_NAMES}
+
+
+def test_tools_carry_a_use_case_tag() -> None:
+    """The description is what the model reads when choosing a tool.
+
+    Naming the *function* is not the same as naming the *occasion*:
+    `search_procurements` and `search_procurements_detailed` are otherwise hard
+    to tell apart from the name alone.
+    """
+    descriptions = _tool_descriptions()
+    tagged = [n for n, d in descriptions.items() if "<use_case>" in d]
+    ratio = len(tagged) / len(descriptions)
+    assert ratio >= USE_CASE_COVERAGE, (
+        f"only {len(tagged)}/{len(descriptions)} tools carry <use_case>; "
+        f"the floor is {USE_CASE_COVERAGE:.0%}"
+    )
+
+
+def test_no_description_is_too_short() -> None:
+    """`source_status` sat at 57 characters, which is a label rather than a
+    description — and it is the tool a model reaches for when confused."""
+    short = {n: len(d) for n, d in _tool_descriptions().items() if len(d) < MIN_DESCRIPTION_CHARS}
+    assert not short, f"tool descriptions below {MIN_DESCRIPTION_CHARS} chars: {short}"

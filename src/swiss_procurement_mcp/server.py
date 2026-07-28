@@ -360,7 +360,9 @@ def _combine_notes(*notes: str | None) -> str | None:
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_procurements")
 async def search_procurements(args: SearchInput) -> SearchResponse:
-    """Search Swiss public procurement projects on simap.ch.
+    """<use_case>Find open tenders matching a topic, canton, CPV code or date window — the default entry point when the question is "what is being tendered?".</use_case>
+
+    Search Swiss public procurement projects on simap.ch.
 
     Covers all cantons and the Confederation, updated intraday. This is the
     entry point; use `get_procurement_details` with the returned ids for the
@@ -453,7 +455,9 @@ async def search_procurements(args: SearchInput) -> SearchResponse:
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_procurements_detailed")
 async def search_procurements_detailed(args: DetailedSearchInput) -> EnrichedSearchResponse:
-    """Search publications and return the FULL record for the top matches at once.
+    """<use_case>Answer a question needing both the hit list and each hit's detail in one step, e.g. "which school-building tenders ran in ZH and what BKP codes do they carry?". Prefer this over search_procurements followed by N detail calls.</use_case>
+
+    Search publications and return the FULL record for the top matches at once.
 
     Aggregated entry point for the common "find tenders and show me their details"
     question: it runs the search and then fetches `get_procurement_details` for the
@@ -530,7 +534,9 @@ async def search_procurements_detailed(args: DetailedSearchInput) -> EnrichedSea
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_awards")
 async def search_awards(args: AwardSearchInput) -> SearchResponse:
-    """Search only awarded contracts (who won).
+    """<use_case>Find who won, not what is open — all four award types at once. Use when the question is about completed procurement rather than current opportunities.</use_case>
+
+    Search only awarded contracts (who won).
 
     Convenience wrapper over `search_procurements` that queries all four award
     publication types at once.
@@ -592,7 +598,9 @@ async def search_awards(args: AwardSearchInput) -> SearchResponse:
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("get_procurement_details")
 async def get_procurement_details(args: ProcurementDetailInput) -> ProcurementDetail:
-    """Return the full record for one procurement publication.
+    """<use_case>Retrieve the full record for one publication once you have its ids: criteria, deadlines, classification codes and the procuring body.</use_case>
+
+    Return the full record for one procurement publication.
 
     Both ids come from a `search_procurements` result. The record includes the
     order description, CPV and Swiss construction codes (BKP, NPK), deadlines and
@@ -619,7 +627,9 @@ async def get_procurement_details(args: ProcurementDetailInput) -> ProcurementDe
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("get_publication_history")
 async def get_publication_history(args: HistoryInput) -> HistoryResponse:
-    """Return earlier publications of the same procurement project.
+    """<use_case>Trace one project through time — tender to award to correction. Use when the question is "what happened to this procurement?".</use_case>
+
+    Return earlier publications of the same procurement project.
 
     Traces a project's lifecycle: tender → correction → award. An empty list is
     normal for a first publication.
@@ -657,7 +667,9 @@ async def get_publication_history(args: HistoryInput) -> HistoryResponse:
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_cpv_codes")
 async def search_cpv_codes(args: CpvSearchInput) -> CodeSearchResponse:
-    """Search CPV classification codes by keyword.
+    """<use_case>Translate a keyword into the CPV classification codes needed to filter a search. Call this first when the user names a subject rather than a code.</use_case>
+
+    Search CPV classification codes by keyword.
 
     CPV (Common Procurement Vocabulary) is the international code system used to
     filter `search_procurements` by category. Resolve a keyword like "Metall" to
@@ -690,7 +702,9 @@ async def search_cpv_codes(args: CpvSearchInput) -> CodeSearchResponse:
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_construction_codes")
 async def search_construction_codes(args: ConstructionCodeInput) -> CodeSearchResponse:
-    """Search Swiss construction classification codes by keyword.
+    """<use_case>Translate a keyword into Swiss construction cost codes (BKP, NPK, eBKP, OAG, CPC) — the bridge between a building topic and procurement filters.</use_case>
+
+    Search Swiss construction classification codes by keyword.
 
     Args:
         system: One of bkp, npk, ebkp-h, ebkp-t, oag, cpc.
@@ -732,7 +746,9 @@ async def search_construction_codes(args: ConstructionCodeInput) -> CodeSearchRe
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("find_procurement_office")
 async def find_procurement_office(args: OfficeSearchInput) -> OfficeSearchResponse:
-    """Find public procurement offices by (partial) name.
+    """<use_case>Resolve a partial organisation name to the procuring offices simap knows, when the user names an authority rather than a project.</use_case>
+
+    Find public procurement offices by (partial) name.
 
     The public office list is large (~1 MB), so this fetches it once and filters
     client-side. Returns the office id, type (cantonal / federal / communal) and
@@ -790,7 +806,9 @@ async def find_procurement_office(args: OfficeSearchInput) -> OfficeSearchRespon
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("source_status")
 async def source_status(args: StatusInput | None = None) -> StatusResponse:
-    """Report reachability and latency of the simap.ch read API."""
+    """<use_case>Check whether simap.ch is reachable and how fast it is responding. Call this when a search returns nothing and you need to distinguish "no matching tenders" from "the source could not be asked" — the two are not the same answer.</use_case>
+
+    Report reachability and latency of the simap.ch read API."""
     client = get_client()
     probe = await client.probe("simap.ch read API", "/cantons/v1?lang=de")
     status = SourceStatus(**probe)
