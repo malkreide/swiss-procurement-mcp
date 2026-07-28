@@ -90,11 +90,20 @@ jobs:
 
       # SEC-007: a Dockerfile that builds but runs as root would still fail the
       # check, so assert the hardening rather than trusting the instructions.
-      - name: Image runs as a non-root user
+      # The bar is a UID >= 10000, not merely non-zero — the 100-999 system
+      # range collides with host accounts under a bind mount.
+      - name: Image runs as a non-root user with a high UID
         run: |
           uid=$(docker run --rm swiss-procurement-mcp:ci id -u)
-          test "$uid" != "0" || { echo "image runs as root (uid $uid)"; exit 1; }
+          test "$uid" -ge 10000 || { echo "uid $uid is below the required 10000"; exit 1; }
           echo "runs as uid $uid"
+
+      - name: Default seccomp profile is active
+        run: |
+          mode=$(docker run --rm swiss-procurement-mcp:ci python -c \
+            "print(next(l.split()[1] for l in open('/proc/self/status') if l.startswith('Seccomp:')))")
+          test "$mode" = "2" || { echo "seccomp not filtering (mode $mode)"; exit 1; }
+          echo "seccomp mode $mode (filtering)"
 
       - name: Server imports under a read-only root filesystem
         run: |
