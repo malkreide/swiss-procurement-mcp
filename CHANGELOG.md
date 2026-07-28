@@ -5,6 +5,71 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.16.0] — 2026-07-28
+
+Closes **OBS-001** as far as this repository reaches.
+
+### A client-level test of the error paths
+
+The gap was precise: no test distinguished the protocol-error path from the
+execution-error path. Every existing test called the tool functions directly,
+where `isError` is not observable at all — the distinction the check is about
+was invisible to the entire suite.
+
+`tests/test_error_paths.py` drives a real `ClientSession` over an in-memory
+transport instead. Nine tests, covering:
+
+- **Execution errors** — an over-long query and an unknown field both arrive as
+  a tool result with `isError: true`, carrying no traceback and no filesystem
+  path.
+- **The `degraded` envelope** — an upstream outage stays a *result*, with
+  `provenance="degraded"` and `count == 0`, and is asserted to be
+  distinguishable from a genuinely empty answer. That is a deliberate deviation
+  from the check, defended in the test's own docstring: the envelope carries the
+  source, the retrieval time and a note, where raising would collapse all of it
+  into one line and lose the difference between "nothing matched" and "I could
+  not ask".
+- **Protocol errors** — a request for a method the server does not implement
+  raises `McpError` rather than returning a result.
+
+Mutation-tested: making the degraded path raise fails 2 tests.
+
+Two things went wrong while writing this and are worth naming. The
+degraded-versus-empty test used the same query twice, so the shared client cache
+(see `SDK-001`) served the second call as `cached` and the test asserted nothing
+about degradation at all. And the file cost 28 seconds until the real 2s/4s/8s
+retry backoff was stubbed out — the timing is tested in `test_resilience.py`, and
+paying for it again here bought nothing.
+
+### Two SDK limits pinned rather than papered over
+
+- Protocol errors carry **code 0**, not the `-32601` the check asks for, even
+  though `mcp.types` defines `METHOD_NOT_FOUND` and friends. That is above the
+  tool layer; nothing here can change it.
+- An unknown **tool** is reported as `isError` inside a tool result rather than
+  as a protocol error, so "no such tool" and "the tool failed" are
+  indistinguishable to a client without reading the text.
+
+Both are asserted as they are, so an SDK change arrives as a failing test rather
+than as a surprise. `OBS-001` therefore stays `partial` — for a reason that is
+now written down instead of unknown.
+
+### Documentation caught up with the code
+
+`ROADMAP.md` still listed `SEC-004`, `SEC-005` and `ARCH-002` as open work; all
+three were closed in 0.13.0 and 0.14.0, within twenty minutes of the table being
+written. `SECURITY.md` still described the `ARCH-012` README contradiction as
+live, though it was fixed in 0.11.1 with a parametrised guard over both language
+files.
+
+`SECURITY.de.md` was the worse case. Its accepted-risk section had not been
+updated since 0.2.0 and still told a German reader that the HTTP transports "run
+stateless, so a second instance would not break sessions" — the exact claim the
+English file corrects as **wrong**. Both assessments are rewritten to match, and
+the stale release chronicle above them now says so rather than reading as
+current. A wrong reassurance in a security document is worse than an open
+finding.
+
 ### CI — the MCP registry publish is idempotent
 
 The PyPI step carries `skip-existing: true`; the registry step had no
@@ -25,7 +90,7 @@ release that never reached PyPI) still fails, which was verified rather than
 assumed: the step's shell was extracted and run against four outcomes — success,
 duplicate, 404, and a non-1 exit code.
 
-No package change; version unchanged.
+No package change of its own; it ships with this release.
 
 ## [0.15.0] — 2026-07-28
 

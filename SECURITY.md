@@ -97,11 +97,29 @@ secrets and `docs/secret-management.md` records why), `SEC-013`
 at 19 sections). `SEC-004` improved but stays `partial`: HTTPS is now enforced
 before egress, while the resolved-IP blocklist and DNS pinning remain open.
 
-**Still `partial`, and worth naming:** `ARCH-012` — README's "MCP Protocol
-Version" section states the version is pinned as an explicit constant, while the
-"Maturity & updates" section still says it is "negotiated by the pinned `mcp`
-SDK". The second sentence is stale text left behind by the ARCH-012 work and
-tells the reader the opposite of what the code does.
+**Closed in 0.13.0 and 0.14.0, not yet re-measured.** `SEC-004` and `SEC-005`
+(a resolved-address blocklist and DNS pinning, `_net.py`, `tests/test_ssrf.py`)
+and `ARCH-002` (a `<use_case>` tag on all nine tool descriptions).
+
+**`ARCH-012` — the README no longer contradicts itself.** The "MCP Protocol
+Version" section stated the version is pinned as an explicit constant while
+"Maturity & updates" still called it "negotiated by the pinned `mcp` SDK" —
+stale text left behind by the original ARCH-012 work, telling the reader the
+opposite of what the code does. Both language versions were corrected.
+
+**`OBS-001` — as closed in 0.16.0 as this repo can close it.** The gap was that
+no test distinguished the protocol-error path from the execution-error path;
+every existing test called the tool functions directly, where `isError` is not
+observable at all. `tests/test_error_paths.py` drives a real `ClientSession`
+over an in-memory transport and asserts both: an argument error arrives as a
+tool result with `isError: true`, a bad request raises `McpError`, and the
+`degraded` envelope stays a result rather than becoming either.
+
+The check will stay `partial`, for a reason now written down rather than
+unknown: the lowlevel SDK emits protocol-error **code 0**, not the `-32601` the
+check asks for, though `mcp.types` defines the constant. That is above the tool
+layer and nothing here can change it. Two tests assert the current behaviour, so
+an SDK fix arrives as a failing test rather than as a surprise in production.
 
 **Resolved in 0.2.0:**
 

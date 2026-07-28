@@ -43,6 +43,14 @@ umgesetzte Härtung:
 
 ## Audit-Findings (26.07.2026)
 
+> **Stand dieses Abschnitts: 0.2.0.** Die fortlaufende Aufzeichnung — was jedes
+> Release seither geschlossen hat, bis 0.16.0 — steht ausschliesslich in
+> [`SECURITY.md`](SECURITY.md#audit-findings). Die Liste unten ist historisch
+> korrekt, aber nicht mehr vollständig; sie wird hier bewusst nicht dupliziert,
+> weil zwei parallel gepflegte Chroniken genau so auseinanderlaufen wie es hier
+> bereits geschehen ist. Die Bewertungen weiter unten — akzeptierte Risiken,
+> Lethal-Trifecta, Re-Evaluierungs-Auslöser — sind aktuell.
+
 17 Findings wurden dokumentiert (Policy `fail-or-partial`). Keines blockierte die
 Produktion. Die vollständigen Finding-Dokumente liegen unter
 `audits/2026-07-26T131630-Z-swiss-procurement-mcp/findings/`.
@@ -123,36 +131,69 @@ bewusst **out of scope**. Keine hat einen Sicherheits-Impact für dieses Profil.
 
 ### Session-zu-Benutzer-Bindung (SEC-009)
 
-**Status:** akzeptiertes Risiko. Severity im Katalog: `critical`.
+**Status:** wie spezifiziert nicht erreichbar. Severity im Katalog: `critical`.
 
-Es gibt keine kryptografische Bindung einer Session-ID an einen Benutzer, weil
-es weder das eine noch das andere gibt. Der Server hat keine Authentifizierung,
-keinen Per-Benutzer-Zustand und keine privaten Daten: jedes Byte, das er
-zurückgibt, stammt von einem öffentlichen simap.ch-Endpunkt, den jede und jeder
-unauthentifiziert abfragen kann. Eine Session-ID würde einen anonymen Aufrufer
-an öffentliche Daten binden.
+Die Kontrolle verlangt, eine Session-ID kryptografisch an eine **Benutzer-ID aus
+dem `sub`-Claim eines validierten OAuth-Tokens** zu binden. Dieser Server hat
+keine Authentifizierung — die simap-Leseendpunkte sind öffentlich und
+unauthentifiziert — also gibt es keinen `sub`-Claim und nichts, woran eine
+Session zu binden wäre. Das ist keine Aufwandsfrage: die Eingabe, welche die
+Kontrolle benötigt, existiert nicht.
 
-Die `critical`-Severity bezieht sich darauf, was die Kontrolle anderswo schützt,
-nicht auf eine Exposition hier. Sie ist festgehalten statt abgetan, damit die
-Begründung nachprüfbar bleibt.
+Kriterium für Kriterium, Stand heute:
 
-**Real wird das, sobald** der Server eine Authentifizierung, irgendeinen
+| Kriterium | Stand |
+|---|---|
+| Session-ID-Entropie ≥128 Bit | `uuid4().hex` aus dem SDK — 122 zufällige Bits, knapp zu wenig, und nicht von uns gesetzt |
+| Benutzer-ID aus validiertem Token | Unmöglich — kein Identity Provider |
+| Session an Benutzer-ID gebunden | Unmöglich — gleicher Grund |
+| 401/403 bei Mismatch | Nicht anwendbar — kein Benutzer, der abweichen könnte |
+| Explizite TTL | Nicht setzbar: `session_idle_timeout` existiert auf `StreamableHTTPSessionManager`, FastMCP reicht es aber weder über `Settings` noch über den Konstruktor durch (gegen `mcp` 1.28.1 geprüft) |
+| Serverseitige Invalidierung | Ja — `DELETE` auf dem streamable-http-Endpunkt beendet eine Session |
+
+**Was sich geändert hat:** `MCP_STATELESS=1` zusammen mit
+`MCP_TRANSPORT=streamable-http` betreibt den Server ganz ohne Session-Tracking.
+Das ist die stärkste verfügbare Antwort — Session-Hijacking und
+Cross-Session-Zugriff werden strukturell unmöglich statt bloss unwahrscheinlich.
+Die Kontrolle besteht damit trotzdem nicht, denn sie verlangt *Bindung*, nicht
+*Abwesenheit*. Siehe [`docs/load-balancing.md`](docs/load-balancing.md).
+
+**Sauber schliessen** hiesse, einen OAuth/OIDC-Provider einzuführen. Das ist eine
+Produktentscheidung darüber, ob dieser Server überhaupt Benutzer haben soll, und
+keine Remediation-Aufgabe.
+
+**Dringend wird das, sobald** der Server eine Authentifizierung, irgendeinen
 Per-Benutzer-Zustand oder einen Endpunkt bekommt, dessen Antwort davon abhängt,
-wer fragt. Dann ist die Bindung vor dem Ausliefern erforderlich, nicht danach.
+wer fragt.
 
 ### Stateful Load Balancing (SCALE-002)
 
-**Status:** akzeptiertes Risiko. Severity im Katalog: `high`.
+**Status:** teilweise adressiert; nicht bestanden. Severity im Katalog: `high`.
 
-Es gibt keine Sticky Sessions und keinen Session-Manager mit geteiltem Zustand.
-Der Server ist konstruktionsbedingt Single-Instance, das dokumentierte
-Deployment-Profil ist lokales stdio. Die HTTP-Transporte existieren und
-funktionieren, laufen aber zustandslos — eine zweite Instanz würde keine
-Sessions brechen, weil es keine gibt.
+Eine frühere Fassung dieses Abschnitts behauptete, die HTTP-Transporte liefen
+„zustandslos, eine zweite Instanz würde also keine Sessions brechen". **Das war
+falsch.** `stateless_http` ist standardmässig `False`; streamable-http hielt also
+sehr wohl Per-Client-Sessions im Prozessspeicher, und zwei Instanzen hinter
+einem Round-Robin-Balancer hätten Clients genau so gebrochen, wie die Kontrolle
+es beschreibt. Die Korrektur steht hier, statt dass der Satz stillschweigend
+verschwindet: eine falsche Beruhigung ist schlimmer als ein offenes Finding.
 
-**Real wird das, sobald** der Server multi-instance hinter einem Load Balancer
-läuft **und** Session-Zustand bekommt. Jedes für sich ist verkraftbar, die
-Kombination nicht.
+Was heute existiert — [`docs/load-balancing.md`](docs/load-balancing.md):
+
+- **Stateless-Modus** (`MCP_STATELESS=1`, nur streamable-http), der die Frage der
+  Session-Affinität beseitigt, statt sie zu beantworten. Opt-in, weil er
+  SSE-Stream-Resumption und serverseitig initiierte Notifications aufgibt.
+- **Sticky-Session-Konfigurationen** für nginx und Kubernetes Ingress, auf
+  `Mcp-Session-Id` geschlüsselt, samt der Buffering- und Timeout-Einstellungen,
+  welche die langlebigen Transporte brauchen.
+
+Der ehrliche Teil: **Affinität verhindert Fehlleitung, nicht Verlust.** Stirbt
+die Instanz, welche die Session hält, stirbt die Session mit ihr; ein korrekter
+Client initialisiert dann neu. Ein Session-Manager mit geteiltem Zustand
+existiert nicht und würde einen externen Store voraussetzen.
+
+**Dringend wird das, sobald** der Server multi-instance hinter einem Load
+Balancer läuft **und** Session-Zustand hält — also ohne `MCP_STATELESS`.
 
 ### Rate-Limiting / Quota
 
