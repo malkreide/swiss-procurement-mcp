@@ -125,3 +125,61 @@ def test_sse_app_gets_the_same_treatment(monkeypatch: pytest.MonkeyPatch) -> Non
     assert resp.status_code == 200
     assert "mcp-session-id" in resp.headers["access-control-allow-headers"].lower()
     assert resp.headers["access-control-allow-origin"] == ORIGIN
+
+
+# ---------------------------------------------------------------------------
+# SEC-009 / SCALE-002: opt-in stateless mode
+# ---------------------------------------------------------------------------
+
+
+def test_stateless_is_off_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Sessions cost nothing on a single instance, and stateless mode gives up
+    SSE resumption and server-initiated notifications. Opt-in, not default."""
+    monkeypatch.delenv("MCP_STATELESS", raising=False)
+    main = importlib.import_module("swiss_procurement_mcp.__main__")
+    assert main._stateless_requested() is False
+
+
+@pytest.mark.parametrize("value", ["1", "true", "TRUE", "yes"])
+def test_stateless_env_is_accepted(monkeypatch: pytest.MonkeyPatch, value: str) -> None:
+    monkeypatch.setenv("MCP_STATELESS", value)
+    main = importlib.import_module("swiss_procurement_mcp.__main__")
+    assert main._stateless_requested() is True
+
+
+@pytest.mark.parametrize("value", ["0", "false", "no", ""])
+def test_stateless_rejects_non_affirmative_values(
+    monkeypatch: pytest.MonkeyPatch, value: str
+) -> None:
+    """`MCP_STATELESS=0` must mean off. A truthiness check on the raw string
+    would turn "0" and "false" into on, which is the wrong direction to fail."""
+    monkeypatch.setenv("MCP_STATELESS", value)
+    main = importlib.import_module("swiss_procurement_mcp.__main__")
+    assert main._stateless_requested() is False
+
+
+def test_stateless_reaches_the_server_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reading the env var and never applying it is the failure this catches."""
+    from swiss_procurement_mcp.server import mcp
+
+    monkeypatch.setenv("MCP_STATELESS", "1")
+    monkeypatch.setattr(mcp.settings, "stateless_http", False)
+    main = importlib.import_module("swiss_procurement_mcp.__main__")
+    main.build_http_app("streamable-http")
+    assert mcp.settings.stateless_http is True
+
+
+def test_stateless_does_not_silently_apply_to_sse(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The legacy SSE transport has no stateless mode.
+
+    Leaving `stateless_http` set here would tell an operator they are running
+    session-free when they are not — worse than refusing, because it reads as
+    enforced.
+    """
+    from swiss_procurement_mcp.server import mcp
+
+    monkeypatch.setenv("MCP_STATELESS", "1")
+    monkeypatch.setattr(mcp.settings, "stateless_http", False)
+    main = importlib.import_module("swiss_procurement_mcp.__main__")
+    main.build_http_app("sse")
+    assert mcp.settings.stateless_http is False

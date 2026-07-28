@@ -179,34 +179,71 @@ public-open-data server. None has a security impact for this profile.
 
 ### Session-to-user binding (SEC-009)
 
-**Status:** accepted risk. Severity in the catalogue: `critical`.
+**Status:** unreachable as specified. Severity in the catalogue: `critical`.
 
-There is no cryptographic binding of a session id to a user, because there is
-neither. The server has no authentication, no per-user state and no private
-data: every byte it returns comes from a public simap.ch endpoint that anyone
-can query unauthenticated. A session id would bind an anonymous caller to
-public data.
+The check asks that a session id be cryptographically bound to a **user id taken
+from a validated OAuth token's `sub` claim**. This server has no authentication —
+the simap read endpoints are public and unauthenticated — so there is no `sub`
+claim and nothing to bind a session to. This is not an effort question: the input
+the control needs does not exist.
 
-The `critical` severity is about what the control protects elsewhere, not about
-exposure here. It is recorded rather than dismissed so the reasoning is
-checkable.
+What is true today, criterion by criterion:
 
-**This becomes real if** the server gains authentication, any per-user state, or
-any endpoint whose response depends on who is asking. At that point session
-binding is required before the feature ships, not after.
+| Criterion | State |
+|---|---|
+| Session id entropy ≥128 bit | `uuid4().hex` from the SDK — 122 random bits, marginally short, and not ours to set |
+| User id from a validated token | Impossible — no identity provider |
+| Session bound to user id | Impossible — same reason |
+| 401/403 on mismatch | Not applicable — no user to mismatch |
+| Explicit TTL | Not settable: `session_idle_timeout` exists on `StreamableHTTPSessionManager` but FastMCP passes it through neither `Settings` nor its constructor (verified against `mcp` 1.28.1) |
+| Server-side invalidation | Yes — `DELETE` on the streamable-http endpoint terminates a session |
+
+**What has changed:** `MCP_STATELESS=1` with `MCP_TRANSPORT=streamable-http` now
+runs the server with no session tracking at all. That is the strongest available
+answer — session hijacking and cross-session access become structurally
+impossible rather than merely unlikely. It still does not make the check pass,
+because the check asks for *binding*, not *absence*. See
+[`docs/load-balancing.md`](docs/load-balancing.md).
+
+**Closing it properly** means adding an OAuth/OIDC provider. That is a product
+decision about whether this server should have users at all, not a remediation
+task.
+
+**This becomes urgent if** the server gains authentication, per-user state, or
+any endpoint whose response depends on who is asking.
 
 ### Stateful load balancing (SCALE-002)
 
-**Status:** accepted risk. Severity in the catalogue: `high`.
+**Status:** partially addressed; not passing. Severity in the catalogue: `high`.
 
-There is no sticky-session or shared-state session manager. The server is
-single-instance by design and the documented deployment profile is local stdio.
-The HTTP transports exist and work, but run stateless — a second instance would
-not break sessions, because there are none to break.
+An earlier version of this section claimed the HTTP transports "run stateless, so
+a second instance would not break sessions". **That was wrong.**
+`stateless_http` defaults to `False`, so streamable-http did keep per-client
+sessions in process memory, and two instances behind a round-robin balancer
+would have broken clients exactly as the check describes. The claim is corrected
+here rather than quietly removed, because a wrong reassurance is worse than an
+open finding.
 
-**This becomes real if** the server is deployed multi-instance behind a load
-balancer *and* gains session state. Either alone is survivable; the combination
-is not.
+What exists now — [`docs/load-balancing.md`](docs/load-balancing.md):
+
+- **Stateless mode** (`MCP_STATELESS=1`, streamable-http only), which removes
+  session affinity as a question rather than answering it. Opt-in, because it
+  gives up SSE stream resumption and server-initiated notifications.
+- **Sticky-session configurations** for nginx and Kubernetes Ingress, keyed on
+  the `Mcp-Session-Id` header, with the buffering and timeout settings the
+  long-lived transports need.
+- **An honest failover statement:** affinity prevents misrouting, not loss. If
+  the instance holding a session dies, the session dies; a correct client
+  re-initializes.
+
+Two criteria remain unmet, which is why this is not recorded as passing: there is
+no **explicit session TTL** (not settable through FastMCP, see above), and no
+**shared-state session manager** — that would need replacing the SDK's in-process
+manager, which FastMCP does not expose as an extension point, plus a Redis
+dependency this server does not have.
+
+**This becomes urgent if** the server is deployed multi-instance *and* keeps
+sessions. Running stateless removes the combination.
 
 ### Rate limiting / quota
 
