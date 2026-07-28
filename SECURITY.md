@@ -8,13 +8,13 @@ states the current security posture and the **accepted-risk** decisions for
 controls deliberately deferred for this server profile.
 
 It was audited against the internal MCP best-practice catalogue (the portfolio
-`mcp-audit` methodology, 68 checks / 8 categories). The latest run
-(`audits/2026-07-26T131630-Z-swiss-procurement-mcp/`) scored **15 pass / 16
-partial / 1 fail** across the 32 applicable checks — **production-ready, no
-security-impacting finding open** (the single fail, ARCH-012, is a `medium`
-documentation/tooling gap; all `critical` and `high` findings are `partial`, i.e.
-substantially met with a documented remainder). See `audits/` for the full report
-and per-finding docs.
+`mcp-audit` methodology, 68 checks / 8 categories). The latest measured run
+(`audits/2026-07-28T052316-Z-swiss-procurement-mcp/`) scored **23 pass / 9
+partial / 0 fail** across the 32 applicable checks — **production-ready, no
+open fail**. See `audits/` for the full report and per-finding docs.
+
+Four runs against the same catalogue hash and the same applicable set make the
+trend meaningful: 15/16/1 → 20/11/1 → 21/11/0 → 23/9/0.
 
 ## Reporting a vulnerability
 
@@ -39,11 +39,12 @@ path, no user authentication, and no personal data. Hardening in place:
 | Scope | The ~200 write / `my/` / OIDC-protected simap endpoints (publishing, submissions) are deliberately not wrapped |
 | Tests | respx-mocked unit suite on every PR (3.10/3.11/3.12); live API tests gated to a nightly job |
 
-## Audit findings (2026-07-26)
+## Audit findings
 
-17 findings were documented (`fail-or-partial` policy). None blocked production.
-Full per-finding docs are under
-`audits/2026-07-26T131630-Z-swiss-procurement-mcp/findings/`.
+The history below records what each release closed. The current open set is 9
+`partial` findings, documented under
+`audits/2026-07-28T052316-Z-swiss-procurement-mcp/findings/` (`fail-or-partial`
+policy). None blocks production.
 
 **Resolved in 0.2.0:**
 
@@ -83,9 +84,13 @@ Full per-finding docs are under
   reuse follows the simap.ch terms (documented in `ATTRIBUTION`, README Credits and
   every response's `source` field).
 
-**Accepted risk (deferred by profile):** ARCH-008 (tools-only), OBS-003
-(structured logging), SCALE-002 (stateful LB), SEC-007 (container sandboxing),
-SEC-009 (session binding) — see below.
+**Accepted risk (deferred by profile):** SCALE-002 (stateful LB) and SEC-009
+(session binding) — see [Accepted risks](#accepted-risks) for the reasoning and
+the condition that would end each acceptance.
+
+ARCH-008 (tools-only), OBS-003 (structured logging) and SEC-007 (container
+sandboxing) were on this list and are **no longer accepted risks** — all three
+were closed, in v0.8.0, v0.7.0 and v0.6.0 respectively.
 
 ## Lethal-trifecta assessment (SEC-019)
 
@@ -108,19 +113,43 @@ processed private data, or allowed egress to arbitrary hosts.
 The following controls are deliberately **out of scope** for a read-only
 public-open-data server. None has a security impact for this profile.
 
-### Container sandboxing
+> Two entries previously listed here — container sandboxing and structured
+> logging — have been **closed** rather than accepted, in v0.6.0 and v0.7.0
+> respectively. The server now ships a hardened non-root image (SEC-007) and
+> structlog-based JSON logging with correlation ids (OBS-003). They are removed
+> from this list rather than left standing, because a stale acceptance reads as
+> a decision when it is really an out-of-date document.
 
-**Status:** accepted risk.
-No `Dockerfile` is shipped. Acceptable for a local-stdio public-data server —
-defense-in-depth lives at the OS user level. Ship a hardened image if the
-deployment profile ever moves to a persistent cloud service.
+### Session-to-user binding (SEC-009)
 
-### Structured logging
+**Status:** accepted risk. Severity in the catalogue: `critical`.
 
-**Status:** accepted risk.
-The server relies on the host's default logging. JSON-structured logs with trace
-IDs are not justified for a stdio server; revisit if the server is lifted to a
-cloud/SSE deployment.
+There is no cryptographic binding of a session id to a user, because there is
+neither. The server has no authentication, no per-user state and no private
+data: every byte it returns comes from a public simap.ch endpoint that anyone
+can query unauthenticated. A session id would bind an anonymous caller to
+public data.
+
+The `critical` severity is about what the control protects elsewhere, not about
+exposure here. It is recorded rather than dismissed so the reasoning is
+checkable.
+
+**This becomes real if** the server gains authentication, any per-user state, or
+any endpoint whose response depends on who is asking. At that point session
+binding is required before the feature ships, not after.
+
+### Stateful load balancing (SCALE-002)
+
+**Status:** accepted risk. Severity in the catalogue: `high`.
+
+There is no sticky-session or shared-state session manager. The server is
+single-instance by design and the documented deployment profile is local stdio.
+The HTTP transports exist and work, but run stateless — a second instance would
+not break sessions, because there are none to break.
+
+**This becomes real if** the server is deployed multi-instance behind a load
+balancer *and* gains session state. Either alone is survivable; the combination
+is not.
 
 ### Rate limiting / quota
 
