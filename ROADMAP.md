@@ -21,12 +21,25 @@ catalogue; the current run lives under `audits/`.
 
 | Item | Check | State |
 |---|---|---|
-| Resolved-IP blocklist for private, loopback, link-local and `169.254.169.254` | `SEC-004` | open |
-| DNS pinning so the resolved IP is the one connected to | `SEC-005` | open |
-| `<use_case>` tags on all tool descriptions; `source_status` description above the 100-char floor | `ARCH-002` | open |
 | Fuzzy match or suggestions when a search returns nothing | `ARCH-003` | open — needs a design decision first, see below |
 | Split `server.py` handlers into a `tools/` package | `ARCH-011` | open — refactor with regression risk, low payoff |
+| Standardised JSON-RPC codes on protocol errors | `OBS-001` | blocked upstream, see below |
 | Per-tool-call progress reporting via `ctx: Context` | `SDK-003` | not planned while every tool returns in milliseconds |
+
+Closed since the last audit run, and therefore still listed as `partial` there:
+`SEC-004` and `SEC-005` (resolved-address blocklist and DNS pinning, `_net.py`,
+`tests/test_ssrf.py`) and `ARCH-002` (`<use_case>` on all nine tools). The audit
+under `audits/` is a measurement, not a status board — it will say `partial`
+until it is re-run.
+
+**`OBS-001` is closed as far as this repo reaches.** `tests/test_error_paths.py`
+drives a real `ClientSession` and asserts the two paths apart: an execution
+error arrives as a tool result with `isError: true`, a protocol error raises
+`McpError`. What is left is not implementable here — the lowlevel SDK server
+emits error **code 0** rather than the `-32601` the check asks for, and
+`mcp.types` defines the constant without using it. Two tests pin that, so the
+day the SDK starts emitting a real code, the suite says so. Until then the
+check stays `partial` for a reason that is written down rather than unknown.
 
 **`ARCH-003` needs a decision before it needs code.** The check wants empty
 results to trigger a fuzzy or suggestion mechanism. For CPV and construction
