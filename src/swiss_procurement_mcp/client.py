@@ -21,6 +21,7 @@ from typing import Any
 
 import httpx
 
+from ._net import PinnedResolverTransport
 from .constants import (
     ALLOWED_HOSTS,
     DEFAULT_LANGUAGE,
@@ -91,6 +92,11 @@ def _make_http_client() -> httpx.AsyncClient:
         timeout=httpx.Timeout(30.0),
         headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
         follow_redirects=True,
+        # SEC-004 / SEC-005: resolve once, check the address against the
+        # blocklist, then connect to the address that was checked. Installed as
+        # a transport so redirects are covered too — httpx builds a fresh
+        # request per hop and each one passes through here.
+        transport=PinnedResolverTransport(),
     )
 
 
