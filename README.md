@@ -233,6 +233,68 @@ upstream response body (OBS-002).
 
 ---
 
+## MCP Protocol Version
+
+| | |
+|---|---|
+| **Supported spec version** | `2025-11-25` |
+| **Pinned in** | `MCP_PROTOCOL_VERSION` in [`server.py`](src/swiss_procurement_mcp/server.py) |
+| **SDK** | `mcp>=1.28.1` |
+
+The MCP Python SDK negotiates the protocol version in the session layer and
+offers no constructor parameter for it, so the version cannot be pinned by
+configuration. It is pinned as a declared constant and enforced by detection:
+
+- **At runtime**, a mismatch between the constant and the SDK logs a
+  `protocol_version_drift` event at `WARNING`. The server keeps working.
+- **In CI**, `tests/test_protocol_version.py` fails.
+
+That split is deliberate. An SDK bump should break *our* build, not the runtime
+of someone who upgraded `mcp` in their own environment.
+
+### Update policy
+
+- Dependabot opens SDK update PRs monthly (`.github/dependabot.yml`).
+- When an SDK update moves the protocol version, the CI test fails. The fix is
+  **not** to edit the constant blindly: read the spec changelog for what changed
+  between the two versions, verify the server still behaves, then bump the
+  constant, this section and `CHANGELOG.md` in one commit.
+- Protocol-version bumps are called out explicitly in `CHANGELOG.md`, not folded
+  into a dependency-bump line.
+
+---
+
+## Primitives: tools only
+
+This server exposes **tools** and neither resources nor prompts. That is a
+decision, not an omission, so here is the reasoning (ARCH-008).
+
+**Why not resources.** Resources address *identifiable, listable* content —
+`GET`-like reads the client can enumerate and cache. simap's endpoints are the
+opposite: every useful call is a query with filters over a corpus of ~200k
+publications that changes intraday. A resource URI would either enumerate
+something unbounded or encode a full query in the URI, which is a tool with
+extra steps.
+
+Two tools were checked concretely for migration potential and rejected for
+specific reasons, not by blanket policy:
+
+| Candidate | Why it stays a tool |
+|---|---|
+| `source_status` | Genuinely resource-shaped — one fixed, cacheable document. But it exists to be *called* when a result looks wrong, and a resource the model has to remember to re-read is worse at that job than a tool it can invoke on suspicion. |
+| `search_cpv_codes` | The CPV catalogue is finite and stable enough to enumerate. But it is ~10k entries; exposing it as a resource would push the whole classification into the context window, when the point of the tool is that the *server* does the lookup. |
+
+**Why not prompts.** A curated prompt list would encode question templates
+("which tenders in canton X…"). The tool docstrings already carry that guidance
+where the model actually reads it, and prompts would duplicate it in a second
+place that can drift — this repo has already been bitten twice by exactly that
+class of duplication.
+
+This will be revisited if the server ever gains a genuinely enumerable,
+slow-changing dataset.
+
+---
+
 ## Testing
 
 ```bash

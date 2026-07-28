@@ -3,6 +3,61 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.0] — 2026-07-28
+
+Closes ARCH-009, ARCH-008 and ARCH-012 from the 2026-07-28 re-audit. One
+annotation, one constant, and documentation — no behaviour changes.
+
+### ARCH-009 — `destructiveHint` set explicitly
+
+`READ_TOOL` declared `readOnlyHint`, `idempotentHint` and `openWorldHint` but
+omitted `destructiveHint`, leaving it to the client's default. The check asks
+for explicit annotations, and a default by omission is not the same statement as
+"these tools destroy nothing" — the companion `amtsblatt-mcp` has set it
+explicitly all along.
+
+One line, and it was carrying a `high` severity.
+
+### ARCH-012 — MCP protocol version pinned
+
+**Spec version `2025-11-25`** is now pinned as `MCP_PROTOCOL_VERSION` in
+`server.py`, with a new *MCP Protocol Version* section in the README stating the
+version, where it lives, and the update policy.
+
+The SDK offers no way to configure this — negotiation happens in the session
+layer, and neither `FastMCP.__init__` nor `Settings` takes the parameter. So the
+pin is a declared constant plus detection: a mismatch logs
+`protocol_version_drift` at `WARNING` at runtime, and
+`tests/test_protocol_version.py` fails in CI.
+
+That split is deliberate. An SDK bump should break *our* build, not the runtime
+of someone who upgraded `mcp` downstream.
+
+Future protocol-version bumps get their own CHANGELOG line rather than being
+folded into a dependency-bump entry.
+
+### ARCH-008 — tools-only rationale documented
+
+The check accepts either two of the three primitives or a documented reason for
+using one. The README now carries the reason.
+
+Two tools were checked concretely for resource-migration potential and rejected
+with specific reasons rather than by blanket policy: `source_status` is
+resource-shaped but exists to be *called* when a result looks wrong, and a
+resource the model must remember to re-read is worse at that job; the CPV
+catalogue is enumerable but ~10k entries, and pushing it into the context window
+defeats the point of a server-side lookup.
+
+Resources and prompts will be revisited if this server ever gains a genuinely
+enumerable, slow-changing dataset. simap is the opposite — every useful call is
+a filtered query over a corpus that changes intraday.
+
+### Added
+
+- `tests/test_protocol_version.py` — 4 tests: the pin matches the installed SDK,
+  it is a dated spec version rather than a moving target, and the README names
+  both the version and an update policy
+
 ## [0.7.0] — 2026-07-27
 
 Closes the two findings the 2026-07-27 re-audit left open. No tool, argument or

@@ -11,6 +11,7 @@ import logging
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
+from mcp.types import LATEST_PROTOCOL_VERSION
 
 from ._log import configure_logging, log_event, logged_tool
 from .client import (
@@ -63,9 +64,38 @@ mcp = FastMCP("swiss-procurement-mcp")
 # OBS-003: structured JSON to stderr. stdout carries the MCP protocol.
 configure_logging()
 
-# ARCH-009: every tool is read-only, idempotent, and reaches the live simap.ch
-# API (open world). Shared so the hints stay consistent across all tools.
-READ_TOOL = {"readOnlyHint": True, "idempotentHint": True, "openWorldHint": True}
+# ARCH-012: the MCP protocol version this server is written and tested against,
+# pinned explicitly rather than inherited from whatever the SDK happens to
+# default to.
+#
+# The SDK negotiates the version in the session layer and offers no constructor
+# parameter for it, so the pin cannot be enforced by configuration. It is
+# enforced by detection instead: a mismatch logs at WARNING on startup, and
+# tests/test_protocol_version.py fails in CI. That splits the two audiences
+# correctly — an SDK bump breaks the build for us, not the runtime for someone
+# who upgraded `mcp` downstream.
+MCP_PROTOCOL_VERSION = "2025-11-25"
+
+if LATEST_PROTOCOL_VERSION != MCP_PROTOCOL_VERSION:
+    log_event(
+        logging.WARNING,
+        "protocol_version_drift",
+        pinned=MCP_PROTOCOL_VERSION,
+        sdk_latest=LATEST_PROTOCOL_VERSION,
+        hint="the installed mcp SDK negotiates a different protocol version than "
+        "this server was tested against; see the README's MCP Protocol Version section",
+    )
+
+# ARCH-009: every tool is read-only, non-destructive, idempotent, and reaches
+# the live simap.ch API (open world). All four hints are set explicitly —
+# omitting destructiveHint would leave it to the client's default, which is not
+# the same as stating that these tools destroy nothing.
+READ_TOOL = {
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": True,
+}
 
 # SEC-018: bounds, allow-lists and patterns are declared on the input models in
 # inputs.py and enforced by Pydantic before a tool body runs. MAX_LIMIT,
