@@ -55,21 +55,38 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Sync server.json version to the release version
+      - name: Sync server.json version to the published artifact
         run: |
-          # On a tag run (v1.2.3) derive the version from the tag. On a manual
-          # workflow_dispatch from a branch, GITHUB_REF_NAME is the branch name
-          # (e.g. "main"), so stripping "v" would write "main" into server.json
-          # and the MCP-registry version would no longer match the PyPI artifact.
-          # Fall back to the version already committed in server.json, which is
-          # kept in sync with pyproject.toml at release prep.
-          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
-            VERSION="${GITHUB_REF_NAME#v}"
-          else
-            VERSION="$(jq -r '.version' server.json)"
+          # pyproject.toml is the single source of truth: it is what `hatch
+          # build` used for the artifact that was just uploaded to PyPI, so it
+          # is the only version the registry can possibly find there.
+          #
+          # The previous fallback read server.json's own literal, which was a
+          # fourth hand-maintained copy of the version. It drifted to 0.4.0
+          # while pyproject moved on, and the registry then rejected the
+          # publish because it went looking for a release that had never
+          # existed on PyPI.
+          PYPROJECT_VERSION="$(grep -m1 '^version' pyproject.toml | sed -E 's/.*"([^"]+)".*/\1/')"
+          if [ -z "$PYPROJECT_VERSION" ]; then
+            echo "::error::could not read version from pyproject.toml"
+            exit 1
           fi
+
+          # On a tag run the tag must agree with pyproject, or PyPI and the
+          # registry would again be told two different things — which is the
+          # same failure, just arriving from the other side.
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            TAG_VERSION="${GITHUB_REF_NAME#v}"
+            if [ "$TAG_VERSION" != "$PYPROJECT_VERSION" ]; then
+              echo "::error::tag $GITHUB_REF_NAME implies version $TAG_VERSION, but pyproject.toml says $PYPROJECT_VERSION. PyPI received $PYPROJECT_VERSION; the registry would look for $TAG_VERSION and fail."
+              exit 1
+            fi
+          fi
+
+          VERSION="$PYPROJECT_VERSION"
           jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' \
             server.json > server.tmp && mv server.tmp server.json
+          echo "server.json set to version $VERSION"
 
       - name: Install mcp-publisher
         run: |
