@@ -729,15 +729,21 @@ async def find_procurement_office(args: OfficeSearchInput) -> OfficeSearchRespon
         except UpstreamError as exc:
             return OfficeSearchResponse(**_degraded(exc), count=0, offices=[])
 
-    raw = (
-        payload.get("procOffices")
-        or payload.get("offices")
-        or (
-            payload
-            if isinstance(payload, list)
-            else next((v for v in payload.values() if isinstance(v, list)), [])
+    # The upstream has been observed returning the office list under two
+    # different keys, so the shape is probed rather than assumed. The list case
+    # is checked FIRST: it used to sit last, after two `.get()` calls that raise
+    # AttributeError on a list — so the branch that claimed to handle a bare
+    # list could never be reached, and that payload shape crashed the tool.
+    if isinstance(payload, list):
+        raw = payload
+    elif isinstance(payload, dict):
+        raw = (
+            payload.get("procOffices")
+            or payload.get("offices")
+            or next((v for v in payload.values() if isinstance(v, list)), [])
         )
-    )
+    else:
+        raw = []
     matched: list[ProcurementOffice] = []
     for o in raw:
         name = pick_lang(o.get("name"), lang) or ""

@@ -18,12 +18,12 @@ from pydantic import ValidationError
 from swiss_procurement_mcp.constants import (
     CANTON_IDS,
     CANTON_MATCH_MODES,
-    CODE_SYSTEMS,
     PROCESS_TYPES,
     PUB_TYPES,
     SUPPORTED_LANGUAGES,
 )
 from swiss_procurement_mcp.inputs import (
+    CONSTRUCTION_CODE_SYSTEMS,
     MAX_LIMIT,
     MAX_TEXT_LEN,
     AwardSearchInput,
@@ -227,7 +227,7 @@ def test_uppercase_language_rejected_under_strict_mode() -> None:
         (SearchInput, "canton_match", CANTON_MATCH_MODES),
         (SearchInput, "process_type", PROCESS_TYPES),
         (SearchInput, "pub_type", PUB_TYPES),
-        (ConstructionCodeInput, "system", CODE_SYSTEMS),
+        (ConstructionCodeInput, "system", CONSTRUCTION_CODE_SYSTEMS),
         (CpvSearchInput, "language", SUPPORTED_LANGUAGES),
     ],
 )

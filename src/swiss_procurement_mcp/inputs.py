@@ -46,6 +46,13 @@ CantonMatch = Literal[CANTON_MATCH_MODES]
 ProcessType = Literal[PROCESS_TYPES]
 PubType = Literal[PUB_TYPES]
 CodeSystem = Literal[CODE_SYSTEMS]
+# `search_cpv_codes` owns "cpv"; this tool covers the Swiss construction
+# standards. Derived rather than restated, and narrower than CODE_SYSTEMS on
+# purpose: the schema used to advertise "cpv" as a valid `system` and the tool
+# then rejected it in the body, so a model trusting the schema was guaranteed
+# to hit an error.
+CONSTRUCTION_CODE_SYSTEMS = tuple(s for s in CODE_SYSTEMS if s != "cpv")
+ConstructionCodeSystem = Literal[CONSTRUCTION_CODE_SYSTEMS]
 LanguageCode = Literal[SUPPORTED_LANGUAGES]
 
 MAX_LIMIT = 100
@@ -256,7 +263,7 @@ class CpvSearchInput(_LanguageMixin):
 class ConstructionCodeInput(_LanguageMixin):
     """Arguments for `search_construction_codes`."""
 
-    system: CodeSystem = Field(
+    system: ConstructionCodeSystem = Field(
         description="Which classification to search.",
     )
     query: str = Field(
