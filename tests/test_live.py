@@ -17,16 +17,24 @@ from swiss_procurement_mcp.constants import (
 )
 from swiss_procurement_mcp.inputs import (
     AwardSearchInput,
+    ConstructionCodeInput,
     CpvSearchInput,
+    DetailedSearchInput,
+    HistoryInput,
+    OfficeSearchInput,
     ProcurementDetailInput,
     SearchInput,
     StatusInput,
 )
 from swiss_procurement_mcp.server import (
+    find_procurement_office,
     get_procurement_details,
+    get_publication_history,
     search_awards,
+    search_construction_codes,
     search_cpv_codes,
     search_procurements,
+    search_procurements_detailed,
     source_status,
 )
 
@@ -150,3 +158,73 @@ async def test_live_awards():
 
 async def test_live_status():
     assert (await source_status(StatusInput())).all_healthy is True
+
+
+# --- OPS-001: one live test per tool ---------------------------------------
+#
+# These five tools had unit coverage but no live test, so nothing would have
+# noticed if the upstream changed a payload shape under them. That is exactly
+# the failure the mocked tests cannot catch — a fixture keeps passing against a
+# shape the API no longer returns.
+
+
+async def test_live_detailed_search_returns_bodies():
+    result = await search_procurements_detailed(
+        DetailedSearchInput(canton="ZH", published_from="2026-01-01", top_n=2)
+    )
+    assert result.provenance in {"live_api", "cached"}
+    assert result.total_matched >= 0
+    # If anything came back, the aggregation must actually have expanded it —
+    # an empty `results` with a non-zero match count means the fan-out broke.
+    if result.total_matched:
+        assert result.results, "hits found but nothing expanded"
+
+
+async def test_live_publication_history_shape():
+    """Runs against a real publication id taken from a live search."""
+    found = await search_procurements(SearchInput(canton="ZH", published_from="2026-01-01"))
+    if not found.results:
+        pytest.skip("no live results to trace history for")
+    first = found.results[0]
+
+    history = await get_publication_history(HistoryInput(publication_id=first.publication_id))
+    assert history.provenance in {"live_api", "cached"}
+    # An empty history is normal for a first publication; a broken shape is not.
+    for entry in history.publications:
+        assert entry.publication_id, "history entry without an id — shape changed"
+
+
+async def test_live_construction_codes_bkp():
+    result = await search_construction_codes(ConstructionCodeInput(system="bkp", query="Fassade"))
+    assert result.system == "bkp"
+    assert result.provenance in {"live_api", "cached"}
+    for code in result.codes:
+        assert code.code, "code entry without a code — shape changed"
+
+
+async def test_live_procurement_office_lookup():
+    result = await find_procurement_office(OfficeSearchInput(name_contains="Zürich", limit=5))
+    assert result.provenance in {"live_api", "cached"}
+    assert result.count <= 5
+    for office in result.offices:
+        assert "zürich" in office.name.lower(), "client-side filter let a non-match through"
+
+
+async def test_live_detail_of_a_real_publication():
+    """Distinct from the existing detail live test: asserts the codes survive.
+
+    The BKP codes are what make this joinable with construction cost data, and
+    they sit deepest in the payload — the first thing a shape change would drop.
+    """
+    found = await search_procurements(
+        SearchInput(canton="ZH", published_from="2026-01-01", query="Bau")
+    )
+    if not found.results:
+        pytest.skip("no live construction results to inspect")
+    first = found.results[0]
+
+    detail = await get_procurement_details(
+        ProcurementDetailInput(project_id=first.project_id, publication_id=first.publication_id)
+    )
+    assert detail.provenance in {"live_api", "cached"}
+    assert detail.project_id == first.project_id

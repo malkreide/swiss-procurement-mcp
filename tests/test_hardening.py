@@ -120,8 +120,16 @@ async def test_construction_code_search():
 
 
 async def test_construction_code_rejects_cpv():
-    with pytest.raises(ValueError, match="search_cpv_codes"):
-        await search_construction_codes(ConstructionCodeInput(system="cpv", query="metall"))
+    """`cpv` belongs to search_cpv_codes, and the schema now says so.
+
+    The rejection used to happen in the tool body, which meant the tool schema
+    advertised `cpv` as a valid `system` and then errored on it — a model
+    trusting the schema was guaranteed to hit that. The Literal is now narrowed,
+    so the boundary refuses it before the tool runs.
+    """
+    with pytest.raises(ValidationError) as exc:
+        ConstructionCodeInput(system="cpv", query="metall")
+    assert exc.value.errors()[0]["type"] == "literal_error"
 
 
 @respx.mock

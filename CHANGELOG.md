@@ -3,6 +3,69 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.0] — 2026-07-28
+
+Closes OPS-001. Two real bugs surfaced while writing the tests — which is the
+argument for the finding, not a side note.
+
+### The gap
+
+OPS-001 asks for at least 5 unit tests and 1 live test per tool. Counted rather
+than estimated, seven of the nine tools were short, four of them sitting at
+exactly one unit test:
+
+| Tool | before | after |
+|---|---|---|
+| `get_procurement_details` | 1 / 0 | 6 / 2 |
+| `get_publication_history` | 1 / 0 | 6 / 1 |
+| `find_procurement_office` | 1 / 0 | 6 / 1 |
+| `source_status` | 1 / 1 | 6 / 1 |
+| `search_awards` | 2 / 1 | 6 / 1 |
+| `search_construction_codes` | 2 / 0 | 6 / 1 |
+| `search_procurements_detailed` | 3 / 0 | 5 / 1 |
+
+That distribution is where a silently broken tool survives a green suite. It did.
+
+### Fixed — `find_procurement_office` crashed on a bare-list payload
+
+The tool probes three payload shapes because the upstream has been observed
+returning the office list under different keys. The list branch was unreachable:
+it sat last, after two `payload.get(...)` calls that raise `AttributeError` on a
+list. So the shape the code claimed to handle was the one shape that crashed it.
+
+Reordered to check `isinstance(payload, list)` first. Each of the shapes now has
+its own test.
+
+### Fixed — the tool schema advertised a value the tool rejected
+
+`ConstructionCodeInput.system` was typed against the full `CODE_SYSTEMS`, which
+includes `cpv` — and `search_construction_codes` then raised `ValueError` on
+`cpv`, pointing at `search_cpv_codes`.
+
+A model trusting the tool schema was *guaranteed* to hit that error. The Literal
+is now derived as `CODE_SYSTEMS` minus `cpv`, so the schema states what the tool
+accepts. A parametrised test asserts every advertised system is actually
+accepted — the general form of this bug.
+
+### Added
+
+- `tests/test_tool_coverage.py` — 40 tests targeting the paths that break
+  quietly: payload-shape fallbacks, degraded envelopes, language selection,
+  client-side filtering and truncation
+- Five live tests, one per previously-uncovered tool. Mocked tests cannot catch
+  an upstream shape change; a fixture keeps passing against a shape the API no
+  longer returns.
+- A coverage-floor guard, so a new tool cannot arrive under-tested and
+  rediscover this finding at the next audit. Mutation-tested by raising the
+  floor.
+
+### Note on suite runtime
+
+The seven degraded-path tests initially cost ~115s, because each one waits out
+three real retries at 2s/4s/8s. They now reuse the `no_backoff_delay` fixture
+pattern already established in `test_resilience.py`: 115s → 4s. The retry logic
+itself is still tested there; these tests only care about the envelope.
+
 ## [0.8.1] — 2026-07-28
 
 Documentation only. Records SEC-009 and SCALE-002 as accepted risks, and repairs
