@@ -3,6 +3,49 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.15.0] — 2026-07-28
+
+**SEC-009** and **SCALE-002**: addressed as far as the SDK and the absence of an
+identity provider allow. Neither flips to `pass`, and the reasons are now written
+down precisely rather than as "accepted risk".
+
+### `MCP_STATELESS`
+
+Opt-in session-free operation for the streamable-http transport. With no session
+tracking there is no session id to bind to a user and none to route consistently
+to an instance — both problems are removed rather than solved.
+
+Opt-in rather than default because it is not free: a stateless server cannot
+resume an interrupted SSE stream or deliver server-initiated notifications, both
+of which need a session to belong to. Requesting it on the legacy SSE transport
+logs a warning and changes nothing, because leaving the flag set there would tell
+an operator they are session-free when they are not.
+
+### `docs/load-balancing.md`
+
+nginx and Kubernetes Ingress configurations keyed on `Mcp-Session-Id`, with the
+buffering and timeout settings the long-lived transports need — plus the honest
+part: **affinity prevents misrouting, not loss.** If the instance holding a
+session dies, the session dies with it and a correct client re-initializes.
+
+### Two limits found by reading the SDK rather than assuming
+
+- **No explicit session TTL is settable.** `session_idle_timeout` exists on
+  `StreamableHTTPSessionManager`, but FastMCP passes it through neither
+  `Settings` nor its constructor. Same class of limitation as
+  `mask_error_details`, and the reason `SCALE-002` still cannot pass.
+- **`SEC-009` is unreachable, not merely unimplemented.** It requires a user id
+  from a validated OAuth `sub` claim. This server has no authentication at all,
+  so there is no identity to bind to.
+
+### A false claim corrected
+
+The previous SECURITY.md stated the HTTP transports "run stateless, so a second
+instance would not break sessions". That was wrong — `stateless_http` defaults to
+`False`, so streamable-http did keep per-client sessions in memory. The
+correction is stated explicitly rather than quietly removed: a wrong reassurance
+is worse than an open finding.
+
 ## [0.14.0] — 2026-07-28
 
 Closes **ARCH-002**: every tool description carries a `<use_case>` tag.

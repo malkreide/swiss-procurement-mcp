@@ -185,6 +185,7 @@ MCP_TRANSPORT=sse HOST=0.0.0.0 PORT=8000 python -m swiss_procurement_mcp
 | `MCP_TRANSPORT` | `stdio` | `stdio` \| `sse` \| `streamable-http` |
 | `MCP_HOST` / `HOST` | `127.0.0.1` | HTTP-Binding (nur Cloud-Transporte). Standardmässig Loopback; für ein Cloud-Deployment `0.0.0.0` explizit setzen, um alle Interfaces freizugeben. |
 | `MCP_CORS_ORIGINS` | _(nicht gesetzt)_ | Kommagetrennte Origins, die die HTTP-Transporte aus dem Browser aufrufen dürfen. Nicht gesetzt heisst: kein Cross-Origin-Zugriff aus dem Browser — stdio und Nicht-Browser-Clients sind nicht betroffen. Für die gelisteten Origins wird `Mcp-Session-Id` exponiert und akzeptiert, damit ein Browser-Client eine Session halten kann. `*` wird akzeptiert, loggt aber eine Warnung und deaktiviert Credentials, weil Browser eine Wildcard-Origin zusammen mit Credentials ablehnen. |
+| `MCP_STATELESS` | _(aus)_ | Auf `1` setzen, um den streamable-http-Transport ohne Session-Tracking zu betreiben. Nimmt Session-Affinität als Thema aus dem Spiel; verzichtet dafür auf SSE-Stream-Resumption und servergetriebene Notifications. Ohne Wirkung auf den Legacy-SSE-Transport, der eine Warnung loggt. Siehe [docs/load-balancing.md](docs/load-balancing.md). |
 | `PORT` / `MCP_PORT` | `8000` | HTTP-Port (nur Cloud-Transporte) |
 
 Keine API-Keys — die gekapselten simap.ch-Lese-Endpoints sind vollständig öffentlich.

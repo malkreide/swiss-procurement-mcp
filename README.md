@@ -207,6 +207,7 @@ under `--read-only --cap-drop ALL`.
 | `MCP_TRANSPORT` | `stdio` | `stdio` \| `sse` \| `streamable-http` |
 | `MCP_HOST` / `HOST` | `127.0.0.1` | HTTP binding (cloud transports only). Defaults to loopback; set `0.0.0.0` explicitly to expose all interfaces in a cloud deployment. |
 | `MCP_CORS_ORIGINS` | _(unset)_ | Comma-separated origins allowed to call the HTTP transports from a browser. Unset means no cross-origin browser access at all — stdio and non-browser clients are unaffected. `Mcp-Session-Id` is exposed and accepted for the listed origins, so a browser client can hold a session. `*` is honoured but logs a warning and disables credentials, because browsers reject a wildcard origin together with credentials. |
+| `MCP_STATELESS` | _(off)_ | Set to `1` to run the streamable-http transport with no session tracking. Removes session affinity as a concern for multi-instance deployments; gives up SSE stream resumption and server-initiated notifications. No effect on the legacy SSE transport, which logs a warning if asked. See [docs/load-balancing.md](docs/load-balancing.md). |
 | `PORT` / `MCP_PORT` | `8000` | HTTP port (cloud transports only) |
 | `LOG_LEVEL` | `INFO` | `DEBUG` \| `INFO` \| `WARNING` \| `ERROR`. Structured JSON, one object per line, always on **stderr** — stdout carries the MCP protocol on a stdio transport. |
 
