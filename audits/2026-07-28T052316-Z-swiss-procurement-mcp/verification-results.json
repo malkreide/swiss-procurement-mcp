@@ -1,0 +1,379 @@
+{
+  "audit_meta": {
+    "server_name": "swiss-procurement-mcp",
+    "run_id": "2026-07-28T052316-Z-swiss-procurement-mcp"
+  },
+  "policy": "fail-or-partial",
+  "results": {
+    "ARCH-001": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "9 snake_case tools, no special characters (server.py:301,399,481,545,570,605,637,679,732)",
+        "Each docstring opens with the use case, e.g. search_awards 'Search only awarded contracts (who won)'"
+      ],
+      "gaps": []
+    },
+    "ARCH-002": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "Multi-paragraph docstrings well above 100 chars median; canton_match semantics documented per tool",
+        "search_procurements_detailed explicitly differentiates itself from search_procurements"
+      ],
+      "gaps": [
+        "No machine-readable <use_case> tags; differentiation is prose only"
+      ]
+    },
+    "ARCH-003": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "match_type field (exact/none) on search, code and office responses (models.py:38)",
+        "Empty result carries an actionable note; filterless call now refused with the real cause (server.py:_assert_filtered)"
+      ],
+      "gaps": [
+        "Still no fuzzy-match or suggestion mechanism on a zero-hit search"
+      ]
+    },
+    "ARCH-004": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "Dual transport selected by MCP_TRANSPORT in __main__.main(); no request object touched anywhere",
+        "Tool outputs are transport-independent Pydantic models"
+      ],
+      "gaps": [
+        "Config read via os.environ in main(), not a Pydantic-Settings object"
+      ]
+    },
+    "ARCH-005": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "critical",
+      "evidence": [
+        "No secrets in src/ — the wrapped simap endpoints need none (grep for API_KEY/TOKEN/SECRET: 0 hits)",
+        "gitleaks secret scan on push/PR (.github/workflows/security.yml)"
+      ],
+      "gaps": []
+    },
+    "ARCH-006": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "9 tools, under the 12 budget; no 1:1 REST mapping",
+        "Anchor query answered by a single search_procurements_detailed call"
+      ],
+      "gaps": []
+    },
+    "ARCH-007": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "search_procurements_detailed fans out to publication_details via asyncio.gather, bounded by top_n<=5 (server.py:463)",
+        "Docstring states the aggregated character and when to prefer the plain search"
+      ],
+      "gaps": []
+    },
+    "ARCH-008": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "Tools only; 9 read-only tools would be Resource candidates"
+      ],
+      "gaps": [
+        "No Resources, no Prompts, and no documented rationale in the README for tools-only"
+      ]
+    },
+    "ARCH-009": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "Shared READ_TOOL annotation on all 9 tools: readOnlyHint, idempotentHint, openWorldHint (server.py:52)"
+      ],
+      "gaps": [
+        "destructiveHint is omitted rather than set to False — the check requires explicit annotations, not defaults by omission (amtsblatt-mcp sets it explicitly)"
+      ]
+    },
+    "ARCH-011": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "README.md, README.de.md, CHANGELOG.md, LICENSE, pyproject.toml all present; src-layout under src/swiss_procurement_mcp/",
+        "tests/ and .github/workflows/{ci,publish,security}.yml present"
+      ],
+      "gaps": []
+    },
+    "ARCH-012": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "CHANGELOG.md in Keep-a-Changelog format; 'Maturity & updates' documents the SDK-update policy",
+        "Dependabot weekly pip + github-actions PRs (.github/dependabot.yml)",
+        "mcp SDK floor raised to >=1.28.1 for CVE-2026-59950 in v0.4.0"
+      ],
+      "gaps": [
+        "protocolVersion is not pinned in code; no dedicated 'MCP Protocol Version' README section"
+      ]
+    },
+    "CH-004": {
+      "status": "pass",
+      "category": "CH",
+      "severity": "medium",
+      "evidence": [
+        "ATTRIBUTION names source, operator and reuse terms; carried in every response's source field (constants.py:30)",
+        "README Credits states simap.ch publishes no explicit open-data licence and reuse follows the simap terms",
+        "Per-record provenance: each detail record carries its own envelope"
+      ],
+      "gaps": []
+    },
+    "OBS-001": {
+      "status": "pass",
+      "category": "OBS",
+      "severity": "high",
+      "evidence": [
+        "UpstreamError caught per tool and converted into a degraded envelope, not a protocol error (server.py:_degraded)",
+        "Input errors raise ValueError and surface as tool errors; tests/test_resilience.py covers the degraded path"
+      ],
+      "gaps": []
+    },
+    "OBS-002": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "high",
+      "evidence": [
+        "_degraded returns a fixed sanitised note; neither the exception nor the upstream body reaches the model (server.py:73)",
+        "No traceback.format_exc() anywhere in src/"
+      ],
+      "gaps": [
+        "mask_error_details=True is not set on the FastMCP constructor, so an unexpected exception outside the caught paths could still surface"
+      ]
+    },
+    "OBS-003": {
+      "status": "pass",
+      "category": "OBS",
+      "severity": "medium",
+      "evidence": [
+        "structlog>=24.1 declared in pyproject.toml dependencies",
+        "JSON output, one object per line, via structlog.processors.JSONRenderer (_log.py)",
+        "All four severity levels emitted: DEBUG (tool entry), INFO (clean finish with latency), WARNING (upstream degraded), ERROR (tool raised) — asserted by tests/test_logging.py::test_all_four_severity_levels_are_used",
+        "Per-call bound context: tool name plus a 16-char correlation_id bound via structlog.contextvars, so events emitted deep in the HTTP path carry the surrounding call's id (_log.py:logged_tool)",
+        "No print() anywhere in src/; output goes to stderr, asserted in a subprocess because pytest's capture can hide the wrong stream"
+      ],
+      "gaps": []
+    },
+    "OBS-004": {
+      "status": "pass",
+      "category": "OBS",
+      "severity": "critical",
+      "evidence": [
+        "No print() and no stdout writes in src/ — stdout stays reserved for the protocol",
+        "Identical behaviour across stdio and HTTP transports; no transport-dependent logging switch"
+      ],
+      "gaps": [
+        "Nothing writes to stderr either, so there is no diagnostic channel (see OBS-003)"
+      ]
+    },
+    "OPS-001": {
+      "status": "partial",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        "104 offline tests across 8 files, respx-mocked (tests/)",
+        "9 live tests marked @pytest.mark.live (tests/test_live.py)",
+        "Marker registered in pyproject.toml:42",
+        "CI runs pytest -m 'not live'; live runs on a nightly schedule only"
+      ],
+      "gaps": [
+        "The criterion asks for at least 5 unit tests per tool. Coverage is uneven: search_procurements and the input models are heavily covered, while get_publication_history and search_construction_codes have ~2 each."
+      ]
+    },
+    "OPS-002": {
+      "status": "pass",
+      "category": "OPS",
+      "severity": "medium",
+      "evidence": [
+        "README.md carries all mandatory sections incl. anchor demo, installation, tools, configuration, security, limits, licence",
+        "README.de.md parallel; ASCII box-drawing project-structure diagram present",
+        "Known limitations lists five explicit limits"
+      ],
+      "gaps": []
+    },
+    "OPS-003": {
+      "status": "partial",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        "README 'Maturity & updates' declares Phase 1 (read-only) explicitly",
+        "Annotations match the phase: all tools readOnlyHint; write/OIDC endpoints deliberately unwrapped",
+        "SECURITY.md documents the re-evaluation triggers for a move to a write phase"
+      ],
+      "gaps": [
+        "No roadmap file with phase-specific tasks"
+      ]
+    },
+    "SCALE-002": {
+      "status": "partial",
+      "category": "SCALE",
+      "severity": "high",
+      "evidence": [
+        "Single-instance design; SECURITY.md and README document the deployment scope"
+      ],
+      "gaps": [
+        "No sticky-session or shared-state session manager; multi-instance HTTP deployment would break session affinity",
+        "Deployment profile is local-stdio, so the exposure is currently theoretical"
+      ]
+    },
+    "SEC-004": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "Base URL hardcoded to https://www.simap.ch/api; scheme is never caller-supplied (constants.py:12)",
+        "_assert_host_allowed runs before every request and before the probe (client.py:45,104,181)",
+        "No tool accepts a URL or host argument, so there is no SSRF entry point"
+      ],
+      "gaps": [
+        "No explicit IP blocklist or metadata-IP check — unnecessary given the fixed host, but it is defence the check asks for"
+      ]
+    },
+    "SEC-005": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "Single hardcoded HTTPS host with standard certificate validation via httpx",
+        "No caller-controlled hostnames, so the rebinding window has no attacker-reachable input"
+      ],
+      "gaps": [
+        "No explicit DNS pinning / custom resolver"
+      ]
+    },
+    "SEC-006": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "Default transport is stdio; SSE/streamable-http require an explicit MCP_TRANSPORT (server __main__.py:10)",
+        "README documents Claude Desktop stdio as the primary path and cloud separately",
+        "Default start binds no TCP port"
+      ],
+      "gaps": []
+    },
+    "SEC-007": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "Dockerfile sets an explicit non-root UID 10001 (>= 10000 as required), not the 100-999 system range useradd --system would pick",
+        "USER 10001:10001 numeric; compose pins the same via `user:`",
+        "compose: read_only=true, cap_drop [ALL], no-new-privileges",
+        "seccomp: Docker's built-in profile (RuntimeDefault equivalent) applies and is deliberately not overridden; CI asserts Seccomp mode 2 in /proc/self/status on the running container",
+        "CI asserts uid >= 10000 and that the server imports under --read-only --cap-drop ALL; docs/container-hardening.md documents the Kubernetes securityContext equivalent"
+      ],
+      "gaps": []
+    },
+    "SEC-008": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "medium",
+      "evidence": [
+        "No pre/postinstall hooks; uvx swiss-procurement-mcp is the full documented command",
+        "PyPI publish via OIDC Trusted Publishing (.github/workflows/publish.yml)",
+        "CONTRIBUTING.md documents the build process"
+      ],
+      "gaps": []
+    },
+    "SEC-009": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "No authentication and no session state: stdio has no sessions, and the HTTP transports run stateless"
+      ],
+      "gaps": [
+        "If an HTTP transport is exposed there is no session-to-user binding at all; acceptable only because there is no auth and no per-user data"
+      ]
+    },
+    "SEC-013": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "No API keys exist — every wrapped simap endpoint is security: None",
+        "Nothing to store, rotate or leak"
+      ],
+      "gaps": [
+        "No docs/secret-management.md; trivially empty here but the check asks for the statement"
+      ]
+    },
+    "SEC-016": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "HTTP transports bind 127.0.0.1 unless MCP_HOST/HOST is set explicitly (__main__.py:15)",
+        "No 0.0.0.0 default anywhere in src/",
+        "README documents the loopback default and the explicit opt-in"
+      ],
+      "gaps": []
+    },
+    "SEC-018": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "Nine strict Pydantic input models, one per tool (inputs.py:78-260)",
+        "model_config strict=True + extra='forbid' on the shared _StrictInput base (inputs.py:78-86)",
+        "Numeric ge/le: limit 1..100, top_n 1..5 (inputs.py:224-233, 186-193)",
+        "String min_length/max_length + whitelist pattern TEXT_PATTERN (inputs.py:64-70)",
+        "Allow-lists derived from constants.py as Literal types, not restated (inputs.py:42-47)",
+        "Edge cases tested incl. unknown fields, over-long strings, out-of-range numbers, strict coercion refusal (tests/test_input_models.py, 21 tests)"
+      ],
+      "gaps": []
+    },
+    "SEC-019": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "SECURITY.md carries an explicit lethal-trifecta assessment with a per-leg table",
+        "At most one of the three legs: public data only, no exfiltration path, read-only",
+        "The ~200 write/OIDC simap endpoints are deliberately unwrapped"
+      ],
+      "gaps": []
+    },
+    "SEC-020": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "No os.system, subprocess, shell=True, eval, exec or popen anywhere in src/ (0 hits)",
+        "No filesystem or path operations driven by tool input"
+      ],
+      "gaps": []
+    },
+    "SEC-021": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "ALLOWED_HOSTS frozenset in constants.py:17, not config-mutable",
+        "_assert_host_allowed called before every outbound request and before the health probe",
+        "docs/network-egress.md documents the hosts, the code-layer enforcement and a 'Changing the allow-list' procedure",
+        "Network-layer section documents the deployment-side control"
+      ],
+      "gaps": []
+    }
+  }
+}
