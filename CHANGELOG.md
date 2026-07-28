@@ -3,6 +3,50 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.11.0] — 2026-07-28
+
+Closes **SDK-004**: CORS exposing and accepting `Mcp-Session-Id`.
+
+### The defect
+
+MCP over Streamable HTTP or SSE carries the session in the `Mcp-Session-Id`
+header. A browser cannot *read* a response header the server does not name in
+`Access-Control-Expose-Headers`, and cannot *send* it back unless the server
+names it in `Access-Control-Allow-Headers`. There was no CORS layer at all, so a
+browser-based MCP client completed the initialize handshake and then lost the
+session on the very next call — a failure that looks like a broken server rather
+than a missing header.
+
+### The change
+
+`FastMCP.run(transport=...)` offers no hook for adding middleware, so
+`__main__.py` now builds the Starlette app itself and runs uvicorn. That is
+exactly what the SDK does internally — see `FastMCP.run_sse_async`, which builds
+the same app and passes host, port and log level to uvicorn — so no part of the
+session-manager lifecycle changes.
+
+`_cors.py` attaches `CORSMiddleware` with `Mcp-Session-Id` in both
+`expose_headers` and `allow_headers`, `Last-Event-ID` for SSE stream resumption,
+and `DELETE` among the allowed methods so a browser client can terminate a
+session rather than only opening them.
+
+### Origins are fail-closed
+
+`MCP_CORS_ORIGINS` is unset by default, meaning no cross-origin browser access.
+That is the right default for a server whose primary transport is stdio. `*` is
+honoured but logs a WARNING and forces `allow_credentials=False` — browsers
+reject a wildcard origin together with credentials, so accepting both would ship
+a config that fails at request time rather than at startup.
+
+`tests/test_cors.py`, 10 tests, driving real requests through the assembled app
+rather than inspecting the middleware stack — asserting that a `CORSMiddleware`
+object exists would pass with an empty `expose_headers`, which is the defect
+itself. Mutation-tested against five reversions; each is caught by the test
+written for it.
+
+`starlette` and `uvicorn` are now declared dependencies. Both arrived
+transitively via `mcp`, but this module imports them directly.
+
 ## [0.10.0] — 2026-07-28
 
 Closes **SDK-001**: one pooled HTTP client behind the server lifespan.

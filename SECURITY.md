@@ -69,9 +69,17 @@ returned, and the 30-minute TTL was never once reached. 0.10.0 pools one shared
 client behind a lifespan, matching the sister server (`amtsblatt-mcp`), which
 passes this check.
 
+**`SDK-004` closed in 0.11.0, also not yet re-measured.** The HTTP transports
+carried no CORS layer, so `Mcp-Session-Id` was neither exposed nor accepted and
+a browser-based MCP client lost its session immediately after initialize.
+`_cors.py` now names the header in both directions. Origins are fail-closed:
+`MCP_CORS_ORIGINS` is unset by default, so no cross-origin browser access is
+permitted until an operator lists origins explicitly.
+
 The counts above are the measured run and are left as measured. Expected after
-0.10.0 is 18 pass / 15 partial / 3 fail — **derived, not measured**; only a
-re-audit makes it a number.
+0.11.0 is 19 pass / 15 partial / 2 fail, the two remaining being the accepted
+risks `SEC-009` and `SCALE-002` — **derived, not measured**; only a re-audit
+makes it a number.
 
 **Resolved in 0.2.0:**
 
