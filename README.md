@@ -353,10 +353,11 @@ write / OIDC-protected simap endpoints are deliberately out of scope. See the
 [SECURITY.md](SECURITY.md) re-evaluation triggers for the conditions that would
 move it to a write phase.
 
-The server targets the MCP protocol version negotiated by the pinned `mcp` SDK.
-SDK and dependency updates arrive as [Dependabot](.github/dependabot.yml) PRs, so
-a breaking protocol or SDK change is reviewed deliberately rather than drifting
-in silently.
+The server targets the MCP spec version pinned as `MCP_PROTOCOL_VERSION` — see
+[MCP Protocol Version](#mcp-protocol-version) above for the current value and
+how the pin is enforced. SDK and dependency updates arrive as
+[Dependabot](.github/dependabot.yml) PRs, so a breaking protocol or SDK change
+is reviewed deliberately rather than drifting in silently.
 
 ## Contributing
 

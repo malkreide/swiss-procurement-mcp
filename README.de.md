@@ -248,10 +248,11 @@ Lese-Endpoints; die schreibenden / OIDC-geschützten simap-Endpoints sind bewuss
 ausserhalb des Umfangs. Die Bedingungen für einen Übergang zu einer Schreib-Phase
 stehen als Re-Evaluierungs-Auslöser in [SECURITY.de.md](SECURITY.de.md).
 
-Der Server zielt auf die vom gepinnten `mcp`-SDK ausgehandelte MCP-Protokoll-Version.
-SDK- und Abhängigkeits-Updates kommen als [Dependabot](.github/dependabot.yml)-PRs,
-damit eine brechende Protokoll- oder SDK-Änderung bewusst geprüft wird statt still
-zu driften.
+Der Server zielt auf die als `MCP_PROTOCOL_VERSION` gepinnte MCP-Spec-Version —
+der aktuelle Wert und die Durchsetzung des Pins stehen oben im Abschnitt
+[MCP Protocol Version](#mcp-protocol-version). SDK- und Abhängigkeits-Updates
+kommen als [Dependabot](.github/dependabot.yml)-PRs, damit eine brechende
+Protokoll- oder SDK-Änderung bewusst geprüft wird statt still zu driften.
 
 ## Mitwirken
 

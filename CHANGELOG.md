@@ -3,6 +3,22 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.11.1] — 2026-07-28
+
+Closes **ARCH-012**: the README no longer contradicts itself about the protocol
+version.
+
+Two consecutive audits reported this and it went unfixed both times. The *MCP
+Protocol Version* section stated the version is pinned as an explicit constant,
+while *Maturity & updates* further down still said it was "negotiated by the
+pinned `mcp` SDK" — the opposite claim, and the one a reader skimming for the
+update policy hits first. `README.de.md` carried the same contradiction.
+
+Both now point at the pinned constant. `test_readme_does_not_contradict_the_pin`
+is parametrised over both files, so the sentence cannot come back in either
+language: prose drifts away from the code it describes unless something fails
+when it does. Mutation-tested by restoring the sentence.
+
 ## [0.11.0] — 2026-07-28
 
 Closes **SDK-004**: CORS exposing and accepting `Mcp-Session-Id`.
