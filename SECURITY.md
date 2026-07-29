@@ -9,9 +9,16 @@ controls deliberately deferred for this server profile.
 
 It was audited against the internal MCP best-practice catalogue (the portfolio
 `mcp-audit` methodology, 68 checks / 8 categories). The latest measured run
-(`audits/2026-07-28T094256-Z-swiss-procurement-mcp/`) scored **19 pass / 15
+(`audits/2026-07-29T095807-Z-swiss-procurement-mcp/`) scored **29 pass / 5
 partial / 2 fail** across **36** applicable checks. See `audits/` for the full
 report and per-finding docs.
+
+That run closed a long gap between what was measured and what was true. The
+previous measurement predated nine releases; every number quoted between them
+was a derivation, and the estimate written down at the time — ~31 pass / 3
+partial — was two checks optimistic. `OBS-001` and `OBS-002` are the two that
+did not move as far as expected, both for reasons now recorded as gaps rather
+than as guesses.
 
 **Not production-ready, and the two remaining fails are the reason — by
 decision, not by oversight.** `SEC-009` (session-to-user binding) and
@@ -36,7 +43,7 @@ not 32, and two of the four newly-evaluated checks failed. Both are now fixed:
   `Mcp-Session-Id` was neither exposed nor accepted and a browser client lost
   its session immediately after initialize.
 
-Runs against the 36-check set: 17/15/4 → **19/15/2**.
+Runs against the 36-check set: 17/15/4 → 19/15/2 → **29/5/2**.
 Earlier runs, for the record, against the narrower 32-check set:
 15/16/1 → 20/11/1 → 21/11/0 → 23/9/0.
 
@@ -65,9 +72,9 @@ path, no user authentication, and no personal data. Hardening in place:
 
 ## Audit findings
 
-The history below records what each release closed. The current open set is 17
-findings — 15 `partial` and 2 `fail` — documented under
-`audits/2026-07-28T094256-Z-swiss-procurement-mcp/findings/` (`fail-or-partial`
+The history below records what each release closed. The current open set is 7
+findings — 5 `partial` and 2 `fail` — documented under
+`audits/2026-07-29T095807-Z-swiss-procurement-mcp/findings/` (`fail-or-partial`
 policy).
 
 Both fails are the accepted risks `SEC-009` and `SCALE-002`, recorded as `fail`
