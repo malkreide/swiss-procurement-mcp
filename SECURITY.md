@@ -166,6 +166,35 @@ SSE that use it. The CORS layer was re-verified against `starlette` 1.3.1, which
 server drops those transports, which is a separate decision — SSE is now formally
 deprecated, and `ROADMAP.md` tracks it.
 
+**`ARCH-003` — closed in 0.18.0, not yet re-measured, and deliberately split.**
+The check asks that empty results on non-sensitive search tools trigger a fuzzy
+or suggestion mechanism, and that *sensitive* tools stay exact-only with the
+decision documented. This is that documentation.
+
+**The three taxonomy lookups widen** — `search_cpv_codes`,
+`search_construction_codes`, `find_procurement_office`. When the caller's term
+returns nothing, progressively broader terms are tried and the result comes back
+as `match_type="fuzzy"` with a `note` naming *both* the original term and the one
+that actually produced the hits. Silent widening would be worse than the empty
+result it replaces: a model that cannot see the question was changed under it
+will report the answer as though it were exact.
+
+**The three procurement searches do not widen** — `search_procurements`,
+`search_awards`, `search_procurements_detailed`. Broadening a tender query can
+surface publications that do not answer the question and present them as though
+they do, and "no tender matched" is a legitimate, actionable answer in a way that
+"no such CPV code" is not. `test_a_tender_search_never_widens` asserts the
+request count, because that is what a widening implementation would change. Their
+empty results still carry an actionable note, which names the split so the
+absence reads as a decision rather than a missing feature.
+
+The widening strategy was measured against the live API before it was written.
+`Schulhausneubau` returns nothing while `Schul` returns eighteen codes;
+`Betonsanierungsarbeiten` nothing while `Beto` returns five. A first
+implementation stepped down by a fixed ratio, looked reasonable, and was measured
+to stop three characters short of the term that works — the schedule now always
+ends at the floor.
+
 **Resolved in 0.2.0:**
 
 - **ARCH-012** (was fail, medium) — added `.github/dependabot.yml` (pip +

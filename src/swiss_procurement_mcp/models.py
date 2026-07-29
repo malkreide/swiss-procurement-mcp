@@ -12,7 +12,10 @@ Provenance = Literal["live_api", "cached", "degraded"]
 # schema advertised "any string" for a field that only ever takes two values, so
 # a model had no way to know what to expect back — the same class of mismatch as
 # a tool schema advertising a value the tool rejects.
-MatchType = Literal["exact", "none"]
+# ARCH-003. `fuzzy` means the caller's term found nothing and a broader one was
+# tried; `note` then names both, because a widened result read as an exact one is
+# the failure this whole mechanism has to avoid.
+MatchType = Literal["exact", "fuzzy", "none"]
 
 
 class Envelope(BaseModel):
@@ -89,7 +92,7 @@ class CodeSearchResponse(Envelope):
     system: str = Field(description="cpv, bkp, npk, cpc, ebkp-h, ebkp-t or oag.")
     count: int
     match_type: MatchType = Field(
-        default="none", description="exact when codes were returned, none when empty."
+        default="none", description="exact, fuzzy (broader term, see note), or none."
     )
     codes: list[CodeEntry]
 
@@ -104,7 +107,7 @@ class ProcurementOffice(BaseModel):
 class OfficeSearchResponse(Envelope):
     count: int
     match_type: MatchType = Field(
-        default="none", description="exact when offices matched, none when empty."
+        default="none", description="exact, fuzzy (broader term, see note), or none."
     )
     offices: list[ProcurementOffice]
 

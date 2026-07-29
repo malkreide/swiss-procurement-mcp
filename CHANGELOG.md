@@ -5,6 +5,64 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.18.0] — 2026-07-29
+
+Closes **`ARCH-003`**: an empty taxonomy lookup now widens, visibly, and a tender
+search still does not.
+
+### The split is the point
+
+The check permits — and this release takes — different behaviour for sensitive
+and non-sensitive search tools.
+
+`search_cpv_codes`, `search_construction_codes` and `find_procurement_office`
+retry with broader terms when the caller's term finds nothing, and return
+`match_type="fuzzy"` with a note naming *both* terms. "No such CPV code" is
+rarely the answer anyone wants, and the taxonomy is a closed set the caller can
+check against.
+
+`search_procurements`, `search_awards` and `search_procurements_detailed` are
+unchanged and stay exact. Broadening a procurement query can surface tenders that
+do not answer the question and present them as though they do; "no tender
+matched" is a real answer. `test_a_tender_search_never_widens` asserts the
+upstream request count, because that is what a widening implementation would
+change.
+
+### Silent widening would be worse than the empty result
+
+Every widened response names the original term and the one that produced the
+hits. A model seeing only results cannot tell the question was changed under it,
+and a bare `match_type: fuzzy` does not let it warn anyone which term the answer
+is really about. `match_type` gains `fuzzy` alongside `exact` and `none`.
+
+Every `none` now carries an actionable note: what was tried, what to do next, and
+a pointer to `source_status` — an upstream outage looks exactly like an empty
+result from the caller's side.
+
+### Measured before it was written
+
+`Schulhausneubau` returns nothing from the live CPV search while `Schul` returns
+eighteen codes. `Betonsanierungsarbeiten` nothing while `Beto` returns five. The
+upstream matches prefixes, which is why prefix-shortening is the strategy and why
+no stemmer is involved — guessing at German morphology would invent terms the
+caller never used.
+
+A first implementation stepped down by a fixed 30% per candidate. It looked
+reasonable and was wrong: from `Betonsanierungsarbeiten` it reached seven
+characters and stopped, three short of the term that works. The schedule is now
+geometric between the full word and the floor, so the last attempt is always the
+widest one.
+
+`find_procurement_office` widens without a second request — its list is already
+in memory, and a re-fetch would multiply traffic against a ~1 MB endpoint. There
+is a test asserting the request count for exactly that reason.
+
+Mutation-tested four ways: labelling widened results as exact fails 1, dropping
+the empty-result note fails 1, letting a tender search widen fails 2, and
+flattening the prefix schedule fails 2.
+
+254 tests pass, `ruff check` and `ruff format` clean.
+
 ## [0.17.0] — 2026-07-29
 
 Migrates to **`mcp` 2.x**, which closes the `OBS-001` criterion that 0.16.0 had

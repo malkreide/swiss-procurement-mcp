@@ -14,6 +14,7 @@ from typing import Any
 from mcp.server.mcpserver import MCPServer
 from mcp.types import LATEST_PROTOCOL_VERSION
 
+from ._fuzzy import empty_note, widen, widening_note
 from ._log import configure_logging, log_event, logged_tool
 from .client import (
     SimapClient,
@@ -436,14 +437,16 @@ async def search_procurements(args: SearchInput) -> SearchResponse:
     results = [_to_summary(e, lang) for e in projects]
     has_more = bool(next_cursor) and len(results) >= pagination.get("itemsPerPage", 20)
 
-    empty_note = None
+    # Renamed off `empty_note` to stop it shadowing the helper imported for the
+    # taxonomy lookups: these searches deliberately do not widen (ARCH-003).
+    no_match_note = None
     if not results:
-        empty_note = "No projects matched. Widen the date range or check the canton/CPV filters."
+        no_match_note = f"No projects matched. {_TENDER_HINT}"
     return SearchResponse(
         source=ATTRIBUTION,
         provenance=provenance,
         retrieved_at=stamp,
-        note=_combine_notes(empty_note, _canton_note(canton, canton_match)),
+        note=_combine_notes(no_match_note, _canton_note(canton, canton_match)),
         count=len(results),
         match_type="exact" if results else "none",
         has_more=has_more,
@@ -516,14 +519,14 @@ async def search_procurements_detailed(args: DetailedSearchInput) -> EnrichedSea
     details = await asyncio.gather(*(_fetch(pid, pubid) for pid, pubid in pairs))
 
     results = [d for d in details if d is not None]
-    empty_note = None
+    no_match_note = None
     if not total:
-        empty_note = "No projects matched. Widen the date range or check the canton/CPV filters."
+        no_match_note = f"No projects matched. {_TENDER_HINT}"
     return EnrichedSearchResponse(
         source=ATTRIBUTION,
         provenance=provenance,
         retrieved_at=stamp,
-        note=_combine_notes(empty_note, _canton_note(canton, canton_match)),
+        note=_combine_notes(no_match_note, _canton_note(canton, canton_match)),
         count=len(results),
         match_type="exact" if results else "none",
         total_matched=total,
@@ -586,7 +589,10 @@ async def search_awards(args: AwardSearchInput) -> SearchResponse:
         source=ATTRIBUTION,
         provenance=provenance,
         retrieved_at=stamp,
-        note=_canton_note(canton, canton_match),
+        note=_combine_notes(
+            None if results else f"No awards matched. {_TENDER_HINT}",
+            _canton_note(canton, canton_match),
+        ),
         count=len(results),
         match_type="exact" if results else "none",
         has_more=has_more,
@@ -664,6 +670,52 @@ async def get_publication_history(args: HistoryInput) -> HistoryResponse:
     )
 
 
+# ARCH-003 hints. Written once so the three taxonomy lookups say the same thing
+# and the two search tools say why they deliberately do not widen.
+_CODE_HINT = (
+    "Try a shorter or more general term — the upstream matches prefixes, so "
+    "'Metall' finds what 'Metallbauarbeiten' may not."
+)
+_OFFICE_HINT = "Try a distinctive fragment of the name rather than the full official title."
+_TENDER_HINT = (
+    "This search is exact by design and does not widen your terms: a broadened "
+    "procurement query can suggest a tender that does not exist. Drop a filter, "
+    "widen the date range, or resolve the subject to a CPV code with "
+    "`search_cpv_codes` and filter on that instead."
+)
+
+
+async def _code_search_widened(system: str, query: str, lang: str, limit: int):
+    """Exact first; on an empty result retry with broader terms (ARCH-003).
+
+    Returns `(raw, provenance, stamp, term_used, tried)`. `term_used` is what
+    actually produced the rows — the caller needs it for the note, because a
+    widened result presented as an exact one is precisely the failure mode this
+    is meant to prevent.
+
+    Each retry is another upstream request, so it only happens on a path that
+    already returned nothing, and `widen()` caps how many there can be.
+    """
+    client = get_client()
+
+    def _rows(payload):
+        return payload.get("codes", []) if isinstance(payload, dict) else payload
+
+    payload, provenance, stamp = await client.code_search(system, query, lang, limit)
+    raw = _rows(payload)
+    if raw:
+        return raw, provenance, stamp, query, []
+
+    tried: list[str] = []
+    for candidate in widen(query):
+        tried.append(candidate)
+        payload, provenance, stamp = await client.code_search(system, candidate, lang, limit)
+        raw = _rows(payload)
+        if raw:
+            return raw, provenance, stamp, candidate, tried
+    return [], provenance, stamp, query, tried
+
+
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("search_cpv_codes")
 async def search_cpv_codes(args: CpvSearchInput) -> CodeSearchResponse:
@@ -678,23 +730,25 @@ async def search_cpv_codes(args: CpvSearchInput) -> CodeSearchResponse:
     query, limit, language = args.query, args.limit, args.language
 
     lang = normalise_language(language)
-    client = get_client()
     try:
-        payload, provenance, stamp = await client.code_search("cpv", query, lang, limit)
+        raw, provenance, stamp, used, tried = await _code_search_widened("cpv", query, lang, limit)
     except UpstreamError as exc:
         return CodeSearchResponse(**_degraded(exc), system="cpv", count=0, codes=[])
 
-    raw = payload.get("codes", []) if isinstance(payload, dict) else payload
     codes = [
         CodeEntry(code=c.get("code", ""), label=pick_lang(c.get("label"), lang) or "") for c in raw
     ]
+    widened = bool(codes) and used != query
     return CodeSearchResponse(
         source=ATTRIBUTION,
         provenance=provenance,
         retrieved_at=stamp,
         system="cpv",
         count=len(codes),
-        match_type="exact" if codes else "none",
+        match_type="fuzzy" if widened else ("exact" if codes else "none"),
+        note=widening_note(query, used, len(codes))
+        if widened
+        else (None if codes else empty_note(query, tried, _CODE_HINT)),
         codes=codes,
     )
 
@@ -722,23 +776,27 @@ async def search_construction_codes(args: ConstructionCodeInput) -> CodeSearchRe
     if sys_norm not in allowed:
         raise ValueError(f"system must be one of {allowed}. For CPV use search_cpv_codes.")
 
-    client = get_client()
     try:
-        payload, provenance, stamp = await client.code_search(sys_norm, query, lang, limit)
+        raw, provenance, stamp, used, tried = await _code_search_widened(
+            sys_norm, query, lang, limit
+        )
     except UpstreamError as exc:
         return CodeSearchResponse(**_degraded(exc), system=sys_norm, count=0, codes=[])
 
-    raw = payload.get("codes", []) if isinstance(payload, dict) else payload
     codes = [
         CodeEntry(code=c.get("code", ""), label=pick_lang(c.get("label"), lang) or "") for c in raw
     ]
+    widened = bool(codes) and used != query
     return CodeSearchResponse(
         source=ATTRIBUTION,
         provenance=provenance,
         retrieved_at=stamp,
         system=sys_norm,
         count=len(codes),
-        match_type="exact" if codes else "none",
+        match_type="fuzzy" if widened else ("exact" if codes else "none"),
+        note=widening_note(query, used, len(codes))
+        if widened
+        else (None if codes else empty_note(query, tried, _CODE_HINT)),
         codes=codes,
     )
 
@@ -779,26 +837,46 @@ async def find_procurement_office(args: OfficeSearchInput) -> OfficeSearchRespon
         )
     else:
         raw = []
-    matched: list[ProcurementOffice] = []
-    for o in raw:
-        name = pick_lang(o.get("name"), lang) or ""
-        if needle in name.lower():
-            matched.append(
-                ProcurementOffice(
-                    id=o.get("id", ""),
-                    name=name,
-                    type=o.get("type"),
-                    institution_id=o.get("institutionId"),
+
+    def _filter(fragment: str) -> list[ProcurementOffice]:
+        found: list[ProcurementOffice] = []
+        for o in raw:
+            name = pick_lang(o.get("name"), lang) or ""
+            if fragment in name.lower():
+                found.append(
+                    ProcurementOffice(
+                        id=o.get("id", ""),
+                        name=name,
+                        type=o.get("type"),
+                        institution_id=o.get("institutionId"),
+                    )
                 )
-            )
-            if len(matched) >= limit:
+                if len(found) >= limit:
+                    break
+        return found
+
+    matched = _filter(needle)
+    used, tried = name_contains, []
+    # ARCH-003. Free here, unlike the code lookups: the office list is already in
+    # memory, so widening costs a re-filter rather than another upstream request.
+    if not matched:
+        for candidate in widen(name_contains):
+            tried.append(candidate)
+            matched = _filter(candidate.lower().strip())
+            if matched:
+                used = candidate
                 break
+
+    widened = bool(matched) and used != name_contains
     return OfficeSearchResponse(
         source=ATTRIBUTION,
         provenance=provenance,
         retrieved_at=stamp,
         count=len(matched),
-        match_type="exact" if matched else "none",
+        match_type="fuzzy" if widened else ("exact" if matched else "none"),
+        note=widening_note(name_contains, used, len(matched))
+        if widened
+        else (None if matched else empty_note(name_contains, tried, _OFFICE_HINT)),
         offices=matched,
     )
 
