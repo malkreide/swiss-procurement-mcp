@@ -4,6 +4,19 @@ This document exists because three audit checks point at the same thing from
 different angles: what happens to a client's session when the server is not a
 single process.
 
+> **The protocol is moving out from under this problem.** MCP spec
+> `2026-07-28` — which this server has spoken since 0.17.0 — **removes
+> protocol-level sessions**: no `initialize` handshake, no `Mcp-Session-Id`
+> header, no SSE stream resumability. A server needing cross-call state is told
+> to mint explicit handles and pass them as ordinary tool arguments. This server
+> keeps no cross-call state, so it needs none.
+>
+> Everything below still applies, because the SDK still ships the
+> session-bearing legacy transports and this server still offers them. It stops
+> applying the day SSE and legacy streamable-http are dropped — tracked in
+> `ROADMAP.md`, on the spec's twelve-month deprecation clock rather than on a
+> preference.
+
 ## The short version
 
 MCP over Streamable HTTP or SSE gives each client a session, identified by the
@@ -97,17 +110,17 @@ Back the session manager with Redis or equivalent so any instance can serve any
 session and an instance dying loses nothing.
 
 **Not implemented here.** It requires replacing the SDK's in-process
-`StreamableHTTPSessionManager`, which is not an extension point FastMCP exposes,
+`StreamableHTTPSessionManager`, which is not an extension point `MCPServer` exposes,
 plus a Redis dependency neither server currently has. If you need this, Option 1
 gets you the same availability for a read-only server at none of the cost.
 
 ## Session lifetime
 
-`StreamableHTTPSessionManager` accepts a `session_idle_timeout`, but **FastMCP
+`StreamableHTTPSessionManager` accepts a `session_idle_timeout`, but **`MCPServer`
 does not pass it through** — it is not in `Settings` and there is no constructor
 argument for it (verified against `mcp` 1.28.1). Setting an explicit server-side
 TTL therefore means constructing the session manager directly and bypassing
-`FastMCP.streamable_http_app()`.
+`MCPServer.streamable_http_app()`.
 
 Until that changes, bound session lifetime at the edge instead: the
 `proxy_read_timeout` above caps how long an idle stream is held open, and a
@@ -135,7 +148,7 @@ This is not an effort question — the input does not exist. What *is* true toda
 | User id from a validated token | **Impossible** — no identity provider |
 | Session bound to user id | **Impossible** — same reason |
 | 401/403 on mismatch | Not applicable — no user to mismatch |
-| Explicit TTL | Not settable through FastMCP (see above) |
+| Explicit TTL | Not settable through `MCPServer` (see above) |
 | Server-side invalidation | **Yes** — `DELETE` on the streamable-http endpoint terminates a session |
 
 Running stateless (Option 1) is the strongest available answer: with no sessions,

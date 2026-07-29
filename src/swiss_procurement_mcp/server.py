@@ -11,7 +11,7 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 from mcp.types import LATEST_PROTOCOL_VERSION
 
 from ._log import configure_logging, log_event, logged_tool
@@ -64,7 +64,7 @@ from .models import (
 
 
 @asynccontextmanager
-async def _lifespan(_server: FastMCP):
+async def _lifespan(_server: MCPServer):
     """SDK-001: release the pooled HTTP client when the server stops.
 
     Nothing is opened here — `get_client()` builds the shared client lazily on
@@ -78,7 +78,7 @@ async def _lifespan(_server: FastMCP):
         await close_client()
 
 
-mcp = FastMCP("swiss-procurement-mcp", lifespan=_lifespan)
+mcp = MCPServer("swiss-procurement-mcp", lifespan=_lifespan)
 
 # OBS-003: structured JSON to stderr. stdout carries the MCP protocol.
 configure_logging()
@@ -93,7 +93,7 @@ configure_logging()
 # tests/test_protocol_version.py fails in CI. That splits the two audiences
 # correctly — an SDK bump breaks the build for us, not the runtime for someone
 # who upgraded `mcp` downstream.
-MCP_PROTOCOL_VERSION = "2025-11-25"
+MCP_PROTOCOL_VERSION = "2026-07-28"
 
 if LATEST_PROTOCOL_VERSION != MCP_PROTOCOL_VERSION:
     log_event(

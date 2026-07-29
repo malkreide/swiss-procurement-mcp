@@ -158,28 +158,64 @@ def test_stateless_rejects_non_affirmative_values(
     assert main._stateless_requested() is False
 
 
-def test_stateless_reaches_the_server_settings(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Reading the env var and never applying it is the failure this catches."""
+def _record_stateless(monkeypatch: pytest.MonkeyPatch) -> dict:
+    """Capture what `build_http_app` actually asks the SDK for.
+
+    `mcp` 2.0 turned `stateless_http` from a mutable setting into an argument of
+    `streamable_http_app()`. There is no global left to read afterwards, so the
+    assertion moves to the call itself — which is the better place anyway: it
+    checks the value that reaches the SDK rather than a flag someone set.
+    """
     from swiss_procurement_mcp.server import mcp
 
+    seen: dict = {}
+    real = mcp.streamable_http_app
+
+    def _spy(*args, **kwargs):
+        seen.update(kwargs)
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(mcp, "streamable_http_app", _spy)
+    return seen
+
+
+def test_stateless_reaches_the_sdk(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reading the env var and never applying it is the failure this catches."""
     monkeypatch.setenv("MCP_STATELESS", "1")
-    monkeypatch.setattr(mcp.settings, "stateless_http", False)
+    seen = _record_stateless(monkeypatch)
     main = importlib.import_module("swiss_procurement_mcp.__main__")
     main.build_http_app("streamable-http")
-    assert mcp.settings.stateless_http is True
+    assert seen.get("stateless_http") is True
+
+
+def test_stateless_is_off_unless_asked_for(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The negative control: without the env var the flag must not ride along."""
+    monkeypatch.delenv("MCP_STATELESS", raising=False)
+    seen = _record_stateless(monkeypatch)
+    main = importlib.import_module("swiss_procurement_mcp.__main__")
+    main.build_http_app("streamable-http")
+    assert seen.get("stateless_http") is False
 
 
 def test_stateless_does_not_silently_apply_to_sse(monkeypatch: pytest.MonkeyPatch) -> None:
     """The legacy SSE transport has no stateless mode.
 
-    Leaving `stateless_http` set here would tell an operator they are running
-    session-free when they are not — worse than refusing, because it reads as
-    enforced.
+    Building the SSE app as if it were session-free would tell an operator they
+    are running without sessions when they are not — worse than refusing,
+    because it reads as enforced. `sse_app()` takes no such argument, so the
+    check is that the streamable-http builder is never reached at all.
     """
     from swiss_procurement_mcp.server import mcp
 
     monkeypatch.setenv("MCP_STATELESS", "1")
-    monkeypatch.setattr(mcp.settings, "stateless_http", False)
+    called = False
+
+    def _explode(*_args, **_kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("SSE must not be built through streamable_http_app")
+
+    monkeypatch.setattr(mcp, "streamable_http_app", _explode)
     main = importlib.import_module("swiss_procurement_mcp.__main__")
     main.build_http_app("sse")
-    assert mcp.settings.stateless_http is False
+    assert called is False

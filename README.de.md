@@ -196,7 +196,7 @@ Keine API-Keys — die gekapselten simap.ch-Lese-Endpoints sind vollständig öf
 
 | | |
 |---|---|
-| **Unterstützte Spec-Version** | `2025-11-25` |
+| **Unterstützte Spec-Version** | `2026-07-28` |
 | **Gepinnt in** | `MCP_PROTOCOL_VERSION` in [`server.py`](src/swiss_procurement_mcp/server.py) |
 | **SDK** | `mcp>=1.28.1` |
 
@@ -294,7 +294,7 @@ Siehe [EXAMPLES.md](EXAMPLES.md) für Anwendungsfälle nach Zielgruppe (Schule,
 ```
 swiss-procurement-mcp/
 ├── src/swiss_procurement_mcp/
-│   ├── server.py      # FastMCP-Tools (9, rein lesend)
+│   ├── server.py      # MCPServer-Tools (9, rein lesend)
 │   ├── client.py      # simap.ch-HTTP-Client + Retry + Normalisierung
 │   ├── constants.py   # probe-abgeleitete Lookup-Tabellen (Kantone, Pub-Typen, Codes)
 │   ├── models.py      # Pydantic-v2-Envelopes (source + provenance)

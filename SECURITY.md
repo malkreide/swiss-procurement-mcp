@@ -76,7 +76,7 @@ fails.
 
 **Closed in 0.10.0 — `SDK-001`, confirmed by the 09:42 run.** Every tool opened
 its own `httpx.AsyncClient` via `async with SimapClient()`, and the server
-passed no `lifespan` to `FastMCP`. That was a TCP and TLS handshake per tool
+passed no `lifespan` to the server object. That was a TCP and TLS handshake per tool
 call, and it made `SimapClient._cache` dead code: the cache is per-instance, so
 it was discarded the moment the tool returned and the 30-minute TTL was never
 once reached. One pooled client now sits behind a lifespan, matching the sister
@@ -115,11 +115,49 @@ over an in-memory transport and asserts both: an argument error arrives as a
 tool result with `isError: true`, a bad request raises `McpError`, and the
 `degraded` envelope stays a result rather than becoming either.
 
-The check will stay `partial`, for a reason now written down rather than
-unknown: the lowlevel SDK emits protocol-error **code 0**, not the `-32601` the
-check asks for, though `mcp.types` defines the constant. That is above the tool
-layer and nothing here can change it. Two tests assert the current behaviour, so
-an SDK fix arrives as a failing test rather than as a surprise in production.
+At the time that was written the check still could not pass: the lowlevel SDK
+emitted protocol-error **code 0**, not the `-32601` the check asks for, though
+`mcp.types` defined the constant. Two tests asserted that gap so an SDK fix
+would arrive as a failing test rather than as a surprise. **It did — see 0.17.0
+below.**
+
+**`OBS-001` criterion 3 met in 0.17.0, not yet re-measured.** The migration to
+`mcp` 2.x made the two pinned tests fail, exactly as they were written to. Under
+2.0 a protocol error carries a real JSON-RPC code: `resources/read` on a missing
+resource answers `-32602` (INVALID_PARAMS), `prompts/get` answers `-32603`. The
+spec made the same correction from the other side — `2026-07-28` moved
+resource-not-found from `-32002` to `-32602` to align with JSON-RPC, and
+partitioned the server-error range so `-32020`…`-32099` belongs to MCP.
+
+One deviation stays pinned rather than endorsed, unchanged by the migration: an
+unknown **tool** is still reported as `is_error` inside a tool result rather than
+as a protocol error, so "no such tool" and "the tool failed" remain
+indistinguishable to a client that does not read the text. `OBS-002` is also
+unchanged — `mask_error_details` does not exist in 2.0 either, and the guarantee
+stays test-enforced rather than configured.
+
+**What the `2026-07-28` spec does to `SEC-009` and `SCALE-002`.** Both controls
+are about sessions, and the spec **removes protocol-level sessions entirely** —
+no `initialize` handshake, no `Mcp-Session-Id` header, no SSE stream
+resumability. Servers needing cross-call state are told to mint explicit handles
+and pass them as ordinary tool arguments. This server has no cross-call state,
+so it needs none.
+
+That does not make the two findings pass, and it is worth being precise about
+why: the audit catalogue still scores them against a protocol that had sessions.
+What changes is their *character* — they move from "controls this server has not
+implemented" toward "controls the protocol no longer defines". The honest
+position until the catalogue catches up is that they remain `fail` and the
+reasoning below still applies to the transports as the SDK actually ships them,
+which — deliberately — still include the session-bearing legacy ones.
+
+**`SDK-004` is not undone by that.** `_cors.py` names `Mcp-Session-Id` in both
+directions, and the SDK still implements the legacy streamable-http transport and
+SSE that use it. The CORS layer was re-verified against `starlette` 1.3.1, which
+`mcp` 2.0 pulls in: preflight 200, the session header allowed and exposed,
+`DELETE` among the allowed methods. It stops being load-bearing only once this
+server drops those transports, which is a separate decision — SSE is now formally
+deprecated, and `ROADMAP.md` tracks it.
 
 **Resolved in 0.2.0:**
 
@@ -213,7 +251,7 @@ What is true today, criterion by criterion:
 | User id from a validated token | Impossible — no identity provider |
 | Session bound to user id | Impossible — same reason |
 | 401/403 on mismatch | Not applicable — no user to mismatch |
-| Explicit TTL | Not settable: `session_idle_timeout` exists on `StreamableHTTPSessionManager` but FastMCP passes it through neither `Settings` nor its constructor (verified against `mcp` 1.28.1) |
+| Explicit TTL | Not settable: `session_idle_timeout` exists on `StreamableHTTPSessionManager` but `MCPServer` passes it through neither `Settings` nor `streamable_http_app()` (re-verified against `mcp` 2.0.0 — the major version did not change this) |
 | Server-side invalidation | Yes — `DELETE` on the streamable-http endpoint terminates a session |
 
 **What has changed:** `MCP_STATELESS=1` with `MCP_TRANSPORT=streamable-http` now
@@ -255,10 +293,10 @@ What exists now — [`docs/load-balancing.md`](docs/load-balancing.md):
   re-initializes.
 
 Two criteria remain unmet, which is why this is not recorded as passing: there is
-no **explicit session TTL** (not settable through FastMCP, see above), and no
+no **explicit session TTL** (not settable through `MCPServer`, see above), and no
 **shared-state session manager** — that would need replacing the SDK's in-process
-manager, which FastMCP does not expose as an extension point, plus a Redis
-dependency this server does not have.
+manager, which the server object does not expose as an extension point, plus a
+Redis dependency this server does not have.
 
 **This becomes urgent if** the server is deployed multi-instance *and* keeps
 sessions. Running stateless removes the combination.

@@ -31,29 +31,45 @@ def _stateless_requested() -> bool:
     return os.environ.get("MCP_STATELESS", "").strip().lower() in {"1", "true", "yes"}
 
 
+def _bind_host() -> str:
+    """Loopback unless an operator opts out explicitly (SEC-016).
+
+    Read here rather than round-tripped through `mcp.settings`: `MCPServer`
+    dropped the `host` and `port` settings in 2.0, and they were only ever a
+    detour — the values come from the environment and go to uvicorn.
+    """
+    return os.environ.get("MCP_HOST", os.environ.get("HOST", "127.0.0.1"))
+
+
+def _bind_port() -> int:
+    return int(os.environ.get("PORT", os.environ.get("MCP_PORT", "8000")))
+
+
 def build_http_app(transport: str) -> Starlette:
     """Build the HTTP app with CORS attached (SDK-004).
 
     The SDK's own `mcp.run(transport=...)` builds this same app and hands it to
-    uvicorn with host, port and log level — see `FastMCP.run_sse_async`. It just
-    offers no hook for adding middleware, so the app is built here instead.
-    Nothing about the session-manager lifecycle changes.
+    uvicorn with host, port and log level. It just offers no hook for adding
+    middleware, so the app is built here instead. Nothing about the
+    session-manager lifecycle changes.
     """
     # Applies to streamable-http only; the legacy SSE transport has no
     # stateless mode, so requesting it there is a no-op and says so.
-    if _stateless_requested():
-        if transport == "sse":
-            log_event(
-                logging.WARNING,
-                "stateless_ignored_on_sse",
-                hint="MCP_STATELESS applies to streamable-http only; the legacy "
-                "SSE transport always keeps a session. Use "
-                "MCP_TRANSPORT=streamable-http to run without sessions.",
-            )
-        else:
-            mcp.settings.stateless_http = True
+    stateless = _stateless_requested()
+    if stateless and transport == "sse":
+        log_event(
+            logging.WARNING,
+            "stateless_ignored_on_sse",
+            hint="MCP_STATELESS applies to streamable-http only; the legacy "
+            "SSE transport always keeps a session. Use "
+            "MCP_TRANSPORT=streamable-http to run without sessions.",
+        )
 
-    app = mcp.sse_app() if transport == "sse" else mcp.streamable_http_app()
+    # `mcp` 2.0 moved `stateless_http` from a mutable setting to an argument of
+    # `streamable_http_app()`, which is strictly better: the mode is a property
+    # of the app being built rather than global state a later reader has to go
+    # looking for. `sse_app()` takes no such argument, hence the branch.
+    app = mcp.sse_app() if transport == "sse" else mcp.streamable_http_app(stateless_http=stateless)
     return apply_cors(app)
 
 
@@ -62,15 +78,10 @@ def main() -> None:
     if transport in HTTP_TRANSPORTS:
         import uvicorn
 
-        # Bind to loopback by default; exposing all interfaces must be an
-        # explicit opt-in (MCP_HOST/HOST=0.0.0.0) rather than the default, so a
-        # local run is not silently reachable from the network (SEC-016).
-        mcp.settings.host = os.environ.get("MCP_HOST", os.environ.get("HOST", "127.0.0.1"))
-        mcp.settings.port = int(os.environ.get("PORT", os.environ.get("MCP_PORT", "8000")))
         uvicorn.run(
             build_http_app(transport),
-            host=mcp.settings.host,
-            port=mcp.settings.port,
+            host=_bind_host(),
+            port=_bind_port(),
             log_level=mcp.settings.log_level.lower(),
         )
     else:

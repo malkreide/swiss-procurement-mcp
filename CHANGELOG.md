@@ -5,6 +5,72 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.17.0] — 2026-07-29
+
+Migrates to **`mcp` 2.x**, which closes the `OBS-001` criterion that 0.16.0 had
+to leave open. Protocol version moves from `2025-11-25` to `2026-07-28`.
+
+### The pinned tests did their job
+
+0.16.0 shipped two tests asserting that protocol errors carry **code 0**, with a
+stated purpose: *"when the SDK starts emitting a real code this test fails,
+which is the point."* It fails now.
+
+Under 2.0 a protocol error carries a real JSON-RPC code — `resources/read` on a
+missing resource answers `-32602` (INVALID_PARAMS), `prompts/get` answers
+`-32603`. The spec made the same correction independently: `2026-07-28` moved
+resource-not-found from `-32002` to `-32602` to align with JSON-RPC and
+partitioned the server-error range, reserving `-32020`…`-32099` for MCP.
+
+Both tests were rewritten from pins into assertions, plus a range check so a
+regression to `0` cannot pass unnoticed. **`OBS-001` criterion 3 is met.**
+
+Unchanged, and still pinned: an unknown *tool* is delivered as a tool result with
+`is_error: true` rather than as a protocol error. And `mask_error_details` does
+not exist in 2.0 either, so `OBS-002` stays test-enforced rather than configured.
+One thing did improve there — `prompts/get` used to echo the raw `ValueError`
+("Unknown prompt: nope") and now answers "Internal server error", keeping the
+detail server-side.
+
+### API changes, and why they are small
+
+The SDK surface this server touches turned out to be two imports:
+
+- `mcp.server.fastmcp.FastMCP` → `mcp.server.mcpserver.MCPServer`. Same
+  constructor kwargs; `@mcp.tool(annotations=…)`, `mcp.run()`, `sse_app()` and
+  `streamable_http_app()` are unchanged.
+- `mcp.settings.host` / `.port` / `.stateless_http` are gone. Host and port now
+  go straight from the environment to uvicorn, which is where they were always
+  headed — the settings object was a detour. `stateless_http` became an argument
+  of `streamable_http_app()`, which is better: the mode is a property of the app
+  being built rather than global state a later reader has to hunt for.
+
+Tests needed more, all in one file plus three renames: `McpError` → `MCPError`,
+`create_connected_server_and_client_session` → `mcp.Client(server)`, and
+camelCase → snake_case throughout (`isError` → `is_error`, `inputSchema` →
+`input_schema`). The `MCP_STATELESS` tests moved from reading a global to
+recording what actually reaches the SDK — a better assertion than the one they
+replaced. Mutation-tested: dropping the flag fails 2 tests, routing SSE through
+the streamable builder fails 1, dropping the lifespan fails 1.
+
+### What the new spec means for the accepted risks
+
+`2026-07-28` **removes protocol-level sessions**: no `initialize` handshake, no
+`Mcp-Session-Id`, no SSE stream resumability. It also reclassifies HTTP+SSE as
+Deprecated with a twelve-month removal window.
+
+Nothing breaks today — the SDK still ships the legacy transports, and `_cors.py`
+was re-verified against the `starlette` 1.3.1 that `mcp` 2.0 pulls in (preflight
+200, session header allowed and exposed, `DELETE` allowed). But it changes what
+`SEC-009` and `SCALE-002` are *about*: they move from controls this server has
+not implemented toward controls the protocol no longer defines. They stay `fail`
+until the audit catalogue catches up, because reclassifying a finding on our own
+authority is exactly the kind of quiet drift these documents exist to prevent.
+`ROADMAP.md` now carries retiring SSE as dated work rather than a someday.
+
+232 tests pass (one more than 0.16.0 — a negative control for the stateless
+flag), `ruff check` and `ruff format` clean.
+
 ## [0.16.0] — 2026-07-28
 
 Closes **OBS-001** as far as this repository reaches.
