@@ -148,7 +148,7 @@ Kriterium für Kriterium, Stand heute:
 | Benutzer-ID aus validiertem Token | Unmöglich — kein Identity Provider |
 | Session an Benutzer-ID gebunden | Unmöglich — gleicher Grund |
 | 401/403 bei Mismatch | Nicht anwendbar — kein Benutzer, der abweichen könnte |
-| Explizite TTL | Nicht setzbar: `session_idle_timeout` existiert auf `StreamableHTTPSessionManager`, FastMCP reicht es aber weder über `Settings` noch über den Konstruktor durch (gegen `mcp` 1.28.1 geprüft) |
+| Explizite TTL | Nicht setzbar: `session_idle_timeout` existiert auf `StreamableHTTPSessionManager`, `MCPServer` reicht es aber weder über `Settings` noch über `streamable_http_app()` durch (gegen `mcp` 2.0.0 erneut geprüft — die Major-Version hat daran nichts geändert) |
 | Serverseitige Invalidierung | Ja — `DELETE` auf dem streamable-http-Endpunkt beendet eine Session |
 
 **Was sich geändert hat:** `MCP_STATELESS=1` zusammen mit

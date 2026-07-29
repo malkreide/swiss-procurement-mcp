@@ -23,7 +23,7 @@ catalogue; the current run lives under `audits/`.
 |---|---|---|
 | Fuzzy match or suggestions when a search returns nothing | `ARCH-003` | open — needs a design decision first, see below |
 | Split `server.py` handlers into a `tools/` package | `ARCH-011` | open — refactor with regression risk, low payoff |
-| Standardised JSON-RPC codes on protocol errors | `OBS-001` | blocked upstream, see below |
+| Retire the deprecated HTTP+SSE transport | — | open, see below |
 | Per-tool-call progress reporting via `ctx: Context` | `SDK-003` | not planned while every tool returns in milliseconds |
 
 Closed since the last audit run, and therefore still listed as `partial` there:
@@ -32,14 +32,23 @@ Closed since the last audit run, and therefore still listed as `partial` there:
 under `audits/` is a measurement, not a status board — it will say `partial`
 until it is re-run.
 
-**`OBS-001` is closed as far as this repo reaches.** `tests/test_error_paths.py`
-drives a real `ClientSession` and asserts the two paths apart: an execution
-error arrives as a tool result with `isError: true`, a protocol error raises
-`McpError`. What is left is not implementable here — the lowlevel SDK server
-emits error **code 0** rather than the `-32601` the check asks for, and
-`mcp.types` defines the constant without using it. Two tests pin that, so the
-day the SDK starts emitting a real code, the suite says so. Until then the
-check stays `partial` for a reason that is written down rather than unknown.
+**`OBS-001` — the blocked criterion cleared in 0.17.0.** `tests/test_error_paths.py`
+drives a real client and asserts the two paths apart: an execution error arrives
+as a tool result with `is_error: true`, a protocol error raises `MCPError` with
+a real JSON-RPC code (`-32602` / `-32603`). Under `mcp` 1.x the code was always
+`0`, which the file pinned with two tests written to fail the day the SDK fixed
+it. The migration made them fail; they were rewritten into assertions. What
+remains open is not a code change: an unknown *tool* is still delivered as a
+tool result rather than a protocol error.
+
+**Retiring SSE is now a question with a deadline.** Spec `2026-07-28` reclassifies
+HTTP+SSE as Deprecated under a twelve-month removal window, and removes
+protocol-level sessions and stream resumability from streamable-http. This server
+offers SSE via `MCP_TRANSPORT=sse`, and the SDK still ships it, so nothing breaks
+today. The work is to decide when to drop it rather than to discover the date
+from a broken deployment — and dropping it is what eventually retires
+`MCP_STATELESS`, the `Mcp-Session-Id` half of `_cors.py`, and the sticky-session
+half of `docs/load-balancing.md` along with it.
 
 **`ARCH-003` needs a decision before it needs code.** The check wants empty
 results to trigger a fuzzy or suggestion mechanism. For CPV and construction

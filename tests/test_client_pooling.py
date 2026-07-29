@@ -86,9 +86,14 @@ async def test_server_is_constructed_with_a_lifespan() -> None:
     Asserted through the server object rather than by reading the source, so
     dropping the `lifespan=` argument fails here rather than passing quietly.
     """
-    assert mcp._mcp_server.lifespan is not None
-    default = type(mcp._mcp_server).__init__.__defaults__ or ()
-    assert mcp._mcp_server.lifespan not in default, "lifespan is still the SDK default"
+    from swiss_procurement_mcp.server import _lifespan
+
+    # `mcp` 2.0 renamed the internal handle (`_mcp_server` -> `_lowlevel_server`)
+    # and exposes the user-supplied lifespan on the settings object, which is
+    # the more direct thing to assert: not merely "some lifespan is wired" but
+    # "ours is".
+    assert mcp.settings.lifespan is _lifespan, "the pooled client has no shutdown hook"
+    assert mcp._lowlevel_server.lifespan is not None
 
 
 async def test_reset_client_is_synchronous_and_drops_the_instance() -> None:

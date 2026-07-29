@@ -116,7 +116,7 @@ def logged_tool(
     ``WARNING`` is emitted elsewhere, by ``_degraded()`` on upstream failure.
 
     `functools.wraps` sets `__wrapped__`, which `inspect.signature` follows, so
-    FastMCP still derives the tool's argument schema from the real signature.
+    The SDK still derives the tool's argument schema from the real signature.
     `tests/test_logging.py` asserts that rather than assuming it.
     """
 

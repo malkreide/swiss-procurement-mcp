@@ -239,7 +239,7 @@ upstream response body (OBS-002).
 
 | | |
 |---|---|
-| **Supported spec version** | `2025-11-25` |
+| **Supported spec version** | `2026-07-28` |
 | **Pinned in** | `MCP_PROTOCOL_VERSION` in [`server.py`](src/swiss_procurement_mcp/server.py) |
 | **SDK** | `mcp>=1.28.1` |
 
@@ -334,7 +334,7 @@ public, administration, developers) and a tool-selection reference table.
 ```
 swiss-procurement-mcp/
 ├── src/swiss_procurement_mcp/
-│   ├── server.py      # FastMCP tools (9, read-only)
+│   ├── server.py      # MCPServer tools (9, read-only)
 │   ├── client.py      # simap.ch HTTP client + retry + normalisation
 │   ├── constants.py   # probe-derived lookup tables (cantons, pub types, codes)
 │   ├── models.py      # Pydantic v2 envelopes (source + provenance)

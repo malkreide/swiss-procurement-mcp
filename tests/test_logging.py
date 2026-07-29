@@ -266,7 +266,7 @@ def test_every_registered_tool_is_wrapped() -> None:
 
 
 async def test_decorator_preserves_the_tool_argument_schema() -> None:
-    """`logged_tool` wraps *args/**kwargs; FastMCP still needs the real signature.
+    """`logged_tool` wraps *args/**kwargs; the SDK still needs the real signature.
 
     Without `functools.wraps` setting `__wrapped__` this silently degrades every
     tool to "no arguments", which no other test in this suite would catch.
@@ -274,15 +274,15 @@ async def test_decorator_preserves_the_tool_argument_schema() -> None:
     tools = {t.name: t for t in await mcp.list_tools()}
     assert len(tools) == 9
 
-    search = tools["search_procurements"].inputSchema
+    search = tools["search_procurements"].input_schema
     assert list(search["properties"]) == ["args"]
     fields = set(search["$defs"]["SearchInput"]["properties"])
     assert {"query", "canton", "canton_match", "cpv_codes", "language"} <= fields
 
-    detail = tools["get_procurement_details"].inputSchema["$defs"]["ProcurementDetailInput"]
+    detail = tools["get_procurement_details"].input_schema["$defs"]["ProcurementDetailInput"]
     assert {"project_id", "publication_id"} <= set(detail["required"])
 
-    assert tools["source_status"].inputSchema["$defs"]["StatusInput"]["properties"] == {}
+    assert tools["source_status"].input_schema["$defs"]["StatusInput"]["properties"] == {}
 
 
 async def test_decorator_preserves_return_values() -> None:
