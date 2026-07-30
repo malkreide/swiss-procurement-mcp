@@ -1,0 +1,139 @@
+{
+  "audit_meta": {
+    "server_name": "swiss-procurement-mcp",
+    "run_id": "2026-07-30T105205-Z-swiss-procurement-mcp",
+    "started_at": "2026-07-30T10:52:05.110029+00:00",
+    "timezone_offset": "Z",
+    "skill_version": "1.0.0",
+    "output_dir": "/home/user/swiss-procurement-mcp/audits/2026-07-30T105205-Z-swiss-procurement-mcp",
+    "catalog_hash": "091f446b27965044ce658a1d5f4b2cabe2b0ab5661dcc1a53b6be8f1f2e093c0",
+    "catalog_dir": "/root/.claude/skills/mcp-audit/checks"
+  },
+  "totals": {
+    "checks_evaluated": 36,
+    "applicable": 36,
+    "by_status": {
+      "pass": 30,
+      "fail": 2,
+      "partial": 4,
+      "todo": 0,
+      "n/a": 0
+    },
+    "by_severity_among_findings": {
+      "critical": 1,
+      "high": 3,
+      "medium": 2,
+      "low": 0
+    },
+    "by_category": {
+      "architecture": {
+        "pass": 10,
+        "fail": 0,
+        "partial": 1,
+        "todo": 0,
+        "n/a": 0
+      },
+      "compliance": {
+        "pass": 1,
+        "fail": 0,
+        "partial": 0,
+        "todo": 0,
+        "n/a": 0
+      },
+      "observability": {
+        "pass": 2,
+        "fail": 0,
+        "partial": 2,
+        "todo": 0,
+        "n/a": 0
+      },
+      "operations": {
+        "pass": 3,
+        "fail": 0,
+        "partial": 0,
+        "todo": 0,
+        "n/a": 0
+      },
+      "scalability": {
+        "pass": 0,
+        "fail": 1,
+        "partial": 0,
+        "todo": 0,
+        "n/a": 0
+      },
+      "sdk": {
+        "pass": 3,
+        "fail": 0,
+        "partial": 1,
+        "todo": 0,
+        "n/a": 0
+      },
+      "security": {
+        "pass": 11,
+        "fail": 1,
+        "partial": 0,
+        "todo": 0,
+        "n/a": 0
+      }
+    }
+  },
+  "findings": {
+    "policy": "fail-or-partial",
+    "policy_statuses": [
+      "fail",
+      "partial"
+    ],
+    "expected_count": 6,
+    "expected_ids": [
+      "ARCH-011",
+      "OBS-001",
+      "OBS-002",
+      "SCALE-002",
+      "SDK-003",
+      "SEC-009"
+    ],
+    "details": [
+      {
+        "check_id": "ARCH-011",
+        "category": "architecture",
+        "severity": "medium",
+        "status": "partial"
+      },
+      {
+        "check_id": "OBS-001",
+        "category": "observability",
+        "severity": "high",
+        "status": "partial"
+      },
+      {
+        "check_id": "OBS-002",
+        "category": "observability",
+        "severity": "high",
+        "status": "partial"
+      },
+      {
+        "check_id": "SCALE-002",
+        "category": "scalability",
+        "severity": "high",
+        "status": "fail"
+      },
+      {
+        "check_id": "SDK-003",
+        "category": "sdk",
+        "severity": "medium",
+        "status": "partial"
+      },
+      {
+        "check_id": "SEC-009",
+        "category": "security",
+        "severity": "critical",
+        "status": "fail"
+      }
+    ]
+  },
+  "production_ready": false,
+  "blocking_findings": [
+    "SCALE-002",
+    "SEC-009"
+  ]
+}
