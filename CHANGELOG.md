@@ -5,6 +5,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.18.1] — 2026-07-29
+
+Hardens `tests/test_security_doc.py`. No behaviour change.
+
+Porting this guard to `amtsblatt-mcp` showed the count assertion here was
+hollow. It searched the whole document for "29 pass", so any coincidental
+mention satisfied it — over there a *historical* sentence ("the estimate
+recorded at the time — ~32 pass / 8 partial / 6 fail") did exactly that, and
+rewriting the real posture line to a wrong number left the suite green. This
+repo does not currently quote its counts twice, so the hole was latent rather
+than active, but a guard that depends on prose never repeating a number is not
+a guard. The counts are now anchored to a window after the run citation,
+because the claim being asserted is that the summary states *this run's*
+numbers.
+
+`fail` is checked as well. Leaving it out meant the posture section could
+quietly stop naming the two fails this server has while staying green — and the
+fails are the part a reader is most likely looking for.
+
+Mutation-tested: each of the three counts, changed in the posture line, fails
+the test independently. One of those mutations was wrong on the first attempt —
+the prose wraps as `5\npartial`, so a literal "5 partial" replacement was a
+no-op that looked like a surviving mutant. The test was already correct; the
+mutation was not.
+
 ## [0.18.0] — 2026-07-29
 
 Closes **`ARCH-003`**: an empty taxonomy lookup now widens, visibly, and a tender
