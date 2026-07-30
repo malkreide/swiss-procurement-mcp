@@ -8,17 +8,33 @@ states the current security posture and the **accepted-risk** decisions for
 controls deliberately deferred for this server profile.
 
 It was audited against the internal MCP best-practice catalogue (the portfolio
-`mcp-audit` methodology, 68 checks / 8 categories). The latest measured run
-(`audits/2026-07-29T095807-Z-swiss-procurement-mcp/`) scored **29 pass / 5
+`mcp-audit` methodology, 68 checks / 8 categories, catalogue hash
+`091f446b…`). The latest measured run
+(`audits/2026-07-30T105205-Z-swiss-procurement-mcp/`) scored **30 pass / 4
 partial / 2 fail** across **36** applicable checks. See `audits/` for the full
 report and per-finding docs.
 
-That run closed a long gap between what was measured and what was true. The
-previous measurement predated nine releases; every number quoted between them
-was a derivation, and the estimate written down at the time — ~31 pass / 3
-partial — was two checks optimistic. `OBS-001` and `OBS-002` are the two that
-did not move as far as expected, both for reasons now recorded as gaps rather
-than as guesses.
+Trend against the identical applicable set: 17/15/4 → 19/15/2 → 29/5/2 →
+**30/4/2**. The applicable set and the catalogue hash are unchanged from the
+previous run, so the one moved check is code.
+
+**`ARCH-003` closed in 0.18.0 and this run confirms it.** All four criteria are
+met: the three taxonomy lookups widen visibly when an exact search comes back
+empty, every response carries `match_type`, `none` arrives with an actionable
+note, and the three tender searches stay exact-only with the split documented.
+
+**`ARCH-011` did not move, and the expectation that it would was wrong.** The
+0.18.2 deviation record argued the case in `SECURITY.md`; the criterion asks for
+it in the README, and it separately requires a `tools/` package above five tools
+— this server has nine. Five of seven criteria pass. Recorded as `partial` rather
+than re-graded on our own authority, which is the same discipline `SEC-009` and
+`SCALE-002` get below.
+
+The 2026-07-29 run had closed a long gap between what was measured and what was
+true. The measurement before it predated nine releases; every number quoted
+between them was a derivation, and the estimate written down at the time — ~31
+pass / 3 partial — was two checks optimistic. `OBS-001` and `OBS-002` were the
+two that did not move as far as expected.
 
 **Not production-ready, and the two remaining fails are the reason — by
 decision, not by oversight.** `SEC-009` (session-to-user binding) and
@@ -43,7 +59,7 @@ not 32, and two of the four newly-evaluated checks failed. Both are now fixed:
   `Mcp-Session-Id` was neither exposed nor accepted and a browser client lost
   its session immediately after initialize.
 
-Runs against the 36-check set: 17/15/4 → 19/15/2 → **29/5/2**.
+Runs against the 36-check set: 17/15/4 → 19/15/2 → 29/5/2 → **30/4/2**.
 Earlier runs, for the record, against the narrower 32-check set:
 15/16/1 → 20/11/1 → 21/11/0 → 23/9/0.
 
@@ -72,10 +88,10 @@ path, no user authentication, and no personal data. Hardening in place:
 
 ## Audit findings
 
-The history below records what each release closed. The current open set is 7
-findings — 5 `partial` and 2 `fail` — documented under
-`audits/2026-07-29T095807-Z-swiss-procurement-mcp/findings/` (`fail-or-partial`
-policy).
+The history below records what each release closed. The current open set is 6
+findings — 4 `partial` and 2 `fail` — documented under
+`audits/2026-07-30T105205-Z-swiss-procurement-mcp/findings/` (`fail-or-partial`
+policy). `ARCH-003` left the set in 0.18.0.
 
 Both fails are the accepted risks `SEC-009` and `SCALE-002`, recorded as `fail`
 because the control is genuinely absent. Nothing else in the applicable set
