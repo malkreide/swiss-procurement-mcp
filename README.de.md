@@ -298,10 +298,40 @@ swiss-procurement-mcp/
 │   ├── client.py      # simap.ch-HTTP-Client + Retry + Normalisierung
 │   ├── constants.py   # probe-abgeleitete Lookup-Tabellen (Kantone, Pub-Typen, Codes)
 │   ├── models.py      # Pydantic-v2-Envelopes (source + provenance)
+│   ├── inputs.py      # strikte Pydantic-Input-Modelle (Grenzen, Allow-Lists)
+│   ├── _fuzzy.py      # Begriffs-Erweiterung für die Taxonomie-Abfragen (ARCH-003)
+│   ├── _log.py        # strukturiertes JSON-Logging auf stderr + @logged_tool
+│   ├── _net.py        # DNS-gepinnter Transport (Egress-Allow-List)
+│   ├── _cors.py       # CORS-Layer für die HTTP-Transporte
 │   └── __main__.py    # Dual-Transport-Einstieg (stdio / SSE / streamable-http)
 ├── tests/             # respx-gemockt + @pytest.mark.live
 └── .github/workflows/ # CI + OIDC-Publish (PyPI / MCP-Registry)
 ```
+
+### Warum es kein `tools/`-Package gibt
+
+Der Struktur-Standard des Portfolios verlangt ein `tools/`-Package, sobald ein
+Server mehr als fünf Tools anbietet. Dieser hat neun und behält sie in
+`server.py` — eine bewusste Abweichung, kein Versehen, und hier festgehalten,
+weil der Standard und wer ihn vergleicht genau hier nachschaut.
+
+`server.py` hat rund 900 Zeilen, und die Module darüber sind längst nach Belang
+getrennt. Die Absicht des Standards — eine Codebasis, die man ohne Scrollen durch
+eine Sammeldatei navigiert — ist damit erfüllt. Was die Aufteilung ergänzen
+würde, ist das wortwörtliche Dateilayout.
+
+Beim Schwesterserver `amtsblatt-mcp` war sie es wert: dessen `server.py` war auf
+2477 Zeilen gewachsen und enthielt HTTP-Plumbing, XML-Parsing, einen
+Taxonomie-Cache, die Input-Modelle und jeden Handler; aufgeteilt in dessen
+0.21.0. Genau dieser Refactor ist auch der Grund zur Vorsicht hier — er hat einen
+Defekt eingebaut (ein extrahiertes Modul fing einen Cache-Global per Wert ab, ein
+Tool meldete daraufhin still veralteten Zustand), den die **komplette Testsuite
+durchgewunken hat**, weil kein Test den betroffenen Pfad abdeckte. Gefunden wurde
+er beim Lesen des Diffs.
+
+Neun Handler für die wortwörtliche Form eines Standards zu verschieben, dessen
+Absicht bereits erfüllt ist, ginge dieses Risiko ohne Navigationsgewinn ein. Ab
+etwa 1500 Zeilen in `server.py` ist das neu zu bewerten.
 
 ---
 

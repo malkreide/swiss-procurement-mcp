@@ -5,6 +5,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.18.3] — 2026-07-30
+
+Moves the `ARCH-011` deviation rationale into `README.md`, where the criterion
+looks for it. Documentation only.
+
+The 2026-07-30 re-audit found the 0.18.2 record was in the wrong file. The check
+asks that "Abweichungen vom Standard sind im README begründet"; the argument sat
+in `SECURITY.md`. That is one of the finding's two open criteria — the other is
+the missing `tools/` package at nine tools, which stays open by decision — so
+`ARCH-011` remains `partial`. Half a finding, closed where it was cheap.
+
+`SECURITY.md` keeps the audit-side facts and links to the README section rather
+than repeating the argument. Two copies of the same rationale drift, which this
+document already says about parallel chronicles.
+
+### A stale tree, found on the way
+
+Both project-structure trees were out of date, and the German one more so: it was
+missing `inputs.py`, `_log.py`, `_fuzzy.py`, `_net.py` and `_cors.py`, the English
+one the last three. A structure section that does not list the modules is a poor
+argument for the structure being fine, so both now match the package.
+
 ## [0.18.2] — 2026-07-30
 
 Records **`ARCH-011`** as a deliberate deviation rather than leaving it looking
