@@ -35,14 +35,44 @@ def test_cites_the_latest_audit_run() -> None:
     )
 
 
+# How much prose after the run citation counts as "the sentence that cites it".
+# Generous enough for a wrapped sentence, tight enough that an unrelated
+# paragraph elsewhere in the document cannot stand in for it.
+_CITATION_WINDOW = 500
+
+
 def test_quoted_counts_match_that_run() -> None:
-    summary = json.loads((_latest_audit_dir() / "summary.json").read_text())
+    """All three counts, anchored to the sentence that names the run.
+
+    Both details were found by porting this file to `amtsblatt-mcp`, where the
+    original form of the assertion turned out to be hollow.
+
+    A document-wide search lets any coincidental mention satisfy the check. Over
+    there a *historical* sentence — "the estimate recorded at the time — ~32 pass
+    / 8 partial / 6 fail" — did exactly that, and rewriting the actual posture
+    line to a wrong number left the suite green. This repo does not currently
+    quote its counts twice, so the hole was latent rather than active here; a
+    guard that depends on prose not repeating a number is not a guard. The claim
+    being asserted is that the summary states *this run's* numbers, so the
+    numbers have to sit next to the run reference.
+
+    `fail` is checked too. Leaving it out meant a posture section could quietly
+    stop naming the two fails this server has while staying green — and the
+    fails are the part a reader is most likely to be looking for.
+    """
+    latest = _latest_audit_dir()
+    summary = json.loads((latest / "summary.json").read_text())
     by = summary["totals"]["by_status"]
+
+    at = SECURITY.find(latest.name)
+    assert at != -1, f"SECURITY.md does not reference {latest.name}"
+    window = SECURITY[at : at + _CITATION_WINDOW]
+
     # `\s+` rather than a literal space: prose wraps, and the count and its
     # label legitimately end up on different lines.
-    for label, value in (("pass", by["pass"]), ("partial", by["partial"])):
-        assert re.search(rf"{value}\s+{label}", SECURITY), (
-            f"SECURITY.md does not state {value} {label} from the latest run"
+    for label in ("pass", "partial", "fail"):
+        assert re.search(rf"{by[label]}\s+{label}", window), (
+            f"the passage citing {latest.name} does not state {by[label]} {label}"
         )
 
 
