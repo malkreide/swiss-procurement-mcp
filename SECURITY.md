@@ -81,6 +81,31 @@ Both fails are the accepted risks `SEC-009` and `SCALE-002`, recorded as `fail`
 because the control is genuinely absent. Nothing else in the applicable set
 fails.
 
+### `ARCH-011` — a deliberate deviation, not deferred work
+
+The finding's gap is worded literally: "no `tools/` package — all 9 handlers in
+`server.py`". That is accurate. It is also the whole of it: `server.py` is 902
+lines, and `_net`, `_cors`, `_log`, `_fuzzy`, `client`, `constants`, `inputs` and
+`models` are already separate modules. The intent of the check — a codebase
+navigable without scrolling through an omnibus file — is met.
+
+The companion server was the opposite case and got the opposite treatment: its
+`server.py` was 2477 lines holding HTTP plumbing, XML parsing, the taxonomy
+cache, the input models and every handler, and it was split in `amtsblatt-mcp`
+0.21.0. That refactor is also the argument for not doing this one. It introduced a
+bug — an extracted module captured a cache global by value, so a tool silently
+reported stale state — and **the entire suite stayed green**, because no test
+covered the one path that broke. It was caught by reading the diff.
+
+Nine handlers moved for the literal form of a criterion whose intent is already
+satisfied would run that risk for no navigational gain. Recorded here as a
+decision rather than left to look like a backlog item, on the same basis as the
+`SEC-022` namespace criterion in the sister server: intent met, wording not,
+written down.
+
+If `server.py` grows past roughly 1500 lines the trade changes and this should be
+revisited.
+
 **Closed in 0.10.0 — `SDK-001`, confirmed by the 09:42 run.** Every tool opened
 its own `httpx.AsyncClient` via `async with SimapClient()`, and the server
 passed no `lifespan` to the server object. That was a TCP and TLS handshake per tool

@@ -5,6 +5,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.18.2] — 2026-07-30
+
+Records **`ARCH-011`** as a deliberate deviation rather than leaving it looking
+like deferred work. Documentation only.
+
+The finding's gap is worded literally: "no `tools/` package — all 9 handlers in
+`server.py`". That is accurate, and it is also the whole of it. `server.py` is 902
+lines, and `_net`, `_cors`, `_log`, `_fuzzy`, `client`, `constants`, `inputs` and
+`models` are already separate modules, so the intent of the check — a codebase
+navigable without scrolling an omnibus file — is met.
+
+The companion server was the opposite case and got the opposite treatment: its
+`server.py` was 2477 lines holding HTTP plumbing, XML parsing, the taxonomy
+cache, the input models and every handler, and `amtsblatt-mcp` 0.21.0 split it.
+
+That refactor is also the argument against doing this one. It introduced a bug —
+an extracted module captured a cache global by value, so a tool silently reported
+stale state — and the entire suite stayed green, because no test covered the one
+path that broke. It was caught by reading the diff, not by CI. Moving nine
+handlers to satisfy the literal wording of a criterion whose intent is already met
+would take that risk for no navigational gain.
+
+Written down on the same basis as the `SEC-022` namespace criterion in the sister
+server: intent met, wording not, recorded as a decision. Revisit if `server.py`
+passes roughly 1500 lines.
+
 ## [0.18.1] — 2026-07-29
 
 Hardens `tests/test_security_doc.py`. No behaviour change.
