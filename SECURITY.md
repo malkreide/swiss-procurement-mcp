@@ -30,6 +30,11 @@ it in the README, and it separately requires a `tools/` package above five tools
 than re-graded on our own authority, which is the same discipline `SEC-009` and
 `SCALE-002` get below.
 
+**0.18.3 closes the documentation half of that**, not yet re-measured: the
+rationale moved to `README.md`, where the criterion looks. The `tools/` package
+is still absent by decision, so `ARCH-011` stays `partial` — one of its two open
+criteria, not both.
+
 The 2026-07-29 run had closed a long gap between what was measured and what was
 true. The measurement before it predated nine releases; every number quoted
 between them was a derivation, and the estimate written down at the time — ~31
@@ -99,28 +104,16 @@ fails.
 
 ### `ARCH-011` — a deliberate deviation, not deferred work
 
-The finding's gap is worded literally: "no `tools/` package — all 9 handlers in
-`server.py`". That is accurate. It is also the whole of it: `server.py` is 902
-lines, and `_net`, `_cors`, `_log`, `_fuzzy`, `client`, `constants`, `inputs` and
-`models` are already separate modules. The intent of the check — a codebase
-navigable without scrolling through an omnibus file — is met.
+The structural rationale now lives in
+[`README.md` § Why there is no `tools/` package](README.md#why-there-is-no-tools-package),
+which is where the check looks and where a reader comparing repo structure
+against the standard looks. It is not duplicated here: two copies of the same
+argument drift, and this document already says so about parallel chronicles.
 
-The companion server was the opposite case and got the opposite treatment: its
-`server.py` was 2477 lines holding HTTP plumbing, XML parsing, the taxonomy
-cache, the input models and every handler, and it was split in `amtsblatt-mcp`
-0.21.0. That refactor is also the argument for not doing this one. It introduced a
-bug — an extracted module captured a cache global by value, so a tool silently
-reported stale state — and **the entire suite stayed green**, because no test
-covered the one path that broke. It was caught by reading the diff.
-
-Nine handlers moved for the literal form of a criterion whose intent is already
-satisfied would run that risk for no navigational gain. Recorded here as a
-decision rather than left to look like a backlog item, on the same basis as the
-`SEC-022` namespace criterion in the sister server: intent met, wording not,
-written down.
-
-If `server.py` grows past roughly 1500 lines the trade changes and this should be
-revisited.
+The audit-side facts, which do belong here: five of seven criteria pass, the two
+open ones are the missing `tools/` package at nine tools and — until 0.18.3 — the
+location of the justification. `ARCH-011` stays `partial` either way, because the
+package is genuinely absent.
 
 **Closed in 0.10.0 — `SDK-001`, confirmed by the 09:42 run.** Every tool opened
 its own `httpx.AsyncClient` via `async with SimapClient()`, and the server

@@ -338,12 +338,40 @@ swiss-procurement-mcp/
 │   ├── client.py      # simap.ch HTTP client + retry + normalisation
 │   ├── constants.py   # probe-derived lookup tables (cantons, pub types, codes)
 │   ├── models.py      # Pydantic v2 envelopes (source + provenance)
-│   ├── _log.py        # structured JSON logging to stderr + @logged_tool
 │   ├── inputs.py      # strict Pydantic tool-input models (bounds, allow-lists)
+│   ├── _fuzzy.py      # term widening for the taxonomy lookups (ARCH-003)
+│   ├── _log.py        # structured JSON logging to stderr + @logged_tool
+│   ├── _net.py        # DNS-pinned transport (egress allow-list)
+│   ├── _cors.py       # CORS layer for the HTTP transports
 │   └── __main__.py    # Dual-transport entry point (stdio / SSE / streamable-http)
 ├── tests/             # respx-mocked + @pytest.mark.live
 └── .github/workflows/ # CI + OIDC PyPI/MCP-registry publish
 ```
+
+### Why there is no `tools/` package
+
+The portfolio structure standard asks for a `tools/` package once a server
+exposes more than five tools. This one exposes nine and keeps them in
+`server.py`, which is a deliberate deviation rather than an oversight — recorded
+here because this is where the standard, and anyone comparing against it, looks.
+
+`server.py` is ~900 lines and the surrounding modules above are already split out
+by concern, so the intent of the standard — a codebase navigable without
+scrolling one omnibus file — is met. What the split would add is the literal file
+layout.
+
+The companion server `amtsblatt-mcp` is the case where it was worth doing: its
+`server.py` had grown to 2477 lines holding HTTP plumbing, XML parsing, a
+taxonomy cache, the input models and every handler, and it was split in that
+project's 0.21.0. That refactor is also the reason for caution here — it
+introduced a defect (an extracted module captured a cache global by value, so a
+tool silently reported stale state) that the **entire test suite passed
+through**, because no test covered the affected path. It was caught by reading
+the diff.
+
+Moving nine handlers for the literal form of a standard whose intent is already
+satisfied would take that risk for no navigational gain. This should be revisited
+if `server.py` passes roughly 1500 lines.
 
 ---
 
