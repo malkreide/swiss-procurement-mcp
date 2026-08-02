@@ -5,6 +5,53 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.18.4] — 2026-08-02
+
+### Fixed
+
+- **Every request to simap.ch announced `swiss-procurement-mcp/0.4.0`.** The
+  package on PyPI was `0.18.3`; the User-Agent had been fourteen minor versions
+  stale for months. Measured at the installed artefact, not in the source tree.
+
+  The cause is worth recording, because it was an earlier repair of this same
+  bug. `constants.py` carried
+
+  ```python
+  # Single source of truth for the version string; `__init__` re-exports it, so
+  # the User-Agent cannot drift from the packaged version again (it said 0.3.0
+  # while the package was already 0.3.1).
+  VERSION = "0.4.0"
+  ```
+
+  A hand-written constant is not a source of truth for a number the build
+  decides — it is a second copy, and second copies drift. The comment promised
+  the drift could not happen while sitting on top of the mechanism that caused
+  it, and `__init__` re-exported the wrong value as `__version__`, so anything
+  introspecting the package got it too.
+
+  `VERSION` now comes from `importlib.metadata`, which is written at install
+  time by the thing that sets the version and therefore cannot disagree with
+  the artefact it describes. The fallback for an uninstalled source tree is
+  `0.0.0+source` — a PEP 440 local segment that cannot be read as a release.
+
+- **Nothing in this repository ever asserted anything about the version.**
+  `tests/test_version_identity.py` now checks that `VERSION` equals the
+  installed distribution, that `__version__` re-exports it, that the
+  User-Agent carries it, and that no version literal returns under `src/`.
+
+  The scan is semantic rather than shape-based: this package is full of IP
+  literals (`127.0.0.1`, `10.0.0.0/8`) that look exactly like version numbers.
+  It matches a version-shaped literal assigned to a version-named constant, or
+  one riding inside this package's own User-Agent token. Two further tests
+  assert that it fires on both shapes that actually shipped and stays quiet on
+  the addresses, the protocol date pin and the fallback marker.
+
+  Worth noting for the portfolio: the standard `scripts/check_version_sync.py`
+  would **not** have caught this. It looks for hardcoded versions inside
+  User-Agent-shaped strings (`name/version`), and here the literal was a bare
+  constant feeding an f-string. Run against this repository in its broken state
+  it reported `Versions-Sync OK`.
+
 ## [0.18.3] — 2026-07-30
 
 Moves the `ARCH-011` deviation rationale into `README.md`, where the criterion

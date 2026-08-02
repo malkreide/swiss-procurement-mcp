@@ -6,6 +6,9 @@ future refactorings.
 
 from __future__ import annotations
 
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _pkg_version
+
 # FINDING: The public read API lives under /api on the production host. The web
 # UI at simap.ch/de is a separate SSR app and does NOT expose these endpoints —
 # probing it was the reason for an earlier, wrong "no API" conclusion.
@@ -21,10 +24,24 @@ ALLOWED_HOSTS = frozenset({"www.simap.ch"})
 # /api calls work. A cookie jar / persistent client is therefore mandatory.
 COOKIE_SEED_URL = "https://www.simap.ch/api/cantons/v1?lang=de"
 
-# Single source of truth for the version string; `__init__` re-exports it, so
-# the User-Agent cannot drift from the packaged version again (it said 0.3.0
-# while the package was already 0.3.1).
-VERSION = "0.4.0"
+# The version comes from the INSTALLED distribution's metadata, not from a
+# literal here. A literal was the previous attempt at "a single source of
+# truth", and it drifted fourteen minor versions: it read 0.4.0 while the
+# package on PyPI was 0.18.3, so every request to simap.ch announced a client
+# version that had not existed for months.
+#
+# The lesson is that a hand-written constant is never a source of truth for a
+# number the build decides — it is a second copy, and second copies drift.
+# Package metadata is written at install time by the thing that sets the
+# version, so it cannot disagree with the artefact it describes.
+#
+# The fallback marks itself as one: a PEP 440 local segment after `+` can never
+# be mistaken for a release, unlike a plausible-looking "0.0.0".
+try:
+    VERSION = _pkg_version("swiss-procurement-mcp")
+except PackageNotFoundError:  # running from a source tree, not installed
+    VERSION = "0.0.0+source"
+
 USER_AGENT = (
     f"swiss-procurement-mcp/{VERSION} (+https://github.com/malkreide/swiss-procurement-mcp)"
 )
