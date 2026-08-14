@@ -1,0 +1,764 @@
+{
+  "project-info": {
+    "stateContractArea": true,
+    "dialog": "no",
+    "documentsWithCosts": "no",
+    "publicationTed": false,
+    "procOfficeAddress": {
+      "postalCode": "3000",
+      "countryId": "CH",
+      "cantonId": "BE",
+      "id": "16c39a14-8054-4433-860e-aac7ea8a7d52",
+      "name": {
+        "de": "SBB CFF FFS Infra-Telecom und Elektroanlagen",
+        "en": null,
+        "fr": "SBB CFF FFS Infra-Telecom und Elektroanlagen",
+        "it": null
+      },
+      "contactPerson": {
+        "de": null,
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "phone": "+0000000",
+      "email": "einkauf.telecom@sbb.ch",
+      "url": {
+        "de": null,
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "reference": null,
+      "street": {
+        "de": "Hilfikerstrasse 3 ",
+        "en": null,
+        "fr": "Hilfikerstrasse 3 ",
+        "it": null
+      },
+      "city": {
+        "de": "Bern 65 ",
+        "en": null,
+        "fr": "Bern 65 ",
+        "it": null
+      }
+    },
+    "procurementRecipientAddress": {
+      "postalCode": "3000",
+      "countryId": "CH",
+      "cantonId": "BE",
+      "id": "9ec77d06-9b99-49e3-b1d8-d841ede17497",
+      "name": {
+        "de": "SBB CFF FFS Infra-Telecom und Elektroanlagen",
+        "en": null,
+        "fr": "SBB CFF FFS Infra-Telecom und Elektroanlagen",
+        "it": null
+      },
+      "contactPerson": {
+        "de": null,
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "phone": "+0000000",
+      "email": "einkauf.telecom@sbb.ch",
+      "url": {
+        "de": null,
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "reference": null,
+      "street": {
+        "de": "Hilfikerstrasse 3 ",
+        "en": null,
+        "fr": "Hilfikerstrasse 3 ",
+        "it": null
+      },
+      "city": {
+        "de": "Bern 65 ",
+        "en": null,
+        "fr": "Bern 65 ",
+        "it": null
+      }
+    },
+    "title": {
+      "de": "Business Connectivity as a Service",
+      "en": null,
+      "fr": "Business Connectivity as a Service",
+      "it": null
+    },
+    "documentsLanguages": [
+      "de"
+    ],
+    "documentsSourceType": "documents_source_simap",
+    "offerLanguages": [
+      "de"
+    ],
+    "offerTypes": [
+      "offer_external"
+    ],
+    "publicationLanguages": [
+      "de"
+    ],
+    "processType": "open",
+    "orderType": "service",
+    "participantLotsLimitation": null,
+    "participantLotsLimitationNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "dialogNote": null,
+    "documentsCosts": {
+      "currency": null,
+      "price": null
+    },
+    "documentsCostsNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "documentsLanguagesNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "documentsSourceEmail": null,
+    "documentsSourceUrl": null,
+    "documentsSourceNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "offerSpecificNote": null,
+    "offerDigitalExternalPlatformUrl": null,
+    "documentsSourceAddress": null,
+    "offerAddress": {
+      "postalCode": "3000",
+      "countryId": "CH",
+      "cantonId": null,
+      "id": "8515f2ae-6e2f-4e2a-89c3-3581612d9d6a",
+      "name": {
+        "de": "SBB CFF FFS Infra-Telecom und Elektroanlagen",
+        "en": null,
+        "fr": "SBB CFF FFS Infra-Telecom und Elektroanlagen",
+        "it": null
+      },
+      "contactPerson": {
+        "de": null,
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "phone": null,
+      "email": null,
+      "url": {
+        "de": null,
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "reference": null,
+      "street": {
+        "de": "Hilfikerstrasse 3 ",
+        "en": null,
+        "fr": "Hilfikerstrasse 3 ",
+        "it": null
+      },
+      "city": {
+        "de": "Bern 65 ",
+        "en": null,
+        "fr": "Bern 65 ",
+        "it": null
+      }
+    },
+    "publicationLanguagesComment": {
+      "de": "Die Ausschreibungsunterlagen sind gemäss Art. 21 Abs. 2 VöB nur in deutscher Sprache erhältlich. \n\nDieses Beschaffungsprojekt wurde am 01.04.2026 im Simap vorangekündet. Die SBB hat innerhalb der gesetzten Frist keine Anfrage erhalten, welche eine Übersetzung der Ausschreibungsunterlagen fordert. Die Ausschreibungsunterlagen sind daher nur in deutscher Sprache erhältlich. ",
+      "en": null,
+      "fr": "Conformément à l’art. 21, al. 2 OMP, les documents d’appel d’offres ne sont disponibles qu’en langue allemande. \n\nLe présent projet d’acquisition a été préalablement annoncé sur Simap le 1er avril 2026. Les CFF n’ont reçu aucune demande visant à obtenir une traduction des documents d’appel d’offres dans le délai imparti. Ceux-ci ne sont donc disponibles qu’en langue allemande.",
+      "it": null
+    }
+  },
+  "procurement": {
+    "orderDescription": {
+      "de": "<p>Die Schweizerischen Bundesbahnen (SBB) betreiben ein gesamtschweizerisches Schienennetz für den Güter- und Personenverkehr. Für den Betrieb ist der Einsatz eines sehr leistungsfähigen und zuverlässigen Datennetzes von grösster Wichtigkeit.&nbsp;&nbsp;Dieses wird sowohl für bahnkritische Anwendungen (z.B. im Bereich der Zugsicherung und Zuglenkung, im Bahnfunk und im Bereich Energiemanagement) wie auch für bahnnahe oder administrative Anwendungen (Dispositionssysteme, Verwaltungssysteme) eingesetzt. Das sich jetzt im Betrieb befindliche Datennetz nähert sich dem Ende seines Lebenszyklus.&nbsp;&nbsp;&nbsp;</p><p><br></p><p>Zur Steigerung der Wirtschaftlichkeit sollen zusätzlich ganze Gebäude, die nicht Bahnrelevant sind oder einzelne Stockwerke darin, durch einen Service-Provider im as-a-Service Modell mit WLAN und LAN erschlossen, ausgerüstet und betrieben werden. Im Rahmen des Programms zur Erneuerung des Datennetzes (AiNET) wird mittels TCO-Betrachtung (Total Cost of Ownership) jeweils pro Gebäude eine Make-or-Buy-Entscheidung gefällt. &nbsp;</p><p><br></p><p>Da auch im Bereich Business Connectivity bahnnahe Applikationen eingesetzt werden können, werden zwei unterschiedliche Integrationstiefen ins Datennetz der SBB gefordert. Der Service-Provider muss daher in der Lage sein, neben der marktüblichen Leistung wie Gebäudeanschluss, LAN und WLAN (Standard Business Connectivity) auch zusätzliche Anforderungen gemäss Lastenheft im as-a-Service (Bau und Betrieb) zu erfüllen.&nbsp;&nbsp;&nbsp;</p><p>&nbsp;</p><p>Die zu beschaffende Leistung umfasst dabei die Planung, Lieferung, Installation, Betrieb, Monitoring, Wartung und kontinuierliche Weiterentwicklung der Lösung. Erwartet werden klare Service-Level-Vereinbarungen, transparente Leistungsbeschreibungen sowie ein proaktives Störungsmanagement. Hohe Sicherheitsstandards, Datenschutzkonformität und die Einhaltung relevanter Normen und Vorschriften bilden grundlegende Anforderungen.&nbsp;</p>",
+      "en": null,
+      "fr": "<p>Les Chemins de fer fédéraux suisses (CFF) exploitent un réseau ferroviaire couvrant l’ensemble de la Suisse pour le trafic voyageurs et le trafic marchandises. Il est de la plus haute importance pour l’exploitation de disposer d’un réseau de données très performant et fiable.&nbsp;Il est utilisé aussi bien pour les applications critiques pour l’exploitation ferroviaire (p. ex. dans le domaine de l’arrêt automatique des trains et de l’acheminement automatique des trains, de la radio ferroviaire et de la gestion de l’énergie) que pour les applications liées au chemin de fer ou administratives (systèmes de régulation, systèmes de gestion). Le réseau de données, actuellement en service, touche à la fin de son cycle de vie.&nbsp;&nbsp;</p><p><br></p><p>Afin d’accroître la rentabilité, des bâtiments entiers non déterminants pour l’exploitation ferroviaire ou certains étages de ceux-ci doivent par ailleurs être équipés, équipés et exploités par un prestataire de services selon le modèle «as a service». Dans le cadre du programme de renouvellement du réseau de données (AiNET), une décision «make or buy» est prise pour chaque bâtiment sur la base d’un calcul du coût total de propriété (TCO).&nbsp;</p><p><br></p><p>&nbsp;Comme des applications liées au chemin de fer sont également possibles dans le domaine de la Business Connectivity, deux degrés d’intégration différents sont exigés dans le réseau de données des CFF. Le prestataire de services doit donc être en mesure de répondre, outre la prestation habituelle telle que le raccordement du bâtiment, le LAN et le WLAN (Standard Business Connectivity), à des exigences supplémentaires conformément au cahier des charges dans le cadre du «as a service» (construction et exploitation).&nbsp;&nbsp;&nbsp;</p><p><br></p><p>La prestation à acquérir porte sur la planification, la livraison, l’installation, l’exploitation, la surveillance, la maintenance et le développement continu de la solution. La prestation à acquérir porte sur des contrats de niveau de service clairs, des descriptions de prestations transparentes et une gestion proactive des dérangements. Des standards de sécurité élevés, le respect de la protection des données et le respect des normes et prescriptions pertinentes constituent des exigences essentielles.&nbsp;</p>",
+      "it": null
+    },
+    "processType": "open",
+    "orderType": "service",
+    "additionalCpvCodes": [
+      {
+        "code": "32410000",
+        "label": {
+          "de": "Lokales Netz",
+          "en": "Local area network",
+          "fr": "Réseau local",
+          "it": "Rete locale"
+        }
+      },
+      {
+        "code": "32420000",
+        "label": {
+          "de": "Netzausrüstung",
+          "en": "Network equipment",
+          "fr": "Matériel de réseau",
+          "it": "Apparecchiature di rete"
+        }
+      },
+      {
+        "code": "32430000",
+        "label": {
+          "de": "Fernnetz",
+          "en": "Wide area network",
+          "fr": "Réseau à grande distance",
+          "it": "Rete ad estensione geografica"
+        }
+      }
+    ],
+    "bkpCodes": [],
+    "ebkphCodes": [],
+    "ebkptCodes": [],
+    "npkCodes": [],
+    "cpcCode": null,
+    "orderAddressOnlyDescription": "yes",
+    "orderAddressDescription": {
+      "de": "Ganze Schweiz",
+      "en": null,
+      "fr": "L’ensemble de la Suisse",
+      "it": null
+    },
+    "executionDeadlineType": "not_specified",
+    "executionPeriod": null,
+    "executionDays": null,
+    "executionNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "variants": "yes",
+    "variantsNote": {
+      "de": "Allfällige Varianten sind separat einzureichen. Das von der SBB AG geforderte Grundangebot ist in jedem Fall einzureichen.",
+      "en": null,
+      "fr": "Les variantes éventuelles doivent être remises séparément. L’offre de base exigée par CFF SA doit dans tous les cas être remise.",
+      "it": null
+    },
+    "partialOffers": "no",
+    "partialOffersNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "orderAddress": {
+      "countryId": "CH",
+      "cantonId": null,
+      "postalCode": null,
+      "city": {
+        "de": null,
+        "en": null,
+        "fr": null,
+        "it": null
+      }
+    },
+    "contractDeadlineType": "date_time",
+    "contractPeriod": {
+      "dateRange": [
+        "2027-02-01",
+        "2037-12-31"
+      ]
+    },
+    "contractDays": null,
+    "canContractBeExtended": "no",
+    "canContractBeExtendedNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "options": "yes",
+    "optionsNote": {
+      "de": "Die Optionen sind in der Publikation ersichtlich.",
+      "en": null,
+      "fr": "Les options sont communiquées lors de la publication.",
+      "it": null
+    },
+    "cpvCode": {
+      "code": "32400000",
+      "label": {
+        "de": "Netzwerke",
+        "en": "Networks",
+        "fr": "Réseaux",
+        "it": "Network"
+      }
+    }
+  },
+  "terms": {
+    "termsType": "none",
+    "termsCriteria": [],
+    "termsCriteriaAsPDF": false,
+    "consortiumAllowed": "no",
+    "consortiumMultiApplicationAllowed": "no",
+    "subContractorAllowed": "yes",
+    "subContractorMultiApplicationAllowed": "yes",
+    "processType": "open",
+    "orderType": "service",
+    "preInvolvedVendor": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "termsOfBusiness": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "termsOfPayment": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "includedCosts": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "securityDeposits": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "nonWTORequirements": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "walkThroughNotes": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "termsNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "otherRequirements": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "consortiumNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "subContractorNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "remediesNotice": {
+      "de": "Gegen diese Verfügung kann gemäss Art. 56 Abs. 1 des Bundesgesetzes über das öffentliche Beschaffungswesen (BöB) innert 20 Tagen seit Eröffnung schriftlich Beschwerde beim Bundesverwaltungsgericht, Postfach, 9023 St. Gallen, erhoben werden. Die Beschwerde ist im Doppel einzureichen und hat die Begehren, deren Begründung mit Angabe der Beweismittel sowie die Unterschrift der beschwerdeführenden Person oder ihrer Vertretung zu enthalten. Eine Kopie der vorliegenden Verfügung und vorhandene Beweismittel sind beizulegen.\nDie Bestimmungen des Verwaltungsverfahrensgesetzes (VwVG) über den Fristenstillstand finden gemäss Art. 56 Abs. 2 BöB keine Anwendung.",
+      "en": null,
+      "fr": "Conformément à l'art. 56, al. 1, de la loi fédérale sur les marchés publics (LMP), la présente décision peut être attaquée, dans un délai de 20 jours à compter de sa notification, auprès du Tribunal administratif fédéral, case postale, 9023 Saint-Gall. Présenté en deux exemplaires, le mémoire de recours doit indiquer les conclusions, les motifs et les moyens de preuve et porter la signature de la partie recourante ou de son représentant ; y seront jointes une copie de la présente décision et les pièces invoquées comme moyens de preuve, lorsqu'elles sont disponibles.\nConformément à l'art. 56, al. 2, LMP, les dispositions de la Loi fédérale sur la procédure administrative (PA) relatives à la suspension des délais ne s'appliquent pas.",
+      "it": null
+    }
+  },
+  "dates": {
+    "qnaRoundSourceType": "simap",
+    "offerValidityDeadlineType": "days_after",
+    "offerValidityNotes": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "reductionMinimumOfferDeadline": false,
+    "publicOfferOpening": "no",
+    "qnas": [
+      {
+        "id": "63d2b998-b328-4e73-b186-cf14300423af",
+        "date": "2026-08-07",
+        "note": {
+          "de": "Fragebeantwortung rollend",
+          "en": null,
+          "fr": "Réponse aux questions en continu",
+          "it": null
+        },
+        "externalLink": null
+      }
+    ],
+    "otherAppointments": [],
+    "processType": "open",
+    "orderType": "service",
+    "publicationDate": "2026-08-14",
+    "initialPublicationDate": "2026-07-06",
+    "publicationDateForecast": null,
+    "offerDeadline": "2026-08-31T00:00:00+02:00",
+    "specificDeadlinesAndFormalRequirements": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "documentsAvailable": {
+      "dateRange": [
+        "2026-07-06",
+        "2026-08-31"
+      ]
+    },
+    "expressionOfInterestUntil": null,
+    "offerValidityDeadlineDate": null,
+    "offerValidityDeadlineDays": 365,
+    "offerOpening": null,
+    "offerOpeningNotes": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "offerOpeningPostalCode": null,
+    "offerOpeningCity": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    }
+  },
+  "id": "8b42d7d3-7939-4c85-b1dc-59754c006a62",
+  "type": "tender",
+  "projectType": "tender",
+  "publishers": [
+    {
+      "id": "c92c5781-c89a-4f93-94b1-f2061c35e556",
+      "name": "simap.ch"
+    }
+  ],
+  "correction": {
+    "correctedPubId": "55c17c80-f2f0-479f-8ef3-ebd391f2c330",
+    "initialPublicationDate": "2026-07-06",
+    "correctionDiffKeys": [],
+    "remarks": {
+      "de": "C1 Preisblatt und Rabatt BCaaS:\nBitte verwenden Sie für die Eingabe des Angebots das überarbeitete Preisblatt.",
+      "en": null,
+      "fr": "C1 Liste de prix et rabais BCaaS:\nVeuillez utiliser la feuille de prix remaniée pour la saisie de l’offre.",
+      "it": null
+    }
+  },
+  "referencingPub": {
+    "publishers": [
+      {
+        "id": "c92c5781-c89a-4f93-94b1-f2061c35e556",
+        "name": "simap.ch"
+      }
+    ],
+    "publicationId": "55c17c80-f2f0-479f-8ef3-ebd391f2c330",
+    "pubType": "tender",
+    "projectType": "tender",
+    "processType": "open",
+    "corrected": true,
+    "publicationNumber": "34121-03",
+    "publicationDate": "2026-08-10"
+  },
+  "invitedVendors": null,
+  "lots": [],
+  "criteria": {
+    "qualificationCriteriaInDocuments": "no",
+    "qualificationCriteriaAsPDF": false,
+    "qualificationCriteria": [
+      {
+        "id": "3fcd32af-aeb1-4575-90de-2202185f4fb1",
+        "description": {
+          "de": "<p>3 Referenzen, die mit dem vorliegenden Auftrag hinsichtlich Grösse, Komplexität und Funktionalität vergleichbar sind.&nbsp;&nbsp;</p>",
+          "en": null,
+          "fr": "<p>Trois références comparables au présent marché en termes de taille, de complexité et de fonctionnalité.&nbsp;</p>",
+          "it": null
+        },
+        "title": {
+          "de": "EK 1 Nachweis Referenzprojekte",
+          "en": null,
+          "fr": "CAp 1 Preuve relative aux projets de référence",
+          "it": null
+        },
+        "verification": {
+          "de": "<p>3 Referenzen, die mit dem vorliegenden Auftrag hinsichtlich Komplexität und Funktionalität (im Lastenheft angefragte Leistungen) vergleichbar und seit mindestens ein (1) Jahr im Betrieb sind. Die Projekte dürfen nicht länger zurückliegen als fünf (5) Jahre. Mindestens eine Referenz wurde in der Konstellation des Angebots umgesetzt welches seit einem (1) Jahr in Betrieb ist</p>",
+          "en": null,
+          "fr": "<p>Trois références comparables au présent marché en termes de complexité et de fonctionnalité (prestations demandées dans le cahier des charges) et en service depuis au moins un (1) an. Les projets ne doivent pas remonter à plus de cinq (5) ans. Au moins une référence a été mise en œuvre dans la configuration de l’offre et est en service depuis un (1) an.&nbsp;</p>",
+          "it": null
+        }
+      },
+      {
+        "id": "bde45a3c-8d7b-41d1-bbff-077030070e33",
+        "description": {
+          "de": "<p>Das jährliche Auftragsvolumen des Projektes (mit Optionen) darf 35% des durchschnittlichen Umsatzes / Jahr der letzten 3 Jahren nicht übersteigen.</p><p><br></p>",
+          "en": null,
+          "fr": "<p>Le volume annuel des commandes liées au projet (avec les options) ne doit pas excéder 35% du chiffre d’affaires moyen des trois dernières années.</p><p><br></p><p><br></p>",
+          "it": null
+        },
+        "title": {
+          "de": "EK 2.1  Genügend wirtschaftliche Leistungsfähigkeit",
+          "en": null,
+          "fr": "CAp 2.1  Capacité économique suffisante",
+          "it": null
+        },
+        "verification": {
+          "de": "<p>Die Anbieterin reicht Bilanzen und Erfolgsrechnungen der letzten 3 Jahren und eine Ausführung dazu ein.</p>",
+          "en": null,
+          "fr": "<p>Le soumissionnaire remet les bilans et les comptes de résultats des trois dernières années ainsi qu’une version de ceux-ci.</p>",
+          "it": null
+        }
+      },
+      {
+        "id": "140d8bb2-9f96-4c5c-8cd3-ef1420d3c760",
+        "description": {
+          "de": "<p>Die Anbieterin muss ein finanziell gesundes Unternehmen sein, welches über gesunde wirtschaftliche und finanzielle Situation verfügt, um einen Auftrag in der vorliegenden Grössenordnung erfolgreich abwickeln zu können.&nbsp;</p>",
+          "en": null,
+          "fr": "<p>Le soumissionnaire doit être une entreprise financièrement saine et dont la situation économique et financière est saine pour être en mesure de mener à bien un mandat de cet ordre de grandeur.&nbsp;</p>",
+          "it": null
+        },
+        "title": {
+          "de": "EK 2.2 Bestätigung einer Garantin",
+          "en": null,
+          "fr": "CAp 2.2 Confirmation d’un garant",
+          "it": null
+        },
+        "verification": {
+          "de": "<p>Bestätigung einer Garantin, dass im Fall der Beauftragung die geforderte Sicherheitsleistung vor Vertragsabschluss beigebracht werden kann.</p><p>&nbsp;</p><p>Die vorbehaltslose Akzeptanz des Musterformulars Leistungsgarantie muss vom Finanzinstitut bescheinigt werden.</p>",
+          "en": null,
+          "fr": "<p>Attestation d’une banque bénéficiant au minimum de la notation A par l’agence «Standard &amp; Poors» et A2 par l’agence «Moody’s». Garantissant qu’en cas d’attribution du marché, les garanties à fournir (garanties bancaires) exigées seront fournies telles qu’exigées et que les crédits correspondants (examen de solvabilité) d’un montant d’au moins 0.5 millions de francs seront octroyés aux requérants.</p><p><br></p><p>L’acceptation sans réserve du modèle de formulaire Garantie de bonne exécution doit être attestée par l’établissement financier.</p>",
+          "it": null
+        }
+      },
+      {
+        "id": "b6f541bc-1d9b-43b3-879a-e47676f2ba18",
+        "description": {
+          "de": "<p>Die Anbieterin muss über ein hinreichendes Qualitätsmanagement verfügen.</p><p>&nbsp;</p><p><br></p>",
+          "en": null,
+          "fr": "<p>Le soumissionnaire doit disposer d’un système de management de la qualité suffisant.&nbsp;</p><p><br></p><p><br></p>",
+          "it": null
+        },
+        "title": {
+          "de": "EK 3.1 Qualitätsmanagement ISO 9001 oder vergleichbar",
+          "en": null,
+          "fr": "CAp 3.1 Preuve de la norme ISO 9001 ou comparable",
+          "it": null
+        },
+        "verification": {
+          "de": "<p>Nachweis eines unternehmensbezogenen Qualitätsmanagement ISO 9001 oder vergleichbar. Als Nachweis bitte das Zertifikat beilegen oder eine Selbstdeklaration einreichen, aus der nachvollziehbar das eingesetzte Qualitätssystem hervorgeht.</p>",
+          "en": null,
+          "fr": "<p>Preuve d’un système de gestion de la qualité en fonction de l’entreprise ISO 9001 ou d’une certification équivalente. À titre de preuve, veuillez joindre le certificat ou joindre une déclaration volontaire expliquant clairement le système de qualité que vous appliquerez.</p>",
+          "it": null
+        }
+      },
+      {
+        "id": "6f1a70a2-1942-4353-97c3-1ae871c12017",
+        "description": {
+          "de": "<p>Die Anbieterin muss über ein hinreichendes Umweltmanagement verfügen.</p><p>&nbsp;</p><p><br></p>",
+          "en": null,
+          "fr": "<p>Le soumissionnaire doit disposer d’un système de management environnemental suffisant.&nbsp;</p><p><br></p><p><br></p>",
+          "it": null
+        },
+        "title": {
+          "de": "EK 3.2 Umweltmanagementsystem ISO 14001 oder vergleichbar",
+          "en": null,
+          "fr": "CAp 3.2 Preuve de la norme ISO 14001 ou comparable",
+          "it": null
+        },
+        "verification": {
+          "de": "<p>Nachweis eines unternehmensbezogenen Umweltmanagementsystem ISO 14001 oder vergleichbar. Als Nachweis bitte das Zertifikat beilegen oder eine Selbstdeklaration einreichen, aus der nachvollziehbar das eingesetzte Umweltsystem hervorgeht.</p>",
+          "en": null,
+          "fr": "<p>Preuve d’un système de gestion de la qualité en fonction de l’entreprise ISO 14001 ou d’une certification équivalente. À titre de preuve, veuillez joindre le certificat ou joindre une déclaration volontaire avec précision du système environnemental utilisé.</p>",
+          "it": null
+        }
+      },
+      {
+        "id": "afbb5ee8-48ff-4146-afee-adeda9326f8f",
+        "description": {
+          "de": "<p>Selbstauskunft Fragebogen und Selbstdeklaration zur Einhaltung der Teilnahmebedingungen ausgefüllt und unterzeichnet. Bestätigung der Ausschreibungsunterlagen.</p>",
+          "en": null,
+          "fr": "<p>Questionnaire de renseignements fournis par l’entreprise et déclaration volontaire sur le respect des conditions de participation remplis et signés. Confirmation des documents d’appel d’offres.</p>",
+          "it": null
+        },
+        "title": {
+          "de": "EK 4 Selbstauskunft und Selbstdeklaration Ausschreibungsunterlagen ",
+          "en": null,
+          "fr": "CAp 4 Questionnaire de renseignements fournis par l’entreprise et déclaration volontaire Documents d’appel d’offres ",
+          "it": null
+        },
+        "verification": {
+          "de": "<p>Die Antragstellerin reicht die unterzeichnete Selbstdeklaration und Selbstauskunft ein, bestätigt die Ausschreibungsunterlagen mit eventuellen Anmerkungen und Ergänzungen.</p>",
+          "en": null,
+          "fr": "<p>Le requérant remet la déclaration volontaire et les renseignements fournis d’entreprise dûment signés, confirme les documents d’appel d’offres avec d’éventuels commentaires et compléments.</p>",
+          "it": null
+        }
+      }
+    ],
+    "awardCriteriaSelection": "criteria_defined",
+    "awardCriteria": [
+      {
+        "id": "4110e2c6-adc0-4d1d-b06a-35b3f1553044",
+        "description": {
+          "de": "<p>Bewerteter Preis des Angebots</p>",
+          "en": null,
+          "fr": "<p>Prix évalué de l’offre</p>",
+          "it": null
+        },
+        "title": {
+          "de": "ZK 1 Preis",
+          "en": null,
+          "fr": "CAd 1 Prix",
+          "it": null
+        },
+        "isPriceCriterion": true,
+        "verification": null,
+        "weighting": 55,
+        "maxPoints": 275
+      },
+      {
+        "id": "f939bfed-df78-4349-b206-4edac61d2878",
+        "description": {
+          "de": "<p>Rabatt nach Rabatteingabe im Preisblatt</p>",
+          "en": null,
+          "fr": "<p>Rabais après saisie dans la liste de prix</p>",
+          "it": null
+        },
+        "title": {
+          "de": "ZK 2 Rabatt",
+          "en": null,
+          "fr": "CAd 2 Rabais",
+          "it": null
+        },
+        "isPriceCriterion": false,
+        "verification": null,
+        "weighting": 5,
+        "maxPoints": 25
+      },
+      {
+        "id": "50574717-8f33-462e-b9ab-a4d3d5595f61",
+        "description": {
+          "de": "<p>Qualitative Zuschlagskriterien des Angebots</p>",
+          "en": null,
+          "fr": "<p>Critères d’adjudication qualitatifs de l’offre</p>",
+          "it": null
+        },
+        "title": {
+          "de": "ZK 3 Qualitative Zuschlagskriterien",
+          "en": null,
+          "fr": "CAd 3 Critères d’adjudication qualitatifs",
+          "it": null
+        },
+        "isPriceCriterion": false,
+        "verification": null,
+        "weighting": 30,
+        "maxPoints": 150
+      },
+      {
+        "id": "0c8b3322-cd65-4616-9fbf-bbb55c3e9098",
+        "description": {
+          "de": "<p>Vorbehalte zu den in den Ausschreibungsbedingungen definierten Vertagsinhalten oder AGB-D</p>",
+          "en": null,
+          "fr": "<p>Réserves relatives aux contenus du contrat définis dans les conditions de l’appel d’offres ou aux CG-D</p>",
+          "it": null
+        },
+        "title": {
+          "de": "ZK 4 Vorbehalte",
+          "en": null,
+          "fr": "CAd 4 Réserves",
+          "it": null
+        },
+        "isPriceCriterion": false,
+        "verification": null,
+        "weighting": 10,
+        "maxPoints": 50
+      }
+    ],
+    "processType": "open",
+    "orderType": "service",
+    "qualificationCriteriaNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "awardCriteriaNote": {
+      "de": "Die Zuschlagskriterien und deren Gewichtung sind in der Publikation Unterlagen ersichtlich.",
+      "en": null,
+      "fr": "Les critères d’adjudication et leur pondération sont communiqués dans la publication.",
+      "it": null
+    }
+  },
+  "base": {
+    "corrected": true,
+    "cpvCode": {
+      "code": "32400000",
+      "label": {
+        "de": "Netzwerke",
+        "en": "Networks",
+        "fr": "Réseaux",
+        "it": "Network"
+      }
+    },
+    "orderType": "service",
+    "lots": [],
+    "publicationTed": false,
+    "id": "8b42d7d3-7939-4c85-b1dc-59754c006a62",
+    "title": {
+      "de": "Business Connectivity as a Service",
+      "en": null,
+      "fr": "Business Connectivity as a Service",
+      "it": null
+    },
+    "projectType": "tender",
+    "processType": "open",
+    "lotsType": "without",
+    "stateContractArea": true,
+    "type": "tender",
+    "publicationNumber": "34121-04",
+    "projectId": "dc46405e-c5f2-47e2-9670-2d2d1f1a3418",
+    "publicationDate": "2026-08-14",
+    "creationLanguage": "de",
+    "translationLanguages": [
+      {
+        "language": "fr",
+        "type": "complete"
+      }
+    ],
+    "procOfficeId": "89c6f1f0-5e89-4096-83e8-d597937c2890",
+    "publishers": [
+      "c92c5781-c89a-4f93-94b1-f2061c35e556"
+    ],
+    "participantLotsLimitation": null,
+    "participantLotsLimitationNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "correctedPubId": "55c17c80-f2f0-479f-8ef3-ebd391f2c330",
+    "initialPublicationDate": "2026-07-06",
+    "referencingPubId": "74b5c0b7-b302-4c37-b60d-80579d28c03c",
+    "cpcCode": null,
+    "projectNumber": "34121"
+  },
+  "hasProjectDocuments": true,
+  "ted": null
+}

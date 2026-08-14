@@ -1,0 +1,60 @@
+{
+  "procOffices": [
+    {
+      "id": "9f8f97d6-3296-4d7f-bc9c-97567db2654a",
+      "name": "Kanton Zürich Finanzdirektion Amt für Informatik",
+      "type": "cantonal",
+      "institutionId": "6d66e05a-2701-43ac-b528-2b819c9db479",
+      "compCentreId": "dccd88b4-3fb4-4f35-9333-74fa71e56c24"
+    },
+    {
+      "id": "5d4192d3-f4d1-43a5-be97-e0f9ca766f8e",
+      "name": "Centrale de compensation",
+      "type": "central_federation",
+      "institutionId": "291c7ff2-41bc-44f2-af41-01d04db9b6fd",
+      "compCentreId": "572e82a9-4095-4435-9241-d5b671c4ed7f"
+    },
+    {
+      "id": "c118c171-de81-4a56-8ce0-165f1ab00c16",
+      "name": "Gemeinde Untervaz",
+      "type": "communal",
+      "institutionId": "3f23f570-5a37-466e-aa09-39bdc583e189",
+      "compCentreId": "f92fce44-d3a2-428f-ad0c-5d04e33eee50"
+    },
+    {
+      "id": "62827a6a-cb68-46ed-8278-b52a21552221",
+      "name": "Schweizerische Bundesbahnen SBB Division Produktion Personenverkehr",
+      "type": "decentral_federation",
+      "institutionId": "9cb9f4f1-b64a-4f48-9522-545888ab228d",
+      "compCentreId": "572e82a9-4095-4435-9241-d5b671c4ed7f"
+    },
+    {
+      "id": "7faca70a-1795-4a52-817d-e3cd04ae68fd",
+      "name": "Swisscontact",
+      "type": "foreign",
+      "institutionId": "f81834be-ccf1-4c99-8248-ef4e5c8b236c",
+      "compCentreId": "572e82a9-4095-4435-9241-d5b671c4ed7f"
+    },
+    {
+      "id": "42cfa417-70af-4a7b-9e23-21536c7b2717",
+      "name": "Repower AG",
+      "type": "other_cantonal",
+      "institutionId": "ed941a1f-0d12-4801-ba9e-fd1501af658a",
+      "compCentreId": "f92fce44-d3a2-428f-ad0c-5d04e33eee50"
+    },
+    {
+      "id": "7a536aa8-c0ca-4ab1-aafe-262ac8e2c04f",
+      "name": "Gemeindeverband ARA am Twannbach ",
+      "type": "other_communal",
+      "institutionId": "82230bc3-a258-48ed-a8fb-ab56f1b37924",
+      "compCentreId": "63d59c2d-48df-4031-8e6a-f90dc8c439d9"
+    },
+    {
+      "id": "92c9ee49-c456-40d6-8979-64fa3d0c2768",
+      "name": "Alliance SwissPass",
+      "type": "other_federation",
+      "institutionId": "bc3487ba-5ed9-4984-9c84-224177a00820",
+      "compCentreId": "572e82a9-4095-4435-9241-d5b671c4ed7f"
+    }
+  ]
+}

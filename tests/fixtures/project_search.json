@@ -1,0 +1,162 @@
+{
+  "projects": [
+    {
+      "id": "11d690da-91aa-4023-867e-088f2992d0f6",
+      "title": {
+        "de": "Marketingartikel",
+        "en": null,
+        "fr": "Articles de marketing",
+        "it": null
+      },
+      "projectNumber": "28066",
+      "projectType": "tender",
+      "projectSubType": "supply",
+      "processType": "open",
+      "lotsType": "with",
+      "publicationId": "ebadc6da-a432-419c-bab1-b51359aec800",
+      "publicationDate": "2026-08-14",
+      "publicationNumber": "28066-04",
+      "pubType": "award",
+      "corrected": false,
+      "procOfficeName": {
+        "de": "Kantonspolizei Bern",
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "lots": [
+        {
+          "publicationId": "ebadc6da-a432-419c-bab1-b51359aec800",
+          "publicationDate": "2026-08-14",
+          "publicationNumber": "28066-04",
+          "pubType": "award",
+          "corrected": false,
+          "lotId": "0235f958-aea1-407c-b007-65d51bf503ec",
+          "lotNumber": 1,
+          "lotTitle": {
+            "de": "Streuartikel (Give-Aways) - Marketingartikel des tieferen Preissegments",
+            "en": null,
+            "fr": null,
+            "it": null
+          },
+          "orderAddressOnlyDescription": "no",
+          "orderAddress": {
+            "countryId": "CH",
+            "cantonId": "BE",
+            "postalCode": "3011",
+            "city": {
+              "de": "Bern",
+              "en": null,
+              "fr": null,
+              "it": null
+            }
+          }
+        },
+        {
+          "publicationId": "56cfd075-6a01-4eed-b559-7ed00d29c087",
+          "publicationDate": "2026-08-14",
+          "publicationNumber": "28066-05",
+          "pubType": "award",
+          "corrected": false,
+          "lotId": "79110fa4-3a9f-43be-a423-e592f59ec6d8",
+          "lotNumber": 2,
+          "lotTitle": {
+            "de": "Geschenkartikel - Marketingartikel des höheren Preissegments",
+            "en": null,
+            "fr": null,
+            "it": null
+          },
+          "orderAddressOnlyDescription": "no",
+          "orderAddress": {
+            "countryId": "CH",
+            "cantonId": "BE",
+            "postalCode": "3011",
+            "city": {
+              "de": "Bern",
+              "en": null,
+              "fr": null,
+              "it": null
+            }
+          }
+        }
+      ],
+      "orderAddressOnlyDescription": null,
+      "orderAddress": null
+    },
+    {
+      "id": "47dd2de9-d325-47e4-9ff1-991ecf60079b",
+      "title": {
+        "de": "FV-MBSG – Maulbeerstrasse / Sandgrubenstrasse Umnutzung, BKP 258 Kücheneinrichtung",
+        "en": null,
+        "fr": "FV-MBSG – Maulbeerstrasse / Sandgrubenstrasse Umnutzung, BKP 258 Kücheneinrichtung",
+        "it": null
+      },
+      "projectNumber": "26921",
+      "projectType": "tender",
+      "projectSubType": "construction",
+      "processType": "open",
+      "lotsType": "without",
+      "publicationId": "e8a78435-6e0f-4e5e-ad59-b6f1cfa7f1a4",
+      "publicationDate": "2026-08-14",
+      "publicationNumber": "26921-02",
+      "pubType": "award",
+      "corrected": false,
+      "procOfficeName": {
+        "de": "Bau- und Verkehrsdepartement des Kantons Basel-Stadt, Kantonale Fachstelle für öffentliche Beschaffungen (KFöB)",
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "lots": [],
+      "orderAddressOnlyDescription": "no",
+      "orderAddress": {
+        "countryId": "CH",
+        "cantonId": "BS",
+        "postalCode": "4058",
+        "city": {
+          "de": "Basel",
+          "en": null,
+          "fr": null,
+          "it": null
+        }
+      }
+    },
+    {
+      "id": "dc46405e-c5f2-47e2-9670-2d2d1f1a3418",
+      "title": {
+        "de": "Business Connectivity as a Service",
+        "en": null,
+        "fr": "Business Connectivity as a Service",
+        "it": null
+      },
+      "projectNumber": "34121",
+      "projectType": "tender",
+      "projectSubType": "service",
+      "processType": "open",
+      "lotsType": "without",
+      "publicationId": "8b42d7d3-7939-4c85-b1dc-59754c006a62",
+      "publicationDate": "2026-08-14",
+      "publicationNumber": "34121-04",
+      "pubType": "tender",
+      "corrected": true,
+      "procOfficeName": {
+        "de": "SBB CFF FFS Infra-Telecom und Elektroanlagen",
+        "en": null,
+        "fr": "SBB CFF FFS Infra-Telecom und Elektroanlagen",
+        "it": null
+      },
+      "lots": [],
+      "orderAddressOnlyDescription": "yes",
+      "orderAddress": {
+        "countryId": "CH",
+        "cantonId": null,
+        "postalCode": null,
+        "city": null
+      }
+    }
+  ],
+  "pagination": {
+    "lastItem": "20260814|37009",
+    "itemsPerPage": 20
+  }
+}

@@ -5,6 +5,44 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Eine aufgezeichnete Antwort je externem Endpunkt**, in `tests/fixtures/`,
+  mit Herkunft, Aufnahmedatum, Auswahlregel und SHA-256 je Datei in
+  `tests/fixtures/PROVENANCE.md`. Neu aufzeichnen mit
+  `python scripts/record_fixtures.py`, geladen wird ueber
+  `tests/fixture_data.py`. Grosse Antworten sind Ausschnitte: **kein Feld
+  entfernt, nur die Zahl der Eintraege gekuerzt** — und die Eintraege sind
+  gewaehlt, nicht genommen. Die ersten Aemter der 1.1-MB-Liste tragen alle
+  denselben `type`, eine Kopfauswahl haette die anderen sieben nie belegt.
+  Fehlerpfade — Timeouts, 5xx, maskierte Abbrueche — bleiben handgeschrieben.
+- **`CANTON_INSTITUTION_IDS` ist jetzt auch offline belegt.** Die 26 gepinnten
+  UUIDs, an denen der Kantonsfilter vollstaendig haengt, standen bisher nur
+  gegen den Live-Test. `institutions.json` haelt alle 28 Wurzeln aus einer
+  datierten Antwort der Quelle, und der Ausschnitt der Aemter fuehrt seine
+  ganze Ahnenkette mit — sonst zeigen zwei Ausschnitte aneinander vorbei und
+  keine Fixture merkt es.
+
+### Fixed
+
+- **`get_procurement_details` lieferte fuer jeden Zuschlag
+  `publication_date: null`.** Der Detail-Endpunkt schneidet seine Bloecke nach
+  Publikationsart zu: `dates` gibt es nur bei Ausschreibungen. Ueber 90
+  Publikationen gemessen tragen 40 ein `dates.publicationDate`, aber alle 90 ein
+  `base.publicationDate` — der Mapper las nur das erste. Die handgeschriebene
+  Fixture `detail_payload` hatte ein `dates` fuer einen Zuschlag erfunden, das
+  es dort nie gibt; die Suite stimmte damit dem Mapper zu statt der Quelle und
+  blieb gruen. Dieselbe Form wie der Befund, der in `i14y-mcp` drei Tools mit
+  leeren Titeln liefern liess. `offer_deadline` bleibt bewusst allein an
+  `dates`: ein Zuschlag hat keine Angebotsfrist.
+- **Drei Testdateien nullten die Wartezeit weiter am geteilten `asyncio`-Modul.**
+  Seit der Backoff-Alias da ist, trifft dieser Patch nichts mehr — `_sleep`
+  wurde beim Import an die echte Funktion gebunden. Gefallen ist dabei kein
+  einziger Test: die Suite wartete die Leiter 2/4/8 an jedem degradierten Pfad
+  wirklich ab und lief **155 statt 4 Sekunden**. `test_kein_test_patcht_die_
+  wartezeit_am_fremden_modul` macht daraus einen Fehlschlag; die bestehende
+  Zusicherung bewachte nur die andere Haelfte der Naht, das Modul.
+
 ### Changed
 
 - **Der Backoff-Schlaf wird ueber einen Modul-Alias gepatcht, nicht ueber
