@@ -130,3 +130,41 @@ def test_der_retry_geht_ueber_den_alias():
     quelle = inspect.getsource(client)
     assert "await _sleep(" in quelle, "der Retry ruft den Modul-Alias nicht mehr auf"
     assert "await asyncio.sleep(" not in quelle, "der Retry umgeht den Alias"
+
+
+def test_kein_test_patcht_die_wartezeit_am_fremden_modul():
+    """Die andere Haelfte derselben Naht — und die, die gefehlt hat.
+
+    `test_der_retry_geht_ueber_den_alias` bewacht das Modul: es soll `_sleep`
+    aufrufen. Damit war aber nur eine Richtung abgesichert. Drei Testdateien
+    nullten die Wartezeit weiter am geteilten `asyncio`-Modul, und seit der
+    Alias da ist, trifft dieser Patch nichts mehr: `_sleep` wurde beim Import
+    an die echte Funktion gebunden.
+
+    Gefallen ist dabei kein einziger Test. Die Suite lief nur 155 statt 4
+    Sekunden — sie wartete die Leiter 2/4/8 an jedem degradierten Pfad wirklich
+    ab. Eine laengere Laufzeit ist kein Signal, das jemand liest; diese
+    Zusicherung macht daraus einen Fehlschlag.
+
+    Diese Datei nennt das verbotene Muster, um es zu verbieten, und nimmt sich
+    deshalb selbst aus.
+    """
+    from pathlib import Path
+
+    # Zusammengesetzt, damit die Datei das Muster nicht ausgeschrieben traegt
+    # und die eigene Ausnahme kleiner bleibt als die Regel.
+    verboten = ("client." + "asyncio.sleep", "asyncio, " + '"sleep"')
+    hier = Path(__file__)
+    schuldig = {
+        pfad.name: muster
+        for pfad in sorted(hier.parent.glob("test_*.py"))
+        if pfad != hier
+        for muster in verboten
+        if muster in pfad.read_text(encoding="utf-8")
+    }
+    assert not schuldig, (
+        f"patcht die Wartezeit am geteilten Modul statt am Alias: {schuldig}. "
+        'Richtig ist `monkeypatch.setattr(_client, "_sleep", _instant)` — der '
+        "Patch am fremden Modul trifft den Retry nicht mehr und entschaerft "
+        "stattdessen `asyncio.sleep` fuer jeden Importeur im Prozess."
+    )

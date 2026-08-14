@@ -323,7 +323,17 @@ def _detail_from_payload(
         procurement_office=pick_lang(office_addr.get("name"), lang) if office_addr else None,
         procurement_office_address=office_addr,
         offer_deadline=dates.get("offerDeadline"),
-        publication_date=dates.get("publicationDate"),
+        # `dates` gibt es nur bei Ausschreibungen — aufgezeichnet am 2026-08-14
+        # und ueber 90 Publikationen gemessen: 40 tragen `dates.publicationDate`,
+        # aber alle 90 tragen `base.publicationDate`. Nur aus `dates` gelesen,
+        # lieferte dieses Feld fuer jeden Zuschlag `null`, obwohl die Quelle das
+        # Datum mitschickt. Die handgeschriebene Fixture hatte ein `dates`
+        # erfunden, das ein Zuschlag nie hat, und die Suite stimmte damit dem
+        # Mapper zu statt der Quelle.
+        #
+        # `offer_deadline` bleibt bewusst allein an `dates`: ein Zuschlag hat
+        # keine Angebotsfrist, dort ist leer die richtige Antwort.
+        publication_date=dates.get("publicationDate") or base.get("publicationDate"),
         has_documents=bool(payload.get("hasProjectDocuments")),
     )
 

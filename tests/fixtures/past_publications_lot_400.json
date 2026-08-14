@@ -1,0 +1,7 @@
+{
+  "status": 400,
+  "error": "Bad Request",
+  "path": "/api/publications/v1/publication/ebadc6da-a432-419c-bab1-b51359aec800/past-publications",
+  "errorCode": "E0003",
+  "message": "Bad request!"
+}

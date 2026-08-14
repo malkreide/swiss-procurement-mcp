@@ -17,6 +17,7 @@ import httpx
 import pytest
 import respx
 
+from swiss_procurement_mcp import client as _client
 from swiss_procurement_mcp.constants import SIMAP_BASE
 from swiss_procurement_mcp.inputs import (
     CONSTRUCTION_CODE_SYSTEMS,
@@ -59,7 +60,7 @@ def no_backoff_delay(monkeypatch):
     async def _instant(_seconds):
         return None
 
-    monkeypatch.setattr("swiss_procurement_mcp.client.asyncio.sleep", _instant)
+    monkeypatch.setattr(_client, "_sleep", _instant)
 
 
 def _office(oid: str, name: str, otype: str = "cantonal") -> dict:

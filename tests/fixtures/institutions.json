@@ -1,0 +1,725 @@
+{
+  "institutions": [
+    {
+      "id": "52ec29e2-da01-4edc-a563-5b8a431f7cb1",
+      "name": {
+        "de": "Bund",
+        "en": "Confederation",
+        "fr": "Confédération",
+        "it": "Confederazione"
+      },
+      "handlesProcOfficesTypes": [
+        "central_federation",
+        "decentral_federation",
+        "other_federation"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "52ec29e2-da01-4edc-a563-5b8a431f7cb1",
+      "compCentreId": null,
+      "parentInstitutionId": null
+    },
+    {
+      "id": "1bd29620-e4b2-4586-ac50-1d3095db276a",
+      "name": {
+        "de": "Aargau",
+        "en": "Argovia",
+        "fr": "Argovie",
+        "it": "Argovia"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "1bd29620-e4b2-4586-ac50-1d3095db276a",
+      "compCentreId": "56dfe275-0ac2-4097-ac07-0b3a78bc952d",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "1a3a0479-5cee-477b-9df1-9cd949299e9b",
+      "name": {
+        "de": "Appenzell I.Rh.",
+        "en": "Appenzell I.Rh.",
+        "fr": "Appenzell RI",
+        "it": "Appenzello I"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "1a3a0479-5cee-477b-9df1-9cd949299e9b",
+      "compCentreId": "91807a9f-efc3-478e-a3c2-b309a6560b6e",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "8a3d36db-471a-4291-9ff9-02cb9981527f",
+      "name": {
+        "de": "Appenzell A.Rh.",
+        "en": "Appenzell A.Rh.",
+        "fr": "Appenzell RE",
+        "it": "Appenzello E"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "8a3d36db-471a-4291-9ff9-02cb9981527f",
+      "compCentreId": "788fbc5c-d3a5-4f12-996d-7be0268f808c",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "62faa47e-8f6e-41de-8b12-0ed76ea91ddc",
+      "name": {
+        "de": "Bern",
+        "en": "Berne",
+        "fr": "Berne",
+        "it": "Berna"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "62faa47e-8f6e-41de-8b12-0ed76ea91ddc",
+      "compCentreId": "63d59c2d-48df-4031-8e6a-f90dc8c439d9",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "60f90ca8-671a-4523-bd8d-e17bdca06062",
+      "name": {
+        "de": "Basel-Landschaft",
+        "en": "Basel-Landschaft",
+        "fr": "Bâle-Campagne",
+        "it": "Basilea campagna"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "60f90ca8-671a-4523-bd8d-e17bdca06062",
+      "compCentreId": "7559fa37-6ff5-41e6-aba3-777d917bcf94",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "6c460fe0-370d-49f2-a16f-6e4bd9601048",
+      "name": {
+        "de": "Basel-Stadt",
+        "en": "Basel-Stadt",
+        "fr": "Bâle-Ville",
+        "it": "Basilea città"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "6c460fe0-370d-49f2-a16f-6e4bd9601048",
+      "compCentreId": "72864ab2-a850-4221-ba46-c28823f0d943",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "fa1d37de-f257-444f-89fe-697d102669d5",
+      "name": {
+        "de": "Freiburg",
+        "en": "Fribourg",
+        "fr": "Fribourg",
+        "it": "Friburgo"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "fa1d37de-f257-444f-89fe-697d102669d5",
+      "compCentreId": "5520d6b2-56de-43ef-afa6-a45ef9033a5a",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "d03fdaa0-62a2-4338-894e-8ff20828b067",
+      "name": {
+        "de": "Genf",
+        "en": "Geneva",
+        "fr": "Genève",
+        "it": "Ginevra"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "d03fdaa0-62a2-4338-894e-8ff20828b067",
+      "compCentreId": "a56acc7a-3c83-4f64-a8d1-e62b676e7a4c",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "8d8dc54a-9b3d-44c7-900c-625c7c1d9f7a",
+      "name": {
+        "de": "Glarus",
+        "en": "Glarus",
+        "fr": "Glaris",
+        "it": "Glarona"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "8d8dc54a-9b3d-44c7-900c-625c7c1d9f7a",
+      "compCentreId": "1483e853-1521-4104-891c-97c89139b6d0",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "b1be671a-1bd4-4b7f-b0df-48b8485b7716",
+      "name": {
+        "de": "Graubünden",
+        "en": "Grisons",
+        "fr": "Grisons",
+        "it": "Grigioni"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "b1be671a-1bd4-4b7f-b0df-48b8485b7716",
+      "compCentreId": "f92fce44-d3a2-428f-ad0c-5d04e33eee50",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "ceceb99b-854d-4ef3-87e2-a0463ce706d5",
+      "name": {
+        "de": "Jura",
+        "en": "Jura",
+        "fr": "Jura",
+        "it": "Giura"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "ceceb99b-854d-4ef3-87e2-a0463ce706d5",
+      "compCentreId": "cdd3ba9a-d996-4400-b0bc-ec91665825fe",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "936b7d5b-7838-4a04-a31c-7e1a5301730a",
+      "name": {
+        "de": "Luzern",
+        "en": "Lucerne",
+        "fr": "Lucerne",
+        "it": "Lucerna"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "936b7d5b-7838-4a04-a31c-7e1a5301730a",
+      "compCentreId": "983226dd-6415-496e-8717-08803800d819",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "c1965ee3-76bc-4621-b21a-f618b6a43713",
+      "name": {
+        "de": "Neuenburg",
+        "en": "Neuchâtel",
+        "fr": "Neuchâtel",
+        "it": "Neuchâtel"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "c1965ee3-76bc-4621-b21a-f618b6a43713",
+      "compCentreId": "d67e36ba-02f4-4cd7-bc30-21f67f374543",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "c329864f-0912-48ce-bc47-c82b33501751",
+      "name": {
+        "de": "Nidwalden",
+        "en": "Nidwalden",
+        "fr": "Nidwald",
+        "it": "Nidvaldo"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "c329864f-0912-48ce-bc47-c82b33501751",
+      "compCentreId": "8c74095a-1fd6-4382-ae42-d8416243c556",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "9d1f82ad-a5ab-4877-b9de-b0812af7f684",
+      "name": {
+        "de": "Obwalden",
+        "en": "Obwalden",
+        "fr": "Obwald",
+        "it": "Obvaldo"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "9d1f82ad-a5ab-4877-b9de-b0812af7f684",
+      "compCentreId": "e4c9eeb0-ce7e-4bd1-b264-a48679276f11",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "85e540d1-7d85-42ce-a294-7cdfa5f177a7",
+      "name": {
+        "de": "St.Gallen",
+        "en": "St.Gallen",
+        "fr": "Saint-Gall",
+        "it": "San Gallo"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "85e540d1-7d85-42ce-a294-7cdfa5f177a7",
+      "compCentreId": "bace7ca3-6cce-4cce-8ec4-6c9987cebf8e",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "69a6e1d1-8377-4023-9d6e-302748b3aad0",
+      "name": {
+        "de": "Schaffhausen",
+        "en": "Schaffhausen",
+        "fr": "Schaffhouse",
+        "it": "Sciaffusa"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "69a6e1d1-8377-4023-9d6e-302748b3aad0",
+      "compCentreId": "17d25180-ec9a-465c-841a-0640959163d0",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "c0acbf83-7a34-4042-b581-1feeba5fddf6",
+      "name": {
+        "de": "Solothurn",
+        "en": "Solothurn",
+        "fr": "Soleure",
+        "it": "Soletta"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "c0acbf83-7a34-4042-b581-1feeba5fddf6",
+      "compCentreId": "b5ce5dc5-4999-43c6-a6c4-53422908fde4",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "221f3f07-657a-4faa-815d-1a8ea41c8b76",
+      "name": {
+        "de": "Schwyz",
+        "en": "Schwyz",
+        "fr": "Schwyz",
+        "it": "Svitto"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "221f3f07-657a-4faa-815d-1a8ea41c8b76",
+      "compCentreId": "61860acf-f19f-4f2d-8333-b187ff1ec0d3",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "16102a65-a5dc-433c-bf08-33c2f77aa7e2",
+      "name": {
+        "de": "Thurgau",
+        "en": "Thurgau",
+        "fr": "Thurgovie",
+        "it": "Turgovia"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "16102a65-a5dc-433c-bf08-33c2f77aa7e2",
+      "compCentreId": "9d7fbcdb-1675-4e19-992f-d5494d790102",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "1306538b-12b9-4874-801c-9d0e4fa18a4d",
+      "name": {
+        "de": "Tessin",
+        "en": "Ticino",
+        "fr": "Tessin",
+        "it": "Ticino"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "1306538b-12b9-4874-801c-9d0e4fa18a4d",
+      "compCentreId": "130a2008-8215-4163-9709-69024a3dda53",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "2fd79e15-368d-404d-adaf-d4207d1b3426",
+      "name": {
+        "de": "Uri",
+        "en": "Uri",
+        "fr": "Uri",
+        "it": "Uri"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "2fd79e15-368d-404d-adaf-d4207d1b3426",
+      "compCentreId": "01f2158d-a4c5-4839-9ac1-4ef4474e7b2a",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "f595059a-68c3-4143-812f-82bc1f44f889",
+      "name": {
+        "de": "Waadt",
+        "en": "Vaud",
+        "fr": "Vaud",
+        "it": "Vaud"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "f595059a-68c3-4143-812f-82bc1f44f889",
+      "compCentreId": "a354387c-8e8a-4b80-9a93-ae9181ce4ca8",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "f8e02dc2-fd1f-4d80-85ab-21878cb328c8",
+      "name": {
+        "de": "Wallis",
+        "en": "Valais",
+        "fr": "Valais",
+        "it": "Vallese"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "f8e02dc2-fd1f-4d80-85ab-21878cb328c8",
+      "compCentreId": "cba76d7b-c867-4200-825a-eca23e360d86",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "27f906df-279a-456b-9006-fe267d9e124c",
+      "name": {
+        "de": "Zug",
+        "en": "Zug",
+        "fr": "Zoug",
+        "it": "Zugo"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "27f906df-279a-456b-9006-fe267d9e124c",
+      "compCentreId": "a3051df5-fc6d-4030-9304-d9527ad87fcf",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "47a89920-1758-4cf4-aa7d-11f02fcc631e",
+      "name": {
+        "de": "Zürich",
+        "en": "Zurich",
+        "fr": "Zurich",
+        "it": "Zurigo"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal",
+        "other_cantonal",
+        "communal",
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "47a89920-1758-4cf4-aa7d-11f02fcc631e",
+      "compCentreId": "dccd88b4-3fb4-4f35-9333-74fa71e56c24",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "f81834be-ccf1-4c99-8248-ef4e5c8b236c",
+      "name": {
+        "de": "Ausland",
+        "en": "Foreign",
+        "fr": "Etranger",
+        "it": "Estero"
+      },
+      "handlesProcOfficesTypes": [
+        "foreign"
+      ],
+      "userCanCreateProcOffice": true,
+      "path": "f81834be-ccf1-4c99-8248-ef4e5c8b236c",
+      "compCentreId": "572e82a9-4095-4435-9241-d5b671c4ed7f",
+      "parentInstitutionId": null
+    },
+    {
+      "id": "6d66e05a-2701-43ac-b528-2b819c9db479",
+      "name": {
+        "de": "Finanzdirektion",
+        "en": "Finanzdirektion",
+        "fr": "Finanzdirektion",
+        "it": "Finanzdirektion"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal"
+      ],
+      "userCanCreateProcOffice": true,
+      "path": "47a89920-1758-4cf4-aa7d-11f02fcc631e.5e622f84-8eab-4b94-933b-22918a56fe63.6d66e05a-2701-43ac-b528-2b819c9db479",
+      "compCentreId": null,
+      "parentInstitutionId": "5e622f84-8eab-4b94-933b-22918a56fe63"
+    },
+    {
+      "id": "5e622f84-8eab-4b94-933b-22918a56fe63",
+      "name": {
+        "de": "Kanton",
+        "en": "Canton",
+        "fr": "Canton",
+        "it": "Cantone"
+      },
+      "handlesProcOfficesTypes": [
+        "cantonal"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "47a89920-1758-4cf4-aa7d-11f02fcc631e.5e622f84-8eab-4b94-933b-22918a56fe63",
+      "compCentreId": null,
+      "parentInstitutionId": "47a89920-1758-4cf4-aa7d-11f02fcc631e"
+    },
+    {
+      "id": "291c7ff2-41bc-44f2-af41-01d04db9b6fd",
+      "name": {
+        "de": "Eidgenössische Finanzverwaltung (EFV)",
+        "en": "Federal Finance Administration (FFA)",
+        "fr": "Administration fédérale des finances (AFF)",
+        "it": "Amministrazione federale delle finanze (AFF)"
+      },
+      "handlesProcOfficesTypes": [
+        "central_federation"
+      ],
+      "userCanCreateProcOffice": true,
+      "path": "52ec29e2-da01-4edc-a563-5b8a431f7cb1.5ea9357c-697c-4457-a908-02fae68753d4.6678be02-b38e-402a-9128-1ce569d4c723.291c7ff2-41bc-44f2-af41-01d04db9b6fd",
+      "compCentreId": null,
+      "parentInstitutionId": "6678be02-b38e-402a-9128-1ce569d4c723"
+    },
+    {
+      "id": "6678be02-b38e-402a-9128-1ce569d4c723",
+      "name": {
+        "de": "Eidgenössisches Finanzdepartement (EFD)",
+        "en": "Federal Department of Finance (FDF)",
+        "fr": "Département fédéral des finances (DFF)",
+        "it": "Dipartimento federale delle finanze (DFF)"
+      },
+      "handlesProcOfficesTypes": [
+        "central_federation"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "52ec29e2-da01-4edc-a563-5b8a431f7cb1.5ea9357c-697c-4457-a908-02fae68753d4.6678be02-b38e-402a-9128-1ce569d4c723",
+      "compCentreId": null,
+      "parentInstitutionId": "5ea9357c-697c-4457-a908-02fae68753d4"
+    },
+    {
+      "id": "5ea9357c-697c-4457-a908-02fae68753d4",
+      "name": {
+        "de": "Zentrale Bundesverwaltung",
+        "en": "Central federal administration",
+        "fr": "Administration fédérale centrale",
+        "it": "Amministrazione federale centrale"
+      },
+      "handlesProcOfficesTypes": [
+        "central_federation"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "52ec29e2-da01-4edc-a563-5b8a431f7cb1.5ea9357c-697c-4457-a908-02fae68753d4",
+      "compCentreId": "572e82a9-4095-4435-9241-d5b671c4ed7f",
+      "parentInstitutionId": "52ec29e2-da01-4edc-a563-5b8a431f7cb1"
+    },
+    {
+      "id": "3f23f570-5a37-466e-aa09-39bdc583e189",
+      "name": {
+        "de": "Stadt / Gemeinde",
+        "en": "City / Municipality",
+        "fr": "Ville / Commune",
+        "it": "Città / Comune"
+      },
+      "handlesProcOfficesTypes": [
+        "communal"
+      ],
+      "userCanCreateProcOffice": true,
+      "path": "b1be671a-1bd4-4b7f-b0df-48b8485b7716.3f23f570-5a37-466e-aa09-39bdc583e189",
+      "compCentreId": null,
+      "parentInstitutionId": "b1be671a-1bd4-4b7f-b0df-48b8485b7716"
+    },
+    {
+      "id": "9cb9f4f1-b64a-4f48-9522-545888ab228d",
+      "name": {
+        "de": "Schweizerische Bundesbahnen (SBB)",
+        "en": "SBB Swiss Federal Railways",
+        "fr": "Chemins de fer fédéraux suisses (CFF)",
+        "it": "Ferrovie federali svizzere FFS"
+      },
+      "handlesProcOfficesTypes": [
+        "decentral_federation"
+      ],
+      "userCanCreateProcOffice": true,
+      "path": "52ec29e2-da01-4edc-a563-5b8a431f7cb1.28cf5d0a-bdbe-4cdd-bc48-72158b34af1c.9cb9f4f1-b64a-4f48-9522-545888ab228d",
+      "compCentreId": null,
+      "parentInstitutionId": "28cf5d0a-bdbe-4cdd-bc48-72158b34af1c"
+    },
+    {
+      "id": "28cf5d0a-bdbe-4cdd-bc48-72158b34af1c",
+      "name": {
+        "de": "Dezentrale Bundesverwaltung - Öffentlich rechtliche Organisationen",
+        "en": "Decentralized federal administration - Public-legal organizations of the federation",
+        "fr": "Administration fédérale décentralisée - Organisations de droit public de la Confédération",
+        "it": "Amministrazione federale decentralizzata - Aziende federali di diritto pubblico"
+      },
+      "handlesProcOfficesTypes": [
+        "decentral_federation",
+        "other_federation"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "52ec29e2-da01-4edc-a563-5b8a431f7cb1.28cf5d0a-bdbe-4cdd-bc48-72158b34af1c",
+      "compCentreId": "572e82a9-4095-4435-9241-d5b671c4ed7f",
+      "parentInstitutionId": "52ec29e2-da01-4edc-a563-5b8a431f7cb1"
+    },
+    {
+      "id": "ed941a1f-0d12-4801-ba9e-fd1501af658a",
+      "name": {
+        "de": "Andere Träger kantonaler Aufgaben",
+        "en": "Other supporting organisations assuming cantonal tasks",
+        "fr": "Autres collectivités assumant des tâches cantonales",
+        "it": "Altri enti preposti a compiti cantonali"
+      },
+      "handlesProcOfficesTypes": [
+        "other_cantonal"
+      ],
+      "userCanCreateProcOffice": true,
+      "path": "b1be671a-1bd4-4b7f-b0df-48b8485b7716.ed941a1f-0d12-4801-ba9e-fd1501af658a",
+      "compCentreId": null,
+      "parentInstitutionId": "b1be671a-1bd4-4b7f-b0df-48b8485b7716"
+    },
+    {
+      "id": "82230bc3-a258-48ed-a8fb-ab56f1b37924",
+      "name": {
+        "de": "Andere Träger kommunaler Aufgaben",
+        "en": "Other supporting organisations assuming communal tasks",
+        "fr": "Autres collectivités assumant des tâches communales",
+        "it": "Altri enti preposti a compiti comunali"
+      },
+      "handlesProcOfficesTypes": [
+        "other_communal"
+      ],
+      "userCanCreateProcOffice": true,
+      "path": "62faa47e-8f6e-41de-8b12-0ed76ea91ddc.82230bc3-a258-48ed-a8fb-ab56f1b37924",
+      "compCentreId": null,
+      "parentInstitutionId": "62faa47e-8f6e-41de-8b12-0ed76ea91ddc"
+    },
+    {
+      "id": "bc3487ba-5ed9-4984-9c84-224177a00820",
+      "name": {
+        "de": "Alliance SwissPass",
+        "en": "Alliance SwissPass",
+        "fr": "Alliance SwissPass",
+        "it": "Alliance SwissPass"
+      },
+      "handlesProcOfficesTypes": [
+        "other_federation"
+      ],
+      "userCanCreateProcOffice": true,
+      "path": "52ec29e2-da01-4edc-a563-5b8a431f7cb1.8c4eb02b-bf7f-4e61-ada9-33bb58260e17.bc3487ba-5ed9-4984-9c84-224177a00820",
+      "compCentreId": null,
+      "parentInstitutionId": "8c4eb02b-bf7f-4e61-ada9-33bb58260e17"
+    },
+    {
+      "id": "8c4eb02b-bf7f-4e61-ada9-33bb58260e17",
+      "name": {
+        "de": "Andere Träger von Bundesaufgaben",
+        "en": "Other supporting organisations assuming federal tasks",
+        "fr": "Autres collectivités assumant des tâches fédérales",
+        "it": "Altri enti preposti a compiti federali"
+      },
+      "handlesProcOfficesTypes": [
+        "other_federation"
+      ],
+      "userCanCreateProcOffice": false,
+      "path": "52ec29e2-da01-4edc-a563-5b8a431f7cb1.8c4eb02b-bf7f-4e61-ada9-33bb58260e17",
+      "compCentreId": "572e82a9-4095-4435-9241-d5b671c4ed7f",
+      "parentInstitutionId": "52ec29e2-da01-4edc-a563-5b8a431f7cb1"
+    }
+  ]
+}

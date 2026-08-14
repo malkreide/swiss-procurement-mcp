@@ -1,0 +1,271 @@
+{
+  "codes": [
+    {
+      "code": "1",
+      "label": {
+        "de": "Vorbereitungsarbeiten",
+        "en": "Enabling works",
+        "fr": "Travaux préparatoires",
+        "it": "Lavori preparatori"
+      },
+      "codes": [
+        {
+          "code": "14",
+          "label": {
+            "de": "Anpassungen an bestehenden Bauten",
+            "en": "Adaptations to existing buildings",
+            "fr": "Adaptation des bâtiments",
+            "it": "Adattamenti a costruzioni esistenti"
+          },
+          "codes": [
+            {
+              "code": "142",
+              "label": {
+                "de": "Rohbau 2",
+                "en": "Structure 2",
+                "fr": "Gros œuvre 2",
+                "it": "Costruzione grezza 2"
+              },
+              "codes": [
+                {
+                  "code": "142.6",
+                  "label": {
+                    "de": "Fassadenputze",
+                    "en": "Facade rendering",
+                    "fr": "Crépissage de façade",
+                    "it": "Intonaci di facciata"
+                  },
+                  "codes": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2",
+      "label": {
+        "de": "Gebäude",
+        "en": "Building",
+        "fr": "Bâtiment",
+        "it": "Edificio"
+      },
+      "codes": [
+        {
+          "code": "21",
+          "label": {
+            "de": "Rohbau 1",
+            "en": "Structure 1",
+            "fr": "Gros œuvre 1",
+            "it": "Costruzione grezza 1"
+          },
+          "codes": [
+            {
+              "code": "215",
+              "label": {
+                "de": "Montagebau als Leichtkonstruktion",
+                "en": "Prefabricated lightweight construction",
+                "fr": "Construction légère préfabriquée",
+                "it": "Costruzioni leggere in elementi prefabbricati"
+              },
+              "codes": [
+                {
+                  "code": "215.2",
+                  "label": {
+                    "de": "Fassadenbau",
+                    "en": "Facade construction/curtain walling",
+                    "fr": "Façades",
+                    "it": "Costruzione di facciate"
+                  },
+                  "codes": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "code": "22",
+          "label": {
+            "de": "Rohbau 2",
+            "en": "Structure 2",
+            "fr": "Gros œuvre 2",
+            "it": "Costruzione grezza 2"
+          },
+          "codes": [
+            {
+              "code": "226",
+              "label": {
+                "de": "Fassadenputze",
+                "en": "Facade rendering",
+                "fr": "Crépissage de façade",
+                "it": "Intonaci di facciata"
+              },
+              "codes": []
+            }
+          ]
+        },
+        {
+          "code": "26",
+          "label": {
+            "de": "Transportanlagen, Lageranlagen",
+            "en": "Transport installations, storage installations",
+            "fr": "Installations de transport, installations de stockage",
+            "it": "Impianti di trasporto, impianti di immagazzinamento"
+          },
+          "codes": [
+            {
+              "code": "263",
+              "label": {
+                "de": "Fassadenreinigungsanlagen",
+                "en": "Facade cleaning systems",
+                "fr": "Installations de nettoyage de façade",
+                "it": "Impianti per pulizia di facciate"
+              },
+              "codes": []
+            }
+          ]
+        },
+        {
+          "code": "29",
+          "label": {
+            "de": "Honorare",
+            "en": "Professional fees",
+            "fr": "Honoraires",
+            "it": "Onorari"
+          },
+          "codes": [
+            {
+              "code": "297",
+              "label": {
+                "de": "Spezialisten 1",
+                "en": "Specialists 1",
+                "fr": "Spécialistes 1",
+                "it": "Specialisti 1"
+              },
+              "codes": [
+                {
+                  "code": "297.7",
+                  "label": {
+                    "de": "Fassadeningenieur",
+                    "en": "Facade engineer",
+                    "fr": "Ingénieur spécialisé façades",
+                    "it": "Ingegnere specialista di facciate"
+                  },
+                  "codes": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "3",
+      "label": {
+        "de": "Betriebseinrichtungen",
+        "en": "Special equipment and services",
+        "fr": "Equipements d’exploitation",
+        "it": "Attrezzature di esercizio"
+      },
+      "codes": [
+        {
+          "code": "32",
+          "label": {
+            "de": "Rohbau 2",
+            "en": "Structure 2",
+            "fr": "Gros œuvre 2",
+            "it": "Costruzione grezza 2"
+          },
+          "codes": [
+            {
+              "code": "326",
+              "label": {
+                "de": "Fassadenputze",
+                "en": "Facade rendering",
+                "fr": "Crépissage de façade",
+                "it": "Intonaci di facciata"
+              },
+              "codes": []
+            }
+          ]
+        },
+        {
+          "code": "39",
+          "label": {
+            "de": "Honorare",
+            "en": "Professional fees",
+            "fr": "Honoraires",
+            "it": "Onorari"
+          },
+          "codes": [
+            {
+              "code": "397",
+              "label": {
+                "de": "Spezialisten 1",
+                "en": "Specialists 1",
+                "fr": "Spécialistes 1",
+                "it": "Specialisti 1"
+              },
+              "codes": [
+                {
+                  "code": "397.7",
+                  "label": {
+                    "de": "Fassadeningenieur",
+                    "en": "Facade engineer",
+                    "fr": "Ingénieur spécialisé façades",
+                    "it": "Ingegnere specialista di facciate"
+                  },
+                  "codes": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "4",
+      "label": {
+        "de": "Umgebung",
+        "en": "External works",
+        "fr": "Aménagements extérieurs",
+        "it": "Lavori esterni"
+      },
+      "codes": [
+        {
+          "code": "41",
+          "label": {
+            "de": "Rohbau- und Ausbauarbeiten",
+            "en": "Structural and fit-out works",
+            "fr": "Constructions",
+            "it": "Costruzione grezza e finiture"
+          },
+          "codes": [
+            {
+              "code": "414",
+              "label": {
+                "de": "Rohbau 2",
+                "en": "Structure 2",
+                "fr": "Gros œuvre 2",
+                "it": "Costruzione grezza 2"
+              },
+              "codes": [
+                {
+                  "code": "414.6",
+                  "label": {
+                    "de": "Fassadenputze",
+                    "en": "Facade rendering",
+                    "fr": "Crépissage de façade",
+                    "it": "Intonaci di facciata"
+                  },
+                  "codes": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

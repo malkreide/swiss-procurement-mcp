@@ -1,0 +1,252 @@
+{
+  "procurement": {
+    "oagCodes": [],
+    "projectType": "tender",
+    "processType": "open",
+    "pubType": "award",
+    "orderType": "construction",
+    "orderDescription": {
+      "de": "<p>Die fünf zwischen 1900 und 1906 errichteten Stadthäuser sind im Inventar der Denkmalpflege aufgeführt. Die Liegenschaften werden von einer Büro- und Labornutzung wieder in Wohnraum umgewandelt.&nbsp;Der Auftrag beinhaltet die Lieferung und Montage von insgesamt 47 Küchenanlagen (einzeilige und L-förmige Ausführungen).</p>",
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "additionalCpvCodes": [],
+    "bkpCodes": [
+      {
+        "code": "258",
+        "label": {
+          "de": "Kücheneinrichtungen",
+          "en": "Kitchen fittings",
+          "fr": "Equipements de cuisine",
+          "it": "Impianti di cucine"
+        }
+      }
+    ],
+    "ebkphCodes": [],
+    "ebkptCodes": [],
+    "npkCodes": [],
+    "cpcCode": null,
+    "constructionType": "execution",
+    "constructionCategory": "structural_engineering",
+    "cpvCode": {
+      "code": "45210000",
+      "label": {
+        "de": "Bauleistungen im Hochbau",
+        "en": "Building construction work",
+        "fr": "Travaux de construction de bâtiments",
+        "it": "Lavori generali di costruzione di edifici"
+      }
+    },
+    "projectOrderDescription": null,
+    "externalReference": null
+  },
+  "id": "e8a78435-6e0f-4e5e-ad59-b6f1cfa7f1a4",
+  "type": "award",
+  "projectType": "tender",
+  "publishers": [
+    {
+      "id": "c92c5781-c89a-4f93-94b1-f2061c35e556",
+      "name": "simap.ch"
+    }
+  ],
+  "project-info": {
+    "procOfficeAddress": {
+      "postalCode": "4001",
+      "countryId": "CH",
+      "cantonId": "BS",
+      "id": "97eb3cc6-d543-4791-a02e-8d901ea4a0b6",
+      "name": {
+        "de": "Bau- und Verkehrsdepartement des Kantons Basel-Stadt, Kantonale Fachstelle für öffentliche Beschaffungen (KFöB)",
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "contactPerson": {
+        "de": null,
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "phone": "+41612679176",
+      "email": "kfoeb@bs.ch",
+      "url": {
+        "de": null,
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "reference": null,
+      "street": {
+        "de": "Münsterplatz 11",
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "city": {
+        "de": "Basel",
+        "en": null,
+        "fr": null,
+        "it": null
+      }
+    },
+    "procurementRecipientAddress": {
+      "postalCode": "4001",
+      "countryId": "CH",
+      "cantonId": "BS",
+      "id": "1be04f66-63f7-45ea-a762-2c595a3f4211",
+      "name": {
+        "de": "Bau- und Verkehrsdepartement des Kantons Basel-Stadt, Städtebau & Architektur Hochbau",
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "contactPerson": {
+        "de": null,
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "phone": null,
+      "email": null,
+      "url": {
+        "de": null,
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "reference": null,
+      "street": {
+        "de": null,
+        "en": null,
+        "fr": null,
+        "it": null
+      },
+      "city": {
+        "de": "Basel",
+        "en": null,
+        "fr": null,
+        "it": null
+      }
+    },
+    "title": {
+      "de": "FV-MBSG – Maulbeerstrasse / Sandgrubenstrasse Umnutzung, BKP 258 Kücheneinrichtung",
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "stateContractArea": true,
+    "publicationTed": false
+  },
+  "decision": {
+    "awardDecisionWithJustification": true,
+    "vendors": [
+      {
+        "vendorId": "c8ca4cca-3d01-4647-9cbe-920cfa45a04a",
+        "vendorName": "Decuspena GmbH",
+        "vendorAddress": {
+          "countryId": "CH",
+          "street": "Binningerstrasse 156",
+          "city": "Allschwil",
+          "postalCode": "4123",
+          "cantonId": "BS"
+        },
+        "price": {
+          "currency": "chf",
+          "price": 603983.15,
+          "vatType": "full"
+        },
+        "note": {
+          "de": null,
+          "en": null,
+          "fr": null,
+          "it": null
+        },
+        "rank": null
+      }
+    ],
+    "numberOfSubmissions": 4,
+    "totalPriceSelection": "price_of_selected_offers",
+    "totalPriceSelectionNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "totalPriceRange": {
+      "currency": null,
+      "vatType": null,
+      "range": null
+    },
+    "awardDecisionDate": "2026-08-11",
+    "awardDecisionJustification": {
+      "de": "Das berücksichtigte Angebot hat aufgrund seiner Merkmale und Vorteile die meisten Nutzwertpunkte (NWP) erzielt. Die Zuschlagskriterien (ZK) wurden wie folgt bewertet:\n\nZK 1 Preis: 350 von 350 NWP\nZK 2 Referenzauftrag Anbieter: 112.50 von 150 NWP\nTotal: 462.50 von 500 NWP\n\nDie Anbietenden können sich unabhängig von einer allfälligen Beschwerde für ein informelles Debriefing über kfoeb@bs.ch bei der Kantonalen Fachstelle für öffentliche Beschaffungen melden.",
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "awardDecisionJuryDescription": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "awardDecisionNote": {
+      "de": null,
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "remediesNotice": {
+      "de": "Gegen diese Verfügung kann innert 20 Tagen seit der Eröffnung auf www.simap.ch beim Verwaltungsgericht Basel-Stadt, Bäumleingasse 1, 4051 Basel, schriftlich Beschwerde erhoben werden. Die Beschwerdeschrift muss einen Antrag, dessen Begründung sowie eine genaue Bezeichnung der Beweismittel enthalten. Die angefochtene Verfügung und, soweit möglich, die genannten Beweismittel sind beizulegen.",
+      "en": null,
+      "fr": null,
+      "it": null
+    }
+  },
+  "referencingPub": {
+    "publishers": [
+      {
+        "id": "c92c5781-c89a-4f93-94b1-f2061c35e556",
+        "name": "simap.ch"
+      }
+    ],
+    "publicationId": "71b8c08e-e1c3-43ec-a5eb-b52ae02804c2",
+    "pubType": "tender",
+    "projectType": "tender",
+    "processType": "open",
+    "corrected": false,
+    "publicationNumber": "26921-01",
+    "publicationDate": "2025-11-22"
+  },
+  "base": {
+    "publicationTed": false,
+    "id": "e8a78435-6e0f-4e5e-ad59-b6f1cfa7f1a4",
+    "title": {
+      "de": "FV-MBSG – Maulbeerstrasse / Sandgrubenstrasse Umnutzung, BKP 258 Kücheneinrichtung",
+      "en": null,
+      "fr": null,
+      "it": null
+    },
+    "projectType": "tender",
+    "processType": "open",
+    "lotsType": "without",
+    "stateContractArea": true,
+    "type": "award",
+    "publicationNumber": "26921-02",
+    "projectId": "47dd2de9-d325-47e4-9ff1-991ecf60079b",
+    "publicationDate": "2026-08-14",
+    "creationLanguage": "de",
+    "translationLanguages": [],
+    "procOfficeId": "9f9c3c3b-1315-46ed-9fcc-78e253e036e9",
+    "publishers": [
+      "c92c5781-c89a-4f93-94b1-f2061c35e556"
+    ],
+    "projectNumber": "26921",
+    "referencingPubId": "71b8c08e-e1c3-43ec-a5eb-b52ae02804c2",
+    "referencingLotId": null
+  },
+  "hasProjectDocuments": false,
+  "ted": null,
+  "lot": null
+}

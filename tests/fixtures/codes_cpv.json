@@ -1,0 +1,1345 @@
+{
+  "codes": [
+    {
+      "code": "14000000",
+      "label": {
+        "de": "Bergbau, Basismetalle und zugehörige Erzeugnisse",
+        "en": "Mining, basic metals and related products",
+        "fr": "Produits d'exploitation des mines, métaux de base et produits connexes",
+        "it": "Prodotti delle miniere, metalli di base e prodotti affini"
+      },
+      "codes": [
+        {
+          "code": "14500000",
+          "label": {
+            "de": "In Bergwerken und Steinbrüchen gewonnene Erzeugnisse",
+            "en": "Related mining and quarrying products",
+            "fr": "Produits connexes d'exploitation de mines et de carrières",
+            "it": "Prodotti affini delle miniere e delle cave"
+          },
+          "codes": [
+            {
+              "code": "14520000",
+              "label": {
+                "de": "Edelsteine und Schmucksteine; Bimsstein; Schmirgel; natürliche Schleifstoffe; andere Mineralien und Edelmetalle",
+                "en": "Precious and semi-precious stones, pumice stone, emery, natural abrasives, other minerals and precious metals",
+                "fr": "Pierres précieuses et semi-précieuses, pierre ponce, émeri, abrasifs naturels, autres minéraux et métaux précieux",
+                "it": "Pietre preziose e semipreziose, pietra pomice, smeriglio, abrasivi naturali, altri minerali e metalli preziosi"
+              },
+              "codes": [
+                {
+                  "code": "14523000",
+                  "label": {
+                    "de": "Mineralien, Edelmetalle und zugehörige Erzeugnisse",
+                    "en": "Related minerals, precious metals and associated products",
+                    "fr": "Minéraux, métaux précieux connexes et produits associés",
+                    "it": "Minerali, metalli preziosi e prodotti affini"
+                  },
+                  "codes": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "code": "14600000",
+          "label": {
+            "de": "Metallerze und Legierungen",
+            "en": "Metal ores and alloys",
+            "fr": "Minerais de métaux et alliages",
+            "it": "Minerali metalliferi e leghe"
+          },
+          "codes": [
+            {
+              "code": "14610000",
+              "label": {
+                "de": "Metallerze",
+                "en": "Metal ores",
+                "fr": "Minerais de métaux",
+                "it": "Minerali metalliferi"
+              },
+              "codes": [
+                {
+                  "code": "14612000",
+                  "label": {
+                    "de": "NE-Metallerze",
+                    "en": "Non-ferrous metal ores",
+                    "fr": "Minerais de métaux non ferreux",
+                    "it": "Minerali metalliferi non ferrosi"
+                  },
+                  "codes": [
+                    {
+                      "code": "14612400",
+                      "label": {
+                        "de": "Edelmetallerze",
+                        "en": "Precious-metal ores",
+                        "fr": "Minerais de métaux précieux",
+                        "it": "Minerali di metalli preziosi"
+                      },
+                      "codes": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "code": "14630000",
+              "label": {
+                "de": "Schlacken, Metallschlacken, Eisenabfälle und Eisenschrott",
+                "en": "Slag, dross, ferrous waste and scrap",
+                "fr": "Scories, laitier, déchets et débris ferreux",
+                "it": "Scorie, sfridi, rottami ferrosi e cascami"
+              },
+              "codes": []
+            }
+          ]
+        },
+        {
+          "code": "14700000",
+          "label": {
+            "de": "Grundmetalle",
+            "en": "Basic metals",
+            "fr": "Métaux de base",
+            "it": "Metalli di base"
+          },
+          "codes": []
+        },
+        {
+          "code": "14800000",
+          "label": {
+            "de": "Diverse nichtmetallische Mineralprodukte",
+            "en": "Miscellaneous non-metallic mineral products",
+            "fr": "Produits minéraux non métalliques divers",
+            "it": "Prodotti vari di minerali non metallici"
+          },
+          "codes": []
+        },
+        {
+          "code": "14900000",
+          "label": {
+            "de": "Wiedergewonnene Sekundärrohstoffe",
+            "en": "Recovered secondary raw materials",
+            "fr": "Matières premières de récupération",
+            "it": "Materie prime secondarie di recupero"
+          },
+          "codes": [
+            {
+              "code": "14910000",
+              "label": {
+                "de": "Wiedergewonnene metallische Sekundärrohstoffe",
+                "en": "Recovered secondary metal raw materials",
+                "fr": "Matières premières métalliques de récupération",
+                "it": "Materie prime metalliche secondarie di recupero"
+              },
+              "codes": []
+            },
+            {
+              "code": "14920000",
+              "label": {
+                "de": "Wiedergewonnene nichtmetallische Sekundärrohstoffe",
+                "en": "Recovered secondary non-metal raw materials",
+                "fr": "Matières premières non métalliques de récupération",
+                "it": "Materie prime non metalliche secondarie di recupero"
+              },
+              "codes": []
+            },
+            {
+              "code": "14930000",
+              "label": {
+                "de": "Asche und Rückstände mit Metallgehalt",
+                "en": "Ash and residues containing metals",
+                "fr": "Cendres et résidus contenant des métaux",
+                "it": "Ceneri e residui contenenti metalli"
+              },
+              "codes": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "18000000",
+      "label": {
+        "de": "Kleidung, Fussbekleidung, Gepäckartikel und Zubehör",
+        "en": "Clothing, footwear, luggage articles and accessories",
+        "fr": "Vêtements, articles chaussants, bagages et accessoires",
+        "it": "Indumenti, calzature, articoli da viaggio e accessori"
+      },
+      "codes": [
+        {
+          "code": "18500000",
+          "label": {
+            "de": "Schmuck, Uhren und zugehörige Artikel",
+            "en": "Jewellery, watches and related articles",
+            "fr": "Bijouterie, montres et articles connexes",
+            "it": "Gioielli, orologi e articoli affini"
+          },
+          "codes": [
+            {
+              "code": "18510000",
+              "label": {
+                "de": "Schmuck und ähnliche Erzeugnisse",
+                "en": "Jewellery and related articles",
+                "fr": "Bijouterie et articles connexes",
+                "it": "Gioielli e articoli affini"
+              },
+              "codes": [
+                {
+                  "code": "18513000",
+                  "label": {
+                    "de": "Schmuckwaren",
+                    "en": "Articles of jewellery",
+                    "fr": "Bijoux",
+                    "it": "Articoli di gioielleria"
+                  },
+                  "codes": [
+                    {
+                      "code": "18513300",
+                      "label": {
+                        "de": "Waren aus Edelmetall",
+                        "en": "Articles of precious metal",
+                        "fr": "Objets en métal précieux",
+                        "it": "Articoli in metallo prezioso"
+                      },
+                      "codes": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "code": "18800000",
+          "label": {
+            "de": "Schuhwerk",
+            "en": "Footwear",
+            "fr": "Articles chaussants",
+            "it": "Calzature"
+          },
+          "codes": [
+            {
+              "code": "18830000",
+              "label": {
+                "de": "Sicherheitsschuhe",
+                "en": "Protective footwear",
+                "fr": "Chaussures de protection",
+                "it": "Calzature protettive"
+              },
+              "codes": [
+                {
+                  "code": "18831000",
+                  "label": {
+                    "de": "Fussbekleidung mit Zehenschutz aus Metall",
+                    "en": "Footwear incorporating a protective metal toecap",
+                    "fr": "Chaussures à embout de protection métallique",
+                    "it": "Calzature con mascherina protettiva di metallo"
+                  },
+                  "codes": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "24000000",
+      "label": {
+        "de": "Chemische Erzeugnisse",
+        "en": "Chemical products",
+        "fr": "Produits chimiques",
+        "it": "Sostanze chimiche"
+      },
+      "codes": [
+        {
+          "code": "24300000",
+          "label": {
+            "de": "Anorganische und organische Grundchemikalien",
+            "en": "Basic inorganic and organic chemicals",
+            "fr": "Produits chimiques organiques et inorganiques de base",
+            "it": "Sostanze chimiche di base organiche e inorganiche"
+          },
+          "codes": [
+            {
+              "code": "24310000",
+              "label": {
+                "de": "Anorganische Grundchemikalien",
+                "en": "Basic inorganic chemicals",
+                "fr": "Produits chimiques inorganiques de base",
+                "it": "Sostanze chimiche di base inorganiche"
+              },
+              "codes": [
+                {
+                  "code": "24311000",
+                  "label": {
+                    "de": "Chemische Elemente, anorganische Säuren und Verbindungen",
+                    "en": "Chemical elements, inorganic acids and compounds",
+                    "fr": "Éléments chimiques, acides inorganiques et composés",
+                    "it": "Elementi chimici; acidi inorganici e composti"
+                  },
+                  "codes": [
+                    {
+                      "code": "24311100",
+                      "label": {
+                        "de": "Nichtmetalle",
+                        "en": "Metalloids",
+                        "fr": "Métalloïdes",
+                        "it": "Metalloidi"
+                      },
+                      "codes": []
+                    },
+                    {
+                      "code": "24311300",
+                      "label": {
+                        "de": "Alkalimetalle",
+                        "en": "Alkali metals",
+                        "fr": "Métaux alcalins",
+                        "it": "Metalli alcalini"
+                      },
+                      "codes": []
+                    },
+                    {
+                      "code": "24311500",
+                      "label": {
+                        "de": "Hydroxide als anorganische Grundchemikalien",
+                        "en": "Hydroxides as basic inorganic chemicals",
+                        "fr": "Hydroxydes utilisés comme produits chimiques inorganiques de base",
+                        "it": "Idrossidi utilizzati come sostanze chimiche inorganiche di base"
+                      },
+                      "codes": [
+                        {
+                          "code": "24311510",
+                          "label": {
+                            "de": "Metalloxide",
+                            "en": "Metal oxides",
+                            "fr": "Oxydes métalliques",
+                            "it": "Ossidi metallici"
+                          },
+                          "codes": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "code": "24312000",
+                  "label": {
+                    "de": "Metallsalze; Hypochlorite, Chlorate und Perchlorate",
+                    "en": "Metallic halogenates; hypochlorites, chlorates and perchlorates",
+                    "fr": "Halogénures métalliques, hypochlorites, chlorates et perchlorates",
+                    "it": "Alogenati metallici; ipocloriti, clorati e perclorati"
+                  },
+                  "codes": [
+                    {
+                      "code": "24312100",
+                      "label": {
+                        "de": "Metallsalze",
+                        "en": "Metallic halogenates",
+                        "fr": "Halogénures métalliques",
+                        "it": "Alogenati metallici"
+                      },
+                      "codes": []
+                    }
+                  ]
+                },
+                {
+                  "code": "24314000",
+                  "label": {
+                    "de": "Diverse saure Metallsalze",
+                    "en": "Miscellaneous metal acid salts",
+                    "fr": "Sels métalliques acides divers",
+                    "it": "Sali metallici acidi vari"
+                  },
+                  "codes": [
+                    {
+                      "code": "24314200",
+                      "label": {
+                        "de": "Saure Oxometallsalze",
+                        "en": "Oxometallic acid salts",
+                        "fr": "Sels oxométalliques acides",
+                        "it": "Sali ossometallici acidi"
+                      },
+                      "codes": []
+                    }
+                  ]
+                },
+                {
+                  "code": "24315000",
+                  "label": {
+                    "de": "Diverse anorganische Chemikalien",
+                    "en": "Miscellaneous inorganic chemicals",
+                    "fr": "Produits chimiques inorganiques divers",
+                    "it": "Sostanze chimiche inorganiche varie"
+                  },
+                  "codes": [
+                    {
+                      "code": "24315500",
+                      "label": {
+                        "de": "Verbindungen von Seltenerdmetallen",
+                        "en": "Compounds of rare earth metals",
+                        "fr": "Composés de métaux des terres rares",
+                        "it": "Composti di metalli delle terre rare"
+                      },
+                      "codes": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "31000000",
+      "label": {
+        "de": "Elektrische Maschinen, Geräte, Ausstattung und Verbrauchsartikel; Beleuchtung",
+        "en": "Electrical machinery, apparatus, equipment and consumables; lighting",
+        "fr": "Machines, appareils, équipements et consommables électriques; éclairage",
+        "it": "Macchine e apparecchi, attrezzature e articoli di consumo elettrici; illuminazione"
+      },
+      "codes": [
+        {
+          "code": "31600000",
+          "label": {
+            "de": "Elektrische Ausrüstung",
+            "en": "Electrical equipment and apparatus",
+            "fr": "Matériel électrique",
+            "it": "Attrezzature e apparecchiature elettriche"
+          },
+          "codes": [
+            {
+              "code": "31640000",
+              "label": {
+                "de": "Maschinen, Apparate und Geräte mit eigener Funktion",
+                "en": "Machines and apparatus with individual functions",
+                "fr": "Machines et appareils à usage spécifique",
+                "it": "Macchine ed apparecchi aventi funzioni specifiche"
+              },
+              "codes": [
+                {
+                  "code": "31642000",
+                  "label": {
+                    "de": "Elektronische Suchgeräte",
+                    "en": "Electronic detection apparatus",
+                    "fr": "Appareils de détection électronique",
+                    "it": "Apparecchi rivelatori elettronici"
+                  },
+                  "codes": [
+                    {
+                      "code": "31642100",
+                      "label": {
+                        "de": "Suchgeräte für Metallrohre",
+                        "en": "Detection apparatus for metal pipes",
+                        "fr": "Détecteurs de tubes métalliques",
+                        "it": "Rivelatori di tubazioni metalliche"
+                      },
+                      "codes": []
+                    },
+                    {
+                      "code": "31642400",
+                      "label": {
+                        "de": "Suchgeräte für nichtmetallische Gegenstände",
+                        "en": "Detection apparatus for non-metallic objects",
+                        "fr": "Détecteurs d'objets non métalliques",
+                        "it": "Rivelatori di oggetti non metallici"
+                      },
+                      "codes": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "code": "31700000",
+          "label": {
+            "de": "Elektronischer, elektromechanischer und elektrotechnischer Bedarf",
+            "en": "Electronic, electromechanical and electrotechnical supplies",
+            "fr": "Fournitures électroniques, électromécaniques et électrotechniques",
+            "it": "Materiale elettronico, elettromeccanico ed elettrotecnico"
+          },
+          "codes": [
+            {
+              "code": "31710000",
+              "label": {
+                "de": "Elektronische Ausstattung",
+                "en": "Electronic equipment",
+                "fr": "Équipement électronique",
+                "it": "Apparecchiatura elettronica"
+              },
+              "codes": [
+                {
+                  "code": "31712000",
+                  "label": {
+                    "de": "Mikroelektronische Maschinen und Geräte und Mikrosysteme",
+                    "en": "Microelectronic machinery and apparatus and microsystems",
+                    "fr": "Machines et appareils microélectroniques et microsystèmes",
+                    "it": "Macchinari, apparecchiature e microsistemi microelettronici"
+                  },
+                  "codes": [
+                    {
+                      "code": "31712300",
+                      "label": {
+                        "de": "Gedruckte Schaltungen",
+                        "en": "Printed circuits",
+                        "fr": "Circuits imprimés",
+                        "it": "Circuiti stampati"
+                      },
+                      "codes": [
+                        {
+                          "code": "31712350",
+                          "label": {
+                            "de": "Transistoren",
+                            "en": "Transistors",
+                            "fr": "Transistors",
+                            "it": "Transistor"
+                          },
+                          "codes": [
+                            {
+                              "code": "31712353",
+                              "label": {
+                                "de": "Metalloxid-Feldeffekttransistoren (MOSFET)",
+                                "en": "Metal oxide field effect transistors (MOSFET)",
+                                "fr": "Transistors à effet de champ à oxdes métalliques (MOSFET)",
+                                "it": "Transistor ad effetto di campo di tipo metallo-ossido-semiconduttore (MOSFET)"
+                              },
+                              "codes": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "35000000",
+      "label": {
+        "de": "Ausrüstung für Sicherheitszwecke, Brandbekämpfung, Polizei und Verteidigung",
+        "en": "Security, fire-fighting, police and defence equipment",
+        "fr": "Équipement de sécurité, de lutte contre l'incendie, de police et de défense",
+        "it": "Attrezzature di sicurezza, antincendio, per la polizia e di difesa"
+      },
+      "codes": [
+        {
+          "code": "35100000",
+          "label": {
+            "de": "Not- und Sicherheitsausrüstungen",
+            "en": "Emergency and security equipment",
+            "fr": "Matériel de secours et de sécurité",
+            "it": "Apparecchiature di emergenza e di sicurezza"
+          },
+          "codes": [
+            {
+              "code": "35120000",
+              "label": {
+                "de": "Überwachungs- und Sicherheitssysteme und -einrichtungen",
+                "en": "Surveillance and security systems and devices",
+                "fr": "Systèmes et appareils de surveillance et de sécurité",
+                "it": "Sistemi e dispositivi di sorveglianza e di sicurezza"
+              },
+              "codes": [
+                {
+                  "code": "35124000",
+                  "label": {
+                    "de": "Metalldetektoren",
+                    "en": "Metal detectors",
+                    "fr": "Détecteurs de métal",
+                    "it": "Rivelatori di metallo"
+                  },
+                  "codes": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "38000000",
+      "label": {
+        "de": "Laborgeräte, optische Geräte und Präzisionsgeräte (ausser Gläser)",
+        "en": "Laboratory, optical and precision equipments (excl. glasses)",
+        "fr": "Équipements de laboratoire, d'optique et de précision (excepté les lunettes)",
+        "it": "Attrezzature da laboratorio, ottiche e di precisione (escluso vetri)"
+      },
+      "codes": [
+        {
+          "code": "38500000",
+          "label": {
+            "de": "Apparate und Geräte zum Prüfen und Testen",
+            "en": "Checking and testing apparatus",
+            "fr": "Appareils de contrôle et d'essai",
+            "it": "Apparecchi di prova e controllo"
+          },
+          "codes": [
+            {
+              "code": "38510000",
+              "label": {
+                "de": "Mikroskope",
+                "en": "Microscopes",
+                "fr": "Microscopes",
+                "it": "Microscopi"
+              },
+              "codes": [
+                {
+                  "code": "38513000",
+                  "label": {
+                    "de": "Inversionsmikroskope und metallurgische Mikroskope",
+                    "en": "Inverted and metallurgical microscopes",
+                    "fr": "Microscopes inversés et métallurgiques",
+                    "it": "Micoscopi invertiti e metallurgici"
+                  },
+                  "codes": [
+                    {
+                      "code": "38513200",
+                      "label": {
+                        "de": "Metallurgische Mikroskope",
+                        "en": "Metallurgical microscopes",
+                        "fr": "Microscopes métallurgiques",
+                        "it": "Microscopi metallurgici"
+                      },
+                      "codes": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "39000000",
+      "label": {
+        "de": "Möbel (einschliesslich Büromöbel), Zubehör, Haushaltsgeräte (ausgenommen Beleuchtung) und Reinigungsmittel",
+        "en": "Furniture (incl. office furniture), furnishings, domestic appliances (excl. lighting) and cleaning products",
+        "fr": "Meubles (y compris les meubles de bureau), aménagements, appareils électroménagers (à l'exclusion de l'éclairage) et produits de nettoyage",
+        "it": "Mobili (incluso mobili da ufficio), arredamento, apparecchi elettrodomestici (escluso illuminazione) e prodotti per pulizie"
+      },
+      "codes": [
+        {
+          "code": "39200000",
+          "label": {
+            "de": "Ausstattung und Zubehör",
+            "en": "Furnishing",
+            "fr": "Aménagements",
+            "it": "Arredamento"
+          },
+          "codes": [
+            {
+              "code": "39220000",
+              "label": {
+                "de": "Küchenausstattung, Haushalts- und Heimartikel, Catering-Zubehör",
+                "en": "Kitchen equipment, household and domestic items and catering supplies",
+                "fr": "Équipement de cuisine, articles de maison, articles ménagers et fournitures de restauration",
+                "it": "Attrezzature per cucina, articoli domestici e per la casa e forniture per ristorazione"
+              },
+              "codes": [
+                {
+                  "code": "39225000",
+                  "label": {
+                    "de": "Feuerzeuge, Artikel aus brennbaren Stoffen, Pyrotechnik, Zündhölzer und flüssige oder gasförmige Brennstoffe",
+                    "en": "Lighters, articles of combustible materials, pyrotechnics, matches and liquid or liquefied gas fuels",
+                    "fr": "Briquets, articles en matières inflammables, articles de pyrotechnie, allumettes et combustibles liquides ou gaz combustibles liquéfiés",
+                    "it": "Accendini, articoli di materiale infiammabile, articoli pirotecnici, fiammiferi e combustibili liquidi o gas combustibili liquefatti"
+                  },
+                  "codes": [
+                    {
+                      "code": "39225200",
+                      "label": {
+                        "de": "Zündmetalllegierungen",
+                        "en": "Pyrophoric alloys",
+                        "fr": "Alliages pyrophoriques",
+                        "it": "Leghe piroforiche"
+                      },
+                      "codes": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "code": "39230000",
+              "label": {
+                "de": "Produkte für Sonderzwecke",
+                "en": "Special-purpose product",
+                "fr": "Produit à usage spécial",
+                "it": "Prodotti per usi speciali"
+              },
+              "codes": [
+                {
+                  "code": "39235000",
+                  "label": {
+                    "de": "Metallmarken",
+                    "en": "Tokens",
+                    "fr": "Jetons",
+                    "it": "Gettoni"
+                  },
+                  "codes": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "code": "39500000",
+          "label": {
+            "de": "Textilwaren",
+            "en": "Textile articles",
+            "fr": "Articles textiles",
+            "it": "Articoli tessili"
+          },
+          "codes": [
+            {
+              "code": "39560000",
+              "label": {
+                "de": "Diverse Textilwaren",
+                "en": "Miscellaneous textile articles",
+                "fr": "Articles textiles divers",
+                "it": "Prodotti tessili vari"
+              },
+              "codes": [
+                {
+                  "code": "39563000",
+                  "label": {
+                    "de": "Wattierungen, Garne, Gewebe und Waren für technischen Bedarf aus Spinnstoffen",
+                    "en": "Textile wadding, yarns, fabrics and articles for technical uses",
+                    "fr": "Textile de rembourrage, fils, tissus et articles textiles utilisés à des fins techniques",
+                    "it": "Ovatta per imbottiture, filati, tessuti e articoli per uso tecnico"
+                  },
+                  "codes": [
+                    {
+                      "code": "39563200",
+                      "label": {
+                        "de": "Metallgarn",
+                        "en": "Metallised yarn",
+                        "fr": "Fil métallisé",
+                        "it": "Filo metallizzato"
+                      },
+                      "codes": []
+                    },
+                    {
+                      "code": "39563300",
+                      "label": {
+                        "de": "Gewebe aus Metallfäden",
+                        "en": "Woven fabrics of metal thread",
+                        "fr": "Tissu de fils métalliques",
+                        "it": "Tessuti di filo di metallo"
+                      },
+                      "codes": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "42000000",
+      "label": {
+        "de": "Industrielle Maschinen",
+        "en": "Industrial machinery",
+        "fr": "Machines industrielles",
+        "it": "Macchinari industriali"
+      },
+      "codes": [
+        {
+          "code": "42600000",
+          "label": {
+            "de": "Werkzeugmaschinen",
+            "en": "Machine tools",
+            "fr": "Machines-outils",
+            "it": "Macchine utensili"
+          },
+          "codes": [
+            {
+              "code": "42630000",
+              "label": {
+                "de": "Werkzeugmaschinen für die Metallbearbeitung",
+                "en": "Metal-working machine tools",
+                "fr": "Machines-outils pour le travail des métaux",
+                "it": "Macchine utensili per la lavorazione dei metalli"
+              },
+              "codes": [
+                {
+                  "code": "42631000",
+                  "label": {
+                    "de": "Werkzeugmaschinen für die Metalloberflächenbehandlung",
+                    "en": "Machine tools for finishing metals",
+                    "fr": "Machines-outils de finissage des métaux",
+                    "it": "Macchine per la rifinitura di metalli"
+                  },
+                  "codes": []
+                },
+                {
+                  "code": "42632000",
+                  "label": {
+                    "de": "Numerisch gesteuerte Maschinen für die Metallbearbeitung",
+                    "en": "Numerically-controlled machines for metal",
+                    "fr": "Machines à commande numérique pour le travail des métaux",
+                    "it": "Macchine a comando numerico per la lavorazione dei metalli"
+                  },
+                  "codes": []
+                },
+                {
+                  "code": "42637000",
+                  "label": {
+                    "de": "Werkzeugmaschinen zum Bohren oder Fräsen von Metallen",
+                    "en": "Machine tools for drilling, boring or milling metal",
+                    "fr": "Machines-outils à percer, à aléser ou à fraiser les métaux",
+                    "it": "Macchine utensili foratrici, alesatrici o fresatrici per metalli"
+                  },
+                  "codes": [
+                    {
+                      "code": "42637100",
+                      "label": {
+                        "de": "Werkzeugmaschinen zum Bohren von Metall",
+                        "en": "Machine tools for drilling metal",
+                        "fr": "Machines-outils à percer les métaux",
+                        "it": "Macchine utensili foratrici per metalli"
+                      },
+                      "codes": []
+                    },
+                    {
+                      "code": "42637200",
+                      "label": {
+                        "de": "Werkzeugmaschinen zum Ausbohren von Metall",
+                        "en": "Machine tools for boring metal",
+                        "fr": "Machines-outils à aléser les métaux",
+                        "it": "Macchine utensili alesatrici per metalli"
+                      },
+                      "codes": []
+                    },
+                    {
+                      "code": "42637300",
+                      "label": {
+                        "de": "Werkzeugmaschinen zum Fräsen von Metall",
+                        "en": "Machine tools for milling metal",
+                        "fr": "Machines-outils à fraiser les métaux",
+                        "it": "Macchine utensili fresatrici per metalli"
+                      },
+                      "codes": []
+                    }
+                  ]
+                },
+                {
+                  "code": "42638000",
+                  "label": {
+                    "de": "Bearbeitungszentrum zum Bearbeiten von Metallen",
+                    "en": "Metal-working machining centre",
+                    "fr": "Centre d'usinage pour le travail des métaux",
+                    "it": "Centro di lavorazione per metalli"
+                  },
+                  "codes": []
+                }
+              ]
+            },
+            {
+              "code": "42640000",
+              "label": {
+                "de": "Werkzeugmaschinen für die Bearbeitung von harten Stoffen, ausser Metallen",
+                "en": "Machine tools for working hard materials except metals",
+                "fr": "Machines-outils à travailler les matériaux durs, excepté les métaux",
+                "it": "Macchine utensili per la lavorazione di materiali duri, esclusi i metalli"
+              },
+              "codes": []
+            },
+            {
+              "code": "42660000",
+              "label": {
+                "de": "Werkzeuge zum Weichlöten, Hartlöten und Schweissen, Maschinen und Geräte zum Oberflächenhärten und Heissspritzen",
+                "en": "Soldering, brazing and welding tools, surface tempering and hot-spraying machines and equipment",
+                "fr": "Outils pour le brasage tendre, le brasage fort et le soudage, machines et matériel pour la trempe superficielle et la projection à chaud",
+                "it": "Utensili per brasatura e saldatura, macchine ed apparecchiature per tempera superficiale e spruzzatura a caldo"
+              },
+              "codes": [
+                {
+                  "code": "42665000",
+                  "label": {
+                    "de": "Metallspritzmaschinen",
+                    "en": "Metal-spraying machinery",
+                    "fr": "Machines de projection métallique",
+                    "it": "Macchinari per la spruzzatura dei metalli"
+                  },
+                  "codes": []
+                }
+              ]
+            },
+            {
+              "code": "42670000",
+              "label": {
+                "de": "Teile und Zubehör für Werkzeugmaschinen",
+                "en": "Parts and accessories of machine tools",
+                "fr": "Pièces et accessoires de machines-outils",
+                "it": "Parti e accessori di macchine utensili"
+              },
+              "codes": [
+                {
+                  "code": "42674000",
+                  "label": {
+                    "de": "Teile und Zubehör für Werkzeugmaschinen für die Metallbearbeitung",
+                    "en": "Parts and accessories for metal-working machine tools",
+                    "fr": "Pièces et accessoires de machines-outils pour le travail des métaux",
+                    "it": "Parti e accessori per macchine utensili destinate alla lavorazione dei metalli"
+                  },
+                  "codes": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "43000000",
+      "label": {
+        "de": "Maschinen und Geräte für Bergbau und Steinbrecharbeiten, Baumaschinen",
+        "en": "Machinery for mining, quarrying, construction equipment",
+        "fr": "Équipement minier, équipement pour l'exploitation de carrières, matériel de construction",
+        "it": "Macchine per l'industria mineraria, lo scavo di cave, attrezzature da costruzione"
+      },
+      "codes": [
+        {
+          "code": "43700000",
+          "label": {
+            "de": "Maschinen für die Metallurgie und zugehörige Teile",
+            "en": "Machinery for metallurgy and associated parts",
+            "fr": "Machines de métallurgie et pièces associées",
+            "it": "Macchinari per la metallurgia e loro parti"
+          },
+          "codes": [
+            {
+              "code": "43710000",
+              "label": {
+                "de": "Metallwalzmaschinen",
+                "en": "Metal-rolling machinery",
+                "fr": "Machines à laminer les métaux",
+                "it": "Macchinari per laminazione"
+              },
+              "codes": [
+                {
+                  "code": "43711000",
+                  "label": {
+                    "de": "Teile für Metallwalzmaschinen",
+                    "en": "Parts of metal-rolling machinery",
+                    "fr": "Pièces pour machines à laminer les métaux",
+                    "it": "Parti di macchinari per laminazione"
+                  },
+                  "codes": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "44000000",
+      "label": {
+        "de": "Baukonstruktionen und Baustoffe; Bauhilfsprodukte (elektrische Apparate ausgenommen)",
+        "en": "Construction structures and materials; auxiliary products to construction (except electric apparatus)",
+        "fr": "Matériaux et structures de construction; produits auxiliaires pour la construction (à l'exception des appareils électriques)",
+        "it": "Strutture e materiali per costruzione, prodotti ausiliari per costruzione (apparecchiature elettriche escluse)"
+      },
+      "codes": [
+        {
+          "code": "44300000",
+          "label": {
+            "de": "Kabel, Draht und zugehörige Erzeugnisse",
+            "en": "Cable, wire and related products",
+            "fr": "Câble, fil métallique et produits connexes",
+            "it": "Cavi, fili metallici e prodotti affini"
+          },
+          "codes": [
+            {
+              "code": "44310000",
+              "label": {
+                "de": "Drahterzeugnisse",
+                "en": "Wire products",
+                "fr": "Articles en fils métalliques",
+                "it": "Prodotti di fili metallici"
+              },
+              "codes": [
+                {
+                  "code": "44313000",
+                  "label": {
+                    "de": "Drahtgeflecht",
+                    "en": "Metal netting",
+                    "fr": "Filet en métal",
+                    "it": "Rete metallica"
+                  },
+                  "codes": [
+                    {
+                      "code": "44313200",
+                      "label": {
+                        "de": "Metalltuch",
+                        "en": "Wire cloth",
+                        "fr": "Toile métallique",
+                        "it": "Tela metallica"
+                      },
+                      "codes": []
+                    }
+                  ]
+                },
+                {
+                  "code": "44316000",
+                  "label": {
+                    "de": "Eisenwaren",
+                    "en": "Ironmongery",
+                    "fr": "Quincaillerie",
+                    "it": "Ferramenta"
+                  },
+                  "codes": [
+                    {
+                      "code": "44316400",
+                      "label": {
+                        "de": "Metallwaren",
+                        "en": "Hardware",
+                        "fr": "Articles de quincaillerie",
+                        "it": "Articoli di ferro"
+                      },
+                      "codes": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "code": "44400000",
+          "label": {
+            "de": "Diverse vorgefertigte Erzeugnisse und zugehörige Artikel",
+            "en": "Miscellaneous fabricated products and related items",
+            "fr": "Produits fabriqués divers et éléments connexes",
+            "it": "Prodotti fabbricati vari e articoli affini"
+          },
+          "codes": [
+            {
+              "code": "44420000",
+              "label": {
+                "de": "Erzeugnisse für den Einsatz im Bau",
+                "en": "Goods used in construction",
+                "fr": "Produits utilisés dans la construction",
+                "it": "Prodotti utilizzati nella costruzione"
+              },
+              "codes": [
+                {
+                  "code": "44423000",
+                  "label": {
+                    "de": "Diverse Artikel",
+                    "en": "Miscellaneous articles",
+                    "fr": "Article divers",
+                    "it": "Articoli vari"
+                  },
+                  "codes": [
+                    {
+                      "code": "44423800",
+                      "label": {
+                        "de": "Metallpressen",
+                        "en": "Metal stamps",
+                        "fr": "Poinçons en métal",
+                        "it": "Matrici metalliche"
+                      },
+                      "codes": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "45000000",
+      "label": {
+        "de": "Bauarbeiten",
+        "en": "Construction work",
+        "fr": "Travaux de construction",
+        "it": "Lavori di costruzione"
+      },
+      "codes": [
+        {
+          "code": "45200000",
+          "label": {
+            "de": "Komplett- oder Teilbauleistungen im Hochbau sowie Tiefbauarbeiten",
+            "en": "Works for complete or part construction and civil engineering work",
+            "fr": "Travaux de construction complète ou partielle et travaux de génie civil",
+            "it": "Lavori per la costruzione completa o parziale e ingegneria civile"
+          },
+          "codes": [
+            {
+              "code": "45220000",
+              "label": {
+                "de": "Ingenieur- und Hochbauarbeiten",
+                "en": "Engineering works and construction works",
+                "fr": "Ouvrages d'art et de génie civil",
+                "it": "Opere d'arte e strutture"
+              },
+              "codes": [
+                {
+                  "code": "45223000",
+                  "label": {
+                    "de": "Bau von Konstruktionen und baulichen Anlagen",
+                    "en": "Structures construction work",
+                    "fr": "Travaux de construction d'ouvrages",
+                    "it": "Lavori di costruzione di strutture edili"
+                  },
+                  "codes": [
+                    {
+                      "code": "45223100",
+                      "label": {
+                        "de": "Zusammenbau von Metallkonstruktionen",
+                        "en": "Assembly of metal structures",
+                        "fr": "Assemblage de structures en métal",
+                        "it": "Assemblaggio di strutture metalliche"
+                      },
+                      "codes": [
+                        {
+                          "code": "45223110",
+                          "label": {
+                            "de": "Installation von Metallkonstruktionen",
+                            "en": "Installation of metal structures",
+                            "fr": "Installation de structures en métal",
+                            "it": "Installazione di strutture metalliche"
+                          },
+                          "codes": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "code": "45260000",
+              "label": {
+                "de": "Dachdeckarbeiten und Spezialbauarbeiten",
+                "en": "Roof works and other special trade construction works",
+                "fr": "Travaux de couverture et travaux d'autres corps de métier spécialisés",
+                "it": "Lavori di copertura ed altri lavori speciali di costruzione"
+              },
+              "codes": [
+                {
+                  "code": "45262000",
+                  "label": {
+                    "de": "Spezialbauarbeiten, ausser Dachbauten",
+                    "en": "Special trade construction works other than roof works",
+                    "fr": "Travaux de corps de métier spécialisés autres que travaux de couverture",
+                    "it": "Lavori speciali di costruzione, esclusi i lavori di copertura"
+                  },
+                  "codes": [
+                    {
+                      "code": "45262600",
+                      "label": {
+                        "de": "Diverse Spezialbauarbeiten",
+                        "en": "Miscellaneous special-trade construction work",
+                        "fr": "Travaux de construction spécialisés divers",
+                        "it": "Lavori specializzati di costruzione vari"
+                      },
+                      "codes": [
+                        {
+                          "code": "45262670",
+                          "label": {
+                            "de": "Metallbauarbeiten",
+                            "en": "Metalworking",
+                            "fr": "Transformation des métaux",
+                            "it": "Lavorazione del metallo"
+                          },
+                          "codes": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "code": "45400000",
+          "label": {
+            "de": "Baufertigstellung",
+            "en": "Building completion work",
+            "fr": "Travaux de parachèvement de bâtiment",
+            "it": "Lavori di completamento degli edifici"
+          },
+          "codes": [
+            {
+              "code": "45420000",
+              "label": {
+                "de": "Bautischlerei-Einbauarbeiten",
+                "en": "Joinery and carpentry installation work",
+                "fr": "Travaux de menuiserie et de charpenterie",
+                "it": "Lavori di installazione di opere da falegname"
+              },
+              "codes": [
+                {
+                  "code": "45421000",
+                  "label": {
+                    "de": "Bautischlerarbeiten",
+                    "en": "Joinery work",
+                    "fr": "Travaux de menuiserie",
+                    "it": "Lavori di falegnameria"
+                  },
+                  "codes": [
+                    {
+                      "code": "45421100",
+                      "label": {
+                        "de": "Einbau von Türen und Fenstern sowie Zubehör",
+                        "en": "Installation of doors and windows and related components",
+                        "fr": "Pose de portes et de fenêtres et d'éléments accessoires",
+                        "it": "Installazione di porte, finestre e componenti connesse"
+                      },
+                      "codes": [
+                        {
+                          "code": "45421140",
+                          "label": {
+                            "de": "Bautischlerei-Einbauarbeiten mit Metall, ausser Türen und Fenstern",
+                            "en": "Installation of metal joinery except doors and windows",
+                            "fr": "Pose de menuiseries métalliques, excepté portes et fenêtres",
+                            "it": "Lavori di installazione di carpenteria metallica, porte e finestre escluse"
+                          },
+                          "codes": []
+                        },
+                        {
+                          "code": "45421150",
+                          "label": {
+                            "de": "Bautischlerei-Einbauarbeiten ohne Metall",
+                            "en": "Non-metal joinery installation work",
+                            "fr": "Travaux d'installation de menuiseries non métalliques",
+                            "it": "Lavori di installazione di carpenteria non metallica"
+                          },
+                          "codes": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "50000000",
+      "label": {
+        "de": "Reparatur- und Wartungsdienste",
+        "en": "Repair and maintenance services",
+        "fr": "Services de réparation et d'entretien",
+        "it": "Servizi di riparazione e manutenzione"
+      },
+      "codes": [
+        {
+          "code": "50500000",
+          "label": {
+            "de": "Reparatur und Wartung von Pumpen, Ventilen, Hähnen, Metallbehältern und Maschinen",
+            "en": "Repair and maintenance services for pumps, valves, taps and metal containers and machinery",
+            "fr": "Services de réparation et d'entretien de pompes, de vannes, de robinets, de conteneurs en métal et de machines",
+            "it": "Servizi di riparazione e manutenzione di pompe, valvole, rubinetti, contenitori metallici e macchinari"
+          },
+          "codes": [
+            {
+              "code": "50510000",
+              "label": {
+                "de": "Reparatur und Wartung von Pumpen, Ventilen, Hähnen und Metallbehältern",
+                "en": "Repair and maintenance services of pumps, valves, taps and metal containers",
+                "fr": "Services de réparation et d'entretien de pompes, de vannes, de robinets et de conteneurs en métal",
+                "it": "Servizi di riparazione e manutenzione di pompe, valvole, rubinetti e contenitori metallici"
+              },
+              "codes": [
+                {
+                  "code": "50514000",
+                  "label": {
+                    "de": "Reparatur und Wartung von Metallbehältern",
+                    "en": "Repair and maintenance services of metal containers",
+                    "fr": "Services de réparation et d'entretien de conteneurs en métal",
+                    "it": "Servizi di riparazione e manutenzione di contenitori metallici"
+                  },
+                  "codes": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "51000000",
+      "label": {
+        "de": "Installation (ausser Software)",
+        "en": "Installation services (except software)",
+        "fr": "Services d'installation (à l'exception des logiciels)",
+        "it": "Servizi di installazione (escluso software)"
+      },
+      "codes": [
+        {
+          "code": "51500000",
+          "label": {
+            "de": "Installation von Maschinen und Geräten",
+            "en": "Installation services of machinery and equipment",
+            "fr": "Services d'installation de machines et d'équipements",
+            "it": "Servizi di installazione di macchinari e attrezzature"
+          },
+          "codes": [
+            {
+              "code": "51540000",
+              "label": {
+                "de": "Installation von Maschinen und Geräten für besondere Zwecke",
+                "en": "Installation services of special-purpose machinery and equipment",
+                "fr": "Services d'installation de machines et d'équipements à usage spécifique",
+                "it": "Servizi di installazione di macchinari e attrezzature per uso speciale"
+              },
+              "codes": [
+                {
+                  "code": "51541000",
+                  "label": {
+                    "de": "Installation von Bergbau-, Steinbruch-, Bau- und Metallurgiemaschinen",
+                    "en": "Installation services of mining, quarrying, construction and metallurgy machinery",
+                    "fr": "Services d'installation de machines utilisées dans les mines, les carrières, la construction et la métallurgie",
+                    "it": "Servizi di installazione di macchinari per l'industria mineraria, estrattiva, edile e metallurgica"
+                  },
+                  "codes": [
+                    {
+                      "code": "51541400",
+                      "label": {
+                        "de": "Installation von Metallurgiemaschinen",
+                        "en": "Installation services of metallurgy machinery",
+                        "fr": "Services d'installation de machines utilisées dans la métallurgie",
+                        "it": "Servizi di installazione di macchinari per l'industria metallurgica"
+                      },
+                      "codes": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "code": "51800000",
+          "label": {
+            "de": "Installation von Metallbehältern",
+            "en": "Installation services of metal containers",
+            "fr": "Services d'installation de conteneurs en métal",
+            "it": "Servizi di installazione di contenitori in metallo"
+          },
+          "codes": []
+        }
+      ]
+    }
+  ]
+}

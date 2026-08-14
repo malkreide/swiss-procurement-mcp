@@ -35,6 +35,7 @@ import pytest
 import respx
 from mcp import Client, MCPError
 
+from swiss_procurement_mcp import client as _client
 from swiss_procurement_mcp.constants import SIMAP_BASE
 from swiss_procurement_mcp.server import mcp
 
@@ -59,7 +60,7 @@ def no_backoff_delay(monkeypatch):
     async def _instant(_seconds):
         return None
 
-    monkeypatch.setattr("swiss_procurement_mcp.client.asyncio.sleep", _instant)
+    monkeypatch.setattr(_client, "_sleep", _instant)
 
 
 # --- execution errors: found the tool, running it failed -------------------
