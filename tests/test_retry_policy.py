@@ -6,6 +6,7 @@ reference template. These assert the behaviour, not the constants.
 
 from __future__ import annotations
 
+import inspect
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime
 
@@ -95,7 +96,7 @@ async def test_empty_error_message_still_names_type_and_host(monkeypatch):
     async def _instant(_seconds):
         return None
 
-    monkeypatch.setattr(client.asyncio, "sleep", _instant)
+    monkeypatch.setattr(client, "_sleep", _instant)
 
     async with client.SimapClient() as c:
         monkeypatch.setattr(c._http, "get", lambda *a, **k: _raise(httpx.ConnectTimeout("")))
@@ -113,3 +114,19 @@ async def test_empty_error_message_still_names_type_and_host(monkeypatch):
 
 async def _raise(exc: Exception):
     raise exc
+
+
+# --- Die Naht, und warum sie nicht `asyncio.sleep` ist -----------------------
+
+
+def test_der_retry_geht_ueber_den_alias():
+    """Sonst patchen die Tests eine Naht, die der Code gar nicht benutzt.
+
+    Umgeht das Modul den Alias, bleibt der Patch wirkungslos und die Suite
+    wartet die echte Backoff-Leiter ab. Kein Test faellt dabei — sie wird nur
+    um ein Vielfaches langsamer, und eine laengere Laufzeit ist kein Signal,
+    das jemand liest. Diese Zusicherung macht daraus einen Fehlschlag.
+    """
+    quelle = inspect.getsource(client)
+    assert "await _sleep(" in quelle, "der Retry ruft den Modul-Alias nicht mehr auf"
+    assert "await asyncio.sleep(" not in quelle, "der Retry umgeht den Alias"
