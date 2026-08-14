@@ -34,6 +34,12 @@ from .constants import (
     USER_AGENT,
 )
 
+# Eigener Alias, damit Tests die Wartezeit nullen koennen, ohne `asyncio.sleep`
+# prozessweit zu entschaerfen. `monkeypatch.setattr(<modul>.asyncio, "sleep", ...)`
+# sieht lokal aus, ersetzt `sleep` aber auf dem geteilten Modulobjekt — fuer
+# httpx, respx, pytest-asyncio und jeden anderen Importeur im Prozess.
+_sleep = asyncio.sleep
+
 MAX_ATTEMPTS = 4
 CACHE_TTL_SECONDS = 60 * 30  # publications change intraday; keep it short
 
@@ -229,7 +235,7 @@ class SimapClient:
                 # caller has given up by the time it ends. Stop instead.
                 if delay >= deadline - time.monotonic():
                     break
-                await asyncio.sleep(delay)
+                await _sleep(delay)
 
             remaining = deadline - time.monotonic()
             if remaining <= 0:

@@ -5,6 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Der Backoff-Schlaf wird ueber einen Modul-Alias gepatcht, nicht ueber
+  `asyncio.sleep`.** Die Tests nullten die Wartezeit mit
+  `monkeypatch.setattr(<modul>.asyncio, "sleep", ...)`. Das liest sich lokal,
+  ersetzt `sleep` aber auf dem geteilten Modulobjekt — fuer httpx, respx,
+  pytest-asyncio und jeden anderen Importeur im Prozess. Das Modul legt die
+  Naht jetzt als `_sleep = asyncio.sleep` offen; gepatcht wird diese.
+  `test_der_retry_geht_ueber_den_alias` haelt sie: umgeht der Retry den Alias,
+  faellt der Test in Sekundenbruchteilen. Ohne ihn fiel gar nichts — die Suite
+  wurde nur ein Vielfaches langsamer, und eine laengere Laufzeit ist kein
+  Signal, das jemand liest.
+
 ### Fixed
 
 - **The retry had six defects, all inherited from the shared template.** This
