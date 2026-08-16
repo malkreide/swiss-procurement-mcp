@@ -68,11 +68,33 @@ sie dieselbe Version aus `pyproject.toml` beziehen und keine zweite nennen.
 **Gates, wörtlich aus `ci.yml`** (Matrix: Python 3.10 / 3.11 / 3.12):
 
 ```
+python -m py_compile src/swiss_procurement_mcp/server.py src/swiss_procurement_mcp/client.py
+python -c "from swiss_procurement_mcp.server import mcp; print('Import OK')"
 pytest -m "not live" -v
 ruff check src/ tests/
 ruff format --check src/ tests/
 pytest tests/ -m live -v --junitxml=live-report.xml 2>&1 | tee live-output.txt
 ```
+
+Syntax-Prüfung und Import-Test fehlten hier, obwohl der Block «wörtlich»
+heisst — sie stehen in `ci.yml` vor den Unit-Tests. Die letzte Zeile ist
+kein PR-Gate: sie gehört dem geplanten Live-Lauf.
+
+**Die vier Jobs sind ungleich zugeschnitten.** `test` fährt die Matrix
+3.10/3.11/3.12, `lint` läuft ohne Matrix auf **3.10** — nicht auf 3.11 wie in
+den meisten Schwester-Servern. Ein `fail-fast: false` steht nicht da.
+
+**Die Matrix fährt kein 3.13.** Damit ist dies einer von zwei Servern im
+Portfolio (mit `swiss-holidays-mcp`), die das aktuellste Feld nicht testen.
+
+**Ein vierter Job gatet mit: `docker`** («Docker build», `needs: [test]`). Er
+stand in keiner Liste. Sein `permissions`-Block hebt `actions: write` an, weil
+der GHA-Cache-Backend das braucht — ein rotes `test` heisst hier ausserdem,
+dass `docker` gar nie lief.
+
+**Es gibt kein Versions-Sync-Gate.** `scripts/` enthält nur
+`classify_live_run.py` und `record_fixtures.py`. `pyproject.toml` und
+`server.json` stehen beide auf `0.18.5`, gehalten wird das von nichts.
 
 **Live-Tests: geplanter Workflow vorhanden.** `.github/workflows/ci.yml`,
 `cron: "23 3 * * *"` plus `workflow_dispatch`. Die Live-Suite ist also nicht bloss
