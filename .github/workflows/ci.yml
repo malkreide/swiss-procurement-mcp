@@ -71,9 +71,17 @@ jobs:
       - name: Ruff-Pin (PATH und Modul gegen pyproject.toml)
         run: python scripts/check_ruff_pin.py
 
-      - run: ruff check src/ tests/
+      # `scripts/` kam zuletzt dazu, weil es ausserhalb BEIDER Gates lag.
+      # Dort steht kein Beiwerk: `check_version_sync.py` ist selbst ein
+      # CI-Gate, `record_fixtures.py` erzeugt die Fixtures, gegen die die
+      # Unit-Tests laufen, und `classify_live_run.py` entscheidet, ob ein
+      # Live-Lauf `clear`, `finding` oder `unknown` heisst. Werkzeug, an dem
+      # die Aussagekraft des geprueften Codes haengt, gehoert selbst geprueft.
+      - run: ruff check src/ tests/ scripts/
 
-      - run: ruff format --check src/ tests/
+      # Scope identisch mit `ruff check` oben. Zwei Gates mit zwei
+      # Reichweiten sehen aus wie eins.
+      - run: ruff format --check src/ tests/ scripts/
 
   docker:
     name: Docker build

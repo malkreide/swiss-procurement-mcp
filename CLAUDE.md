@@ -74,9 +74,10 @@ schlägt den Pin, ohne dass der Install etwas meldet.
 python -m py_compile src/swiss_procurement_mcp/server.py src/swiss_procurement_mcp/client.py
 python -c "from swiss_procurement_mcp.server import mcp; print('Import OK')"
 pytest -m "not live" -v
+python scripts/check_version_sync.py
 python scripts/check_ruff_pin.py
-ruff check src/ tests/
-ruff format --check src/ tests/
+ruff check src/ tests/ scripts/
+ruff format --check src/ tests/ scripts/
 pytest tests/ -m live -v --junitxml=live-report.xml 2>&1 | tee live-output.txt
 ```
 
@@ -96,9 +97,13 @@ stand in keiner Liste. Sein `permissions`-Block hebt `actions: write` an, weil
 der GHA-Cache-Backend das braucht — ein rotes `test` heisst hier ausserdem,
 dass `docker` gar nie lief.
 
-**Es gibt kein Versions-Sync-Gate.** `scripts/` enthält nur
-`classify_live_run.py` und `record_fixtures.py`. `pyproject.toml` und
-`server.json` stehen beide auf `0.18.5`, gehalten wird das von nichts.
+**`scripts/` liegt seit diesem Commit im ruff-Scope.** Die drei Dateien dort
+— `check_version_sync.py`, `classify_live_run.py`, `record_fixtures.py` —
+bestanden ruff schon vorher, der erste Lauf war also grün. Das ist kein
+Argument gegen die Erweiterung, sondern der Grund, warum die Lücke so lange
+offenblieb: sie biss noch nicht. `check_version_sync.py` ist selbst ein Gate,
+`record_fixtures.py` erzeugt die Fixtures der Unit-Tests, und
+`classify_live_run.py` entscheidet über die Einordnung eines Live-Laufs.
 
 **Live-Tests: geplanter Workflow vorhanden.** `.github/workflows/ci.yml`,
 `cron: "23 3 * * *"` plus `workflow_dispatch`. Die Live-Suite ist also nicht bloss
