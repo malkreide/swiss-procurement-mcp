@@ -75,6 +75,7 @@ python -m py_compile src/swiss_procurement_mcp/server.py src/swiss_procurement_m
 python -c "from swiss_procurement_mcp.server import mcp; print('Import OK')"
 pytest -m "not live" -v
 python scripts/check_version_sync.py
+python scripts/check_ruff_pin.py
 ruff check src/ tests/ scripts/
 ruff format --check src/ tests/ scripts/
 pytest tests/ -m live -v --junitxml=live-report.xml 2>&1 | tee live-output.txt
