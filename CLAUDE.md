@@ -105,8 +105,21 @@ offenblieb: sie biss noch nicht. `check_version_sync.py` ist selbst ein Gate,
 `record_fixtures.py` erzeugt die Fixtures der Unit-Tests, und
 `classify_live_run.py` entscheidet über die Einordnung eines Live-Laufs.
 
+Seither ist `check_ruff_pin.py` dazugekommen — vier Dateien, gleicher Scope.
+
 **Live-Tests: geplanter Workflow vorhanden.** `.github/workflows/ci.yml`,
 `cron: "23 3 * * *"` plus `workflow_dispatch`. Die Live-Suite ist also nicht bloss
 per `-m "not live"` ausgeschlossen — DRIFT-005 ist hier erfüllt. `schedule`
 greift nur auf dem Default-Branch (`main`): Änderungen am Workflow wirken erst
 nach dem Merge, vorher von Hand per `workflow_dispatch`.
+
+**Ein fünftes Gate steht ausserhalb `ci.yml`.**
+`.github/workflows/security.yml` hängt am selben PR-Trigger: gitleaks über die
+ganze Historie (`fetch-depth: 0`). Wer nur `ci.yml` liest, hält den PR für
+vollständig geprüft.
+
+**Beide Workflows gaten nur `pull_request: branches: [main]`.** Ein PR mit
+einer anderen Basis bekommt keinen einzigen Check — der `push`-Trigger nennt
+zusätzlich `develop`, der `pull_request`-Trigger nicht. Das ist der zweite
+Fall der Teil-1-Regel «PR ohne jeden Check»: nicht immer ein Merge-Konflikt,
+hier eine Basis ausserhalb des Triggers.
