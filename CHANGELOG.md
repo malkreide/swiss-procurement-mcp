@@ -5,7 +5,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Browser-Clients scheiterten am Preflight.** Spec `2026-07-28` routet eine
+  Streamable-HTTP-Anfrage ueber `Mcp-Method`, `Mcp-Name` und
+  `Mcp-Protocol-Version`; `ALLOW_HEADERS` war noch fuer die alte Form
+  geschrieben und nannte mit `Mcp-Session-Id` den Header genau der
+  Session-Mechanik, die dieselbe Revision abgeschafft hat. Ein Browser darf
+  einen nicht safelisteten Header nicht senden, wenn der Server ihn nicht nennt
+  — die Anfrage starb vor dem ersten MCP-Byte, waehrend stdio und Python, fuer
+  die kein Preflight gilt, weiterliefen.
+
+- **Die SDK-Zeile im Protokoll-Abschnitt beider READMEs nannte `mcp>=1.28.1`.**
+  `pyproject.toml` bindet seit der 2.x-Migration auf `mcp>=2.0.0,<3`.
+
 ### Added
+
+- **Frischehinweise auf `tools/list` und `server/discover`** (SEP-2549, Spec
+  `2026-07-28`): `ttlMs` 300000, `cacheScope` `public`. Das SDK setzt sonst
+  «sofort veraltet, nie geteilt» und laesst damit jeden Client bei jeder
+  Verbindung neu auflisten — fuer eine Liste, die beim Import feststeht und
+  fuer jeden Aufrufer dieselbe ist. `prompts/list` und `resources/list` bleiben
+  ungesetzt: dieser Server registriert beides nicht.
 
 - **Die Pruefsummen im Fixture-Nachweis waren Zierde.** `PROVENANCE.md` fuehrt
   je Datei einen SHA-256 — um genau einen Fall zu fangen: eine Aufzeichnung,
