@@ -11,6 +11,7 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Any
 
+from mcp.server.caching import CacheHint
 from mcp.server.mcpserver import MCPServer
 from mcp.types import LATEST_PROTOCOL_VERSION
 
@@ -79,7 +80,28 @@ async def _lifespan(_server: MCPServer):
         await close_client()
 
 
-mcp = MCPServer("swiss-procurement-mcp", lifespan=_lifespan)
+# SEP-2549, spec 2026-07-28: every cacheable list result carries `ttlMs` and
+# `cacheScope`. The SDK defaults both to "immediately stale, never shared", so a
+# server that passes no `cache_hints` is not neutral — it makes each client
+# re-list on every connection, for a list that cannot change while the process
+# runs. The nine tools are registered at import; there is no dynamic
+# registration and no per-caller filtering.
+#
+# `public` follows from that second property rather than from convenience: the
+# answer is identical for every authorization context. The day a tool list
+# becomes caller-dependent, this has to become `private` in the same commit.
+#
+# `prompts/list` and `resources/list` stay unset on purpose — this server
+# registers neither, and hinting at them would describe a surface that does not
+# exist.
+LIST_CACHE_TTL_MS = 300_000
+
+CACHE_HINTS = {
+    "tools/list": CacheHint(ttl_ms=LIST_CACHE_TTL_MS, scope="public"),
+    "server/discover": CacheHint(ttl_ms=LIST_CACHE_TTL_MS, scope="public"),
+}
+
+mcp = MCPServer("swiss-procurement-mcp", lifespan=_lifespan, cache_hints=CACHE_HINTS)
 
 # OBS-003: structured JSON to stderr. stdout carries the MCP protocol.
 configure_logging()

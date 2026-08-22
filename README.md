@@ -241,7 +241,8 @@ upstream response body (OBS-002).
 |---|---|
 | **Supported spec version** | `2026-07-28` |
 | **Pinned in** | `MCP_PROTOCOL_VERSION` in [`server.py`](src/swiss_procurement_mcp/server.py) |
-| **SDK** | `mcp>=1.28.1` |
+| **SDK** | `mcp>=2.0.0,<3` |
+| **Cache hints** | `tools/list` and `server/discover`: `ttlMs` 300000, `cacheScope` `public` |
 
 The MCP Python SDK negotiates the protocol version in the session layer and
 offers no constructor parameter for it, so the version cannot be pinned by

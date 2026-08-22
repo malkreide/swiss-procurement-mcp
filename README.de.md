@@ -198,7 +198,8 @@ Keine API-Keys — die gekapselten simap.ch-Lese-Endpoints sind vollständig öf
 |---|---|
 | **Unterstützte Spec-Version** | `2026-07-28` |
 | **Gepinnt in** | `MCP_PROTOCOL_VERSION` in [`server.py`](src/swiss_procurement_mcp/server.py) |
-| **SDK** | `mcp>=1.28.1` |
+| **SDK** | `mcp>=2.0.0,<3` |
+| **Cache hints** | `tools/list` and `server/discover`: `ttlMs` 300000, `cacheScope` `public` |
 
 Das MCP-Python-SDK handelt die Protokollversion in der Session-Schicht aus und
 bietet dafür keinen Konstruktor-Parameter — die Version lässt sich also nicht

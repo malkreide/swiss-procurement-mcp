@@ -1,12 +1,18 @@
 """CORS for the HTTP transports (SDK-004).
 
-MCP over Streamable HTTP or SSE carries the session in the `Mcp-Session-Id`
-header. A browser-based client cannot *read* a response header unless the server
-names it in `Access-Control-Expose-Headers`, and cannot *send* it on the next
-request unless the server names it in `Access-Control-Allow-Headers`. Without
-both, a browser client completes the initialize handshake and then loses the
-session on the very next call — the failure looks like a broken server rather
-than a missing header.
+A browser-based client cannot *send* a non-safelisted request header unless the
+server names it in `Access-Control-Allow-Headers`, and cannot *read* a response
+header unless the server names it in `Access-Control-Expose-Headers`. Both lists
+are part of the protocol surface rather than decoration: a header missing here
+fails the preflight, before the first byte of MCP is exchanged.
+
+Spec `2026-07-28` moved request *routing* into headers — `Mcp-Method`,
+`Mcp-Name` and `Mcp-Protocol-Version` ride on every streamable-HTTP request —
+and abolished protocol-level sessions in the same revision. This list had been
+written for the older shape and named only `Mcp-Session-Id`, the header of the
+mechanism that went away; every cross-origin client was refused at the preflight
+while stdio and Python clients, which no preflight applies to, kept working.
+`Mcp-Session-Id` stays listed for as long as `/sse` does.
 
 Origins are fail-closed. `MCP_CORS_ORIGINS` is unset by default, which means no
 cross-origin browser access at all. That is the right default for a server whose
@@ -32,10 +38,29 @@ from ._log import log_event
 
 SESSION_HEADER = "Mcp-Session-Id"
 
+# The headers spec 2026-07-28 routes a request by, in the SDK's own spelling
+# (`mcp.shared.inbound`): the JSON-RPC method, the tool/prompt/resource the call
+# names, and the protocol revision the request is written against.
+# `test_cors_names_every_routing_header_the_sdk_reads` holds this list against
+# those constants, so an SDK rename surfaces as a failing test rather than as a
+# browser client that silently stops connecting.
+#
+# `Mcp-Param-*` is deliberately absent. CORS allows no prefix wildcard, and no
+# tool here annotates an input field with `x-mcp-header`, so no such header is
+# ever sent. `test_no_tool_schema_declares_an_mcp_param_header` fails the day
+# one is added — the reminder that it has to be named here too.
+ROUTING_HEADERS = ["Mcp-Method", "Mcp-Name", "Mcp-Protocol-Version"]
+
 # `Last-Event-ID` is how an SSE client resumes a dropped stream; omitting it
 # would make reconnection fail only under packet loss, which is the worst kind
 # of bug to find in production.
-ALLOW_HEADERS = ["Content-Type", "Authorization", SESSION_HEADER, "Last-Event-ID"]
+ALLOW_HEADERS = [
+    "Content-Type",
+    "Authorization",
+    *ROUTING_HEADERS,
+    SESSION_HEADER,
+    "Last-Event-ID",
+]
 
 # DELETE terminates a Streamable HTTP session. Without it a browser client can
 # open sessions but never close them.
