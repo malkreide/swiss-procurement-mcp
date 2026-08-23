@@ -239,7 +239,9 @@ upstream response body (OBS-002).
 
 | | |
 |---|---|
-| **Supported spec version** | `2026-07-28` |
+| **Served via the `initialize` handshake** | `2024-11-05` … **`2025-11-25`** — the handshake ceiling |
+| **Served via the per-request envelope** | **`2026-07-28`** |
+| **Who picks** | The client's first request, once per connection. A request carrying the `2026-07-28` `_meta` envelope opens a modern connection; anything else opens a handshake connection. |
 | **Pinned in** | `MCP_PROTOCOL_VERSION` in [`server.py`](src/swiss_procurement_mcp/server.py) |
 | **SDK** | `mcp>=2.0.0,<3` |
 | **Cache hints** | `tools/list` and `server/discover`: `ttlMs` 300000, `cacheScope` `public` |

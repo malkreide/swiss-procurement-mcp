@@ -196,7 +196,9 @@ Keine API-Keys — die gekapselten simap.ch-Lese-Endpoints sind vollständig öf
 
 | | |
 |---|---|
-| **Unterstützte Spec-Version** | `2026-07-28` |
+| **Über den `initialize`-Handshake bedient** | `2024-11-05` … **`2025-11-25`** — die Handshake-Obergrenze |
+| **Über den Pro-Request-Envelope bedient** | **`2026-07-28`** |
+| **Wer entscheidet** | Die erste Anfrage des Clients, einmal pro Verbindung. Eine Anfrage mit dem `2026-07-28`-`_meta`-Envelope öffnet eine moderne Verbindung, alles andere eine Handshake-Verbindung. |
 | **Gepinnt in** | `MCP_PROTOCOL_VERSION` in [`server.py`](src/swiss_procurement_mcp/server.py) |
 | **SDK** | `mcp>=2.0.0,<3` |
 | **Cache hints** | `tools/list` and `server/discover`: `ttlMs` 300000, `cacheScope` `public` |
