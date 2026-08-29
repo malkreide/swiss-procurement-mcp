@@ -7,6 +7,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **`get_publication_history` war fuer jede losbasierte Beschaffung kaputt —
+  und meldete dafuer eine Stoerung.** Der Endpunkt `past-publications` fuehrt
+  laut Spec einen optionalen Parameter `lotId`; bei einer Publikation mit Losen
+  ist er nicht optional. Der Client sendete ihn nie, die Quelle antwortete mit
+  HTTP 400 / `errorCode: E0003`, und das Tool machte daraus «simap.ch is
+  currently unreachable — please retry shortly». Erreichbar war sie; ihr fehlte
+  ein Parameter. Ein gemessenes Projekt trug sieben Vorgaengerpublikationen,
+  die der Server samt und sonders wegwarf.
+
+  Gemessen am 29.8.2026 ueber 80 Publikationen aus vier Suchbegriffen,
+  ausnahmslos: die 4 mit Losen antworten 400 ohne den Parameter und 200 mit
+  ihm, die 76 ohne Lose antworten 200 (und 404 auf ein fremdes Los — der
+  Parameter darf deshalb nicht unbedingt mitgehen).
+
+  Der aufgezeichnete Nachweis hielt bis dahin die falsche Lehre fest, die
+  Quelle «verweigere die Auskunft ganz». Belegt war dafuer nur der 400er; aus
+  einem 400 folgt eine Verweigerung nicht. `past_publications_lot.json` liegt
+  jetzt neben `past_publications_lot_400.json` — derselbe Aufruf, ein Parameter
+  mehr. Der Unterschied zwischen beiden ist der Befund, und eine Aufzeichnung
+  nur einer Seite kann ihn nicht tragen.
+
+- **Der Live-Test hing an einem Muenzwurf.** `test_live_publication_history_shape`
+  nahm `results[0]` der ZH-Suche. Ob die neueste Publikation Lose hat, ist eine
+  Eigenschaft des Tages — am 25.8.2026 hatte sie welche, und die geplante Suite
+  wurde rot (Lauf 32807580616), waehrend sie an den Tagen davor und danach
+  gruen war. Der Test waehlt seinen Fall jetzt gezielt, und ein zweiter Test
+  faehrt die Los-Seite beider Zweige.
+
+- **Der Fixture-Recorder belegte still einen anderen Fall als den benannten.**
+  Er nahm die *erste* Publikation mit Losen, waehrend Fixture und Test einen
+  *Zuschlag* mit Losen behaupten. Am 29.8.2026 war die erste eine
+  Abbruchpublikation: die traegt `abandonedLot` statt `lot`, `lot` blieb null.
+  Beide Achsen sind jetzt gepinnt und einzeln zugesichert.
+
 - **Browser-Clients scheiterten am Preflight.** Spec `2026-07-28` routet eine
   Streamable-HTTP-Anfrage ueber `Mcp-Method`, `Mcp-Name` und
   `Mcp-Protocol-Version`; `ALLOW_HEADERS` war noch fuer die alte Form
@@ -20,6 +54,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `pyproject.toml` bindet seit der 2.x-Migration auf `mcp>=2.0.0,<3`.
 
 ### Added
+
+- **`lot_id` an `get_publication_history`** und **`lots_type` plus `lots` an
+  jedem Suchtreffer.** Der Mapper liess die `lots`-Liste der Quelle fallen;
+  damit war die `lot_id`, die die Quelle verlangt, ueber diesen Server
+  ueberhaupt nicht zu beschaffen — ein Parameter, den kein Aufrufer haette
+  fuellen koennen. `lots` traegt je Los `lot_id`, `lot_number`, `lot_title`,
+  die eigene `publication_id` und `pub_type`.
+
+- **`UpstreamError.status`** traegt den HTTP-Status, wo es eine Antwort gab.
+  Damit laesst sich eine Absage, auf die ein Aufrufer reagieren kann, von einem
+  Ausfall unterscheiden, auf den er es nicht kann. Nur der Status — der
+  Antwortkoerper bleibt nach OBS-002 vom Modell fern. `get_publication_history`
+  nennt daraufhin den fehlenden Parameter statt «retry shortly», was auf einen
+  deterministischen 400 der falsche Rat ist.
 
 - **Frischehinweise auf `tools/list` und `server/discover`** (SEP-2549, Spec
   `2026-07-28`): `ttlMs` 300000, `cacheScope` `public`. Das SDK setzt sonst

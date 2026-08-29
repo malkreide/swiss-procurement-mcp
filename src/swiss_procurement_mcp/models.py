@@ -25,6 +25,25 @@ class Envelope(BaseModel):
     note: str | None = None
 
 
+class LotRef(BaseModel):
+    """One lot of a publication, carrying the id `get_publication_history` needs.
+
+    Upstream keeps the publication history per lot: a lot publication answers
+    `past-publications` only when a `lotId` comes with it. Dropping this list
+    from the summary left that id unobtainable through this server, so the
+    history tool could not be called correctly for any lot-based procurement.
+    """
+
+    lot_id: str
+    lot_number: int | None = None
+    lot_title: str | None = None
+    publication_id: str | None = Field(
+        default=None,
+        description="The lot's own publication id, which may differ from the project's.",
+    )
+    pub_type: str | None = None
+
+
 class ProcurementSummary(BaseModel):
     project_id: str
     publication_id: str
@@ -40,6 +59,16 @@ class ProcurementSummary(BaseModel):
     canton: str | None = Field(default=None, description="Bare canton id, e.g. ZH (not CH-ZH).")
     city: str | None = None
     postal_code: str | None = None
+    lots_type: str | None = Field(
+        default=None, description="with or without — whether the project is split into lots."
+    )
+    lots: list[LotRef] = Field(
+        default_factory=list,
+        description=(
+            "Empty unless lots_type is 'with'. Pass a lot_id from here to "
+            "get_publication_history, which cannot trace a lot publication without one."
+        ),
+    )
 
 
 class SearchResponse(Envelope):

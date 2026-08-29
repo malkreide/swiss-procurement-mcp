@@ -241,6 +241,16 @@ class HistoryInput(_LanguageMixin):
         description="Publication id whose earlier publications should be returned.",
         pattern=ID_PATTERN,
     )
+    lot_id: str | None = Field(
+        default=None,
+        description=(
+            "Required when the publication has lots — take `lot_id` from the "
+            "matching entry in the search result's `lots` list. Upstream "
+            "history is kept per lot, so a lot publication cannot be traced "
+            "without it. Leave unset for a publication without lots."
+        ),
+        pattern=ID_PATTERN,
+    )
 
 
 class CpvSearchInput(_LanguageMixin):

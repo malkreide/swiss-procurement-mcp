@@ -1,0 +1,26 @@
+{
+  "pastPublications": [
+    {
+      "projectType": "tender",
+      "projectSubType": "service",
+      "processType": "open",
+      "publicationNumber": "29653-02",
+      "pubType": "tender",
+      "corrected": false,
+      "id": "3d07ce89-3a8a-4325-8df5-3409c2245d71",
+      "publicationDate": "2026-02-16",
+      "lotNumber": null
+    },
+    {
+      "projectType": "tender",
+      "projectSubType": "service",
+      "processType": "open",
+      "publicationNumber": "29653-01",
+      "pubType": "advance_notice",
+      "corrected": false,
+      "id": "9ee59af5-6edb-44ea-b496-df42cf94a2de",
+      "publicationDate": "2026-01-27",
+      "lotNumber": null
+    }
+  ]
+}

@@ -319,6 +319,13 @@ public, administration, developers) and a tool-selection reference table.
   awarded in July appears once, as the July award; `search_awards` likewise only
   finds projects whose newest publication is an award, so a later correction
   hides it. `get_publication_history` reaches the earlier publications.
+- **Lot-based procurements are traced per lot.** Upstream keeps the publication
+  history per lot, so `get_publication_history` needs a `lot_id` whenever the
+  search result shows `lots_type: "with"` — take one from that result's `lots`
+  list. Without it the source answers HTTP 400 and the tool reports a degraded
+  response naming the missing parameter. Measured 2026-08-29 over 80
+  publications: all 4 with lots behaved this way, all 76 without lots answered
+  directly.
 - **At least one filter is required.** simap answers a filterless query with
   nothing rather than everything, so the tools refuse it with that reason
   instead of reporting an empty result.

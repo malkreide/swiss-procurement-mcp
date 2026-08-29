@@ -55,6 +55,7 @@ from .models import (
     EnrichedSearchResponse,
     HistoryEntry,
     HistoryResponse,
+    LotRef,
     OfficeSearchResponse,
     ProcurementDetail,
     ProcurementOffice,
@@ -145,7 +146,7 @@ READ_TOOL = {
 # and notes quote them.
 
 
-def _degraded(exc: Exception) -> dict[str, Any]:
+def _degraded(exc: Exception, note: str | None = None) -> dict[str, Any]:
     # OBS-003: the operator gets the exception type at WARNING; the model gets
     # the sanitised note below. This is the single funnel for every upstream
     # failure path, so one call site covers all of them.
@@ -156,11 +157,16 @@ def _degraded(exc: Exception) -> dict[str, Any]:
     )
     # OBS-002: surface a fixed, sanitised note — never the raw exception or the
     # upstream response body — to the model.
+    # `note` overrides only where the caller has established a *specific*
+    # cause. The default sentence tells the model to retry, which is wrong
+    # advice for a deterministic refusal: retrying a missing parameter forever
+    # produces the same 400 and reads to the model as an outage.
     return {
         "source": ATTRIBUTION,
         "provenance": "degraded",
         "retrieved_at": utc_now_iso(),
-        "note": "simap.ch is currently unreachable or returned an error. Please retry shortly.",
+        "note": note
+        or "simap.ch is currently unreachable or returned an error. Please retry shortly.",
     }
 
 
@@ -181,6 +187,31 @@ def _code_list(values: Any) -> list[str]:
     return [c for c in (_code_str(v) for v in values) if c]
 
 
+def _to_lots(entry: dict[str, Any], lang: str) -> list[LotRef]:
+    """Carry the lot ids through instead of dropping them.
+
+    Without this list a caller has no way to reach a `lot_id`, and
+    `get_publication_history` is uncallable for every lot-based procurement —
+    the tool answered "simap.ch is currently unreachable" for a condition that
+    was neither transient nor upstream's fault.
+    """
+    lots = []
+    for lot in entry.get("lots") or []:
+        lot_id = lot.get("lotId")
+        if not lot_id:
+            continue
+        lots.append(
+            LotRef(
+                lot_id=lot_id,
+                lot_number=lot.get("lotNumber"),
+                lot_title=pick_lang(lot.get("lotTitle"), lang),
+                publication_id=lot.get("publicationId"),
+                pub_type=lot.get("pubType"),
+            )
+        )
+    return lots
+
+
 def _to_summary(entry: dict[str, Any], lang: str) -> ProcurementSummary:
     addr = entry.get("orderAddress") or {}
     return ProcurementSummary(
@@ -198,6 +229,8 @@ def _to_summary(entry: dict[str, Any], lang: str) -> ProcurementSummary:
         canton=addr.get("cantonId"),
         city=pick_lang(addr.get("city"), lang),
         postal_code=addr.get("postalCode"),
+        lots_type=entry.get("lotsType"),
+        lots=_to_lots(entry, lang),
     )
 
 
@@ -662,6 +695,29 @@ async def get_procurement_details(args: ProcurementDetailInput) -> ProcurementDe
     return _detail_from_payload(payload, project_id, publication_id, lang, provenance, stamp)
 
 
+def _history_refusal_note(exc: Exception, lot_id: str | None) -> str | None:
+    """Name the one refusal this endpoint has that a caller can actually fix.
+
+    Measured 2026-08-29 over 80 publications: every one of the 4 with lots
+    answered `past-publications` with HTTP 400 (`errorCode: E0003`) when no
+    `lotId` came with it, and 200 when one did; all 76 without lots answered
+    200. So a 400 on a call made without a lot id is, in every measured case,
+    the missing parameter — not an outage.
+
+    Returning None keeps the generic note, which is the honest answer whenever
+    a lot id was already supplied or the failure was not a 400: those we have
+    not measured and must not explain away.
+    """
+    if lot_id or getattr(exc, "status", None) != 400:
+        return None
+    return (
+        "simap.ch refused this history request. A publication that has lots is "
+        "only traceable per lot: re-run search_procurements, and if the entry "
+        "shows lots_type 'with', call this tool again with a lot_id from its "
+        "lots list."
+    )
+
+
 @mcp.tool(annotations=READ_TOOL)
 @logged_tool("get_publication_history")
 async def get_publication_history(args: HistoryInput) -> HistoryResponse:
@@ -671,15 +727,24 @@ async def get_publication_history(args: HistoryInput) -> HistoryResponse:
 
     Traces a project's lifecycle: tender → correction → award. An empty list is
     normal for a first publication.
+
+    When the publication has lots (`lots_type` is "with" in the search result),
+    pass `lot_id` from its `lots` list: upstream keeps the history per lot and
+    refuses the request without one.
     """
-    publication_id, language = args.publication_id, args.language
+    publication_id, language, lot_id = args.publication_id, args.language, args.lot_id
 
     lang = normalise_language(language)
     client = get_client()
     try:
-        payload, provenance, stamp = await client.past_publications(publication_id, lang)
+        payload, provenance, stamp = await client.past_publications(publication_id, lang, lot_id)
     except UpstreamError as exc:
-        return HistoryResponse(**_degraded(exc), project_id=None, count=0, publications=[])
+        return HistoryResponse(
+            **_degraded(exc, note=_history_refusal_note(exc, lot_id)),
+            project_id=None,
+            count=0,
+            publications=[],
+        )
 
     past = payload.get("pastPublications", [])
     entries = [

@@ -6,7 +6,7 @@
     "pubType": "award",
     "orderType": "construction",
     "orderDescription": {
-      "de": "<p>Die fünf zwischen 1900 und 1906 errichteten Stadthäuser sind im Inventar der Denkmalpflege aufgeführt. Die Liegenschaften werden von einer Büro- und Labornutzung wieder in Wohnraum umgewandelt.&nbsp;Der Auftrag beinhaltet die Lieferung und Montage von insgesamt 47 Küchenanlagen (einzeilige und L-förmige Ausführungen).</p>",
+      "de": "<p>Erbringung der Leistungen im Zusammenhang mit PV-Anlage an Fassade des Ersatzneubaus.</p>",
       "en": null,
       "fr": null,
       "it": null
@@ -14,12 +14,12 @@
     "additionalCpvCodes": [],
     "bkpCodes": [
       {
-        "code": "258",
+        "code": "231.5",
         "label": {
-          "de": "Kücheneinrichtungen",
-          "en": "Kitchen fittings",
-          "fr": "Equipements de cuisine",
-          "it": "Impianti di cucine"
+          "de": "Energieerzeugungsanlagen",
+          "en": "Energy production systems",
+          "fr": "Equipements de production d’énergie électrique",
+          "it": "Impianti per la produzione di energia"
         }
       }
     ],
@@ -30,18 +30,18 @@
     "constructionType": "execution",
     "constructionCategory": "structural_engineering",
     "cpvCode": {
-      "code": "45210000",
+      "code": "45216112",
       "label": {
-        "de": "Bauleistungen im Hochbau",
-        "en": "Building construction work",
-        "fr": "Travaux de construction de bâtiments",
-        "it": "Lavori generali di costruzione di edifici"
+        "de": "Bau von Gerichtsgebäuden",
+        "en": "Court building construction work",
+        "fr": "Travaux de construction de tribunaux",
+        "it": "Lavori di costruzione di tribunali"
       }
     },
     "projectOrderDescription": null,
     "externalReference": null
   },
-  "id": "e8a78435-6e0f-4e5e-ad59-b6f1cfa7f1a4",
+  "id": "246db041-10e0-4a67-a3dd-ff5cc991c126",
   "type": "award",
   "projectType": "tender",
   "publishers": [
@@ -52,24 +52,24 @@
   ],
   "project-info": {
     "procOfficeAddress": {
-      "postalCode": "4001",
+      "postalCode": "8090",
       "countryId": "CH",
-      "cantonId": "BS",
-      "id": "97eb3cc6-d543-4791-a02e-8d901ea4a0b6",
+      "cantonId": "ZH",
+      "id": "8286ba4d-ce83-4f05-8420-60bddc237f98",
       "name": {
-        "de": "Bau- und Verkehrsdepartement des Kantons Basel-Stadt, Kantonale Fachstelle für öffentliche Beschaffungen (KFöB)",
+        "de": "Hochbauamt, Baubereich B",
         "en": null,
         "fr": null,
         "it": null
       },
       "contactPerson": {
-        "de": null,
+        "de": "Oliver Tschuppert",
         "en": null,
         "fr": null,
         "it": null
       },
-      "phone": "+41612679176",
-      "email": "kfoeb@bs.ch",
+      "phone": "+41432592842",
+      "email": "oliver.tschuppert@bd.zh.ch",
       "url": {
         "de": null,
         "en": null,
@@ -78,25 +78,25 @@
       },
       "reference": null,
       "street": {
-        "de": "Münsterplatz 11",
+        "de": "Zollstrasse 36",
         "en": null,
         "fr": null,
         "it": null
       },
       "city": {
-        "de": "Basel",
+        "de": "Zürich",
         "en": null,
         "fr": null,
         "it": null
       }
     },
     "procurementRecipientAddress": {
-      "postalCode": "4001",
+      "postalCode": "8090",
       "countryId": "CH",
-      "cantonId": "BS",
-      "id": "1be04f66-63f7-45ea-a762-2c595a3f4211",
+      "cantonId": "ZH",
+      "id": "64022707-2bef-4ffe-b45d-62067cf1721d",
       "name": {
-        "de": "Bau- und Verkehrsdepartement des Kantons Basel-Stadt, Städtebau & Architektur Hochbau",
+        "de": "Baudirektion Kanton Zürich",
         "en": null,
         "fr": null,
         "it": null
@@ -123,37 +123,37 @@
         "it": null
       },
       "city": {
-        "de": "Basel",
+        "de": "Zürich",
         "en": null,
         "fr": null,
         "it": null
       }
     },
     "title": {
-      "de": "FV-MBSG – Maulbeerstrasse / Sandgrubenstrasse Umnutzung, BKP 258 Kücheneinrichtung",
+      "de": "BGER HIN l 13602 l BKP 231 PV-Anlage Fassade",
       "en": null,
       "fr": null,
       "it": null
     },
     "stateContractArea": true,
-    "publicationTed": false
+    "publicationTed": true
   },
   "decision": {
     "awardDecisionWithJustification": true,
     "vendors": [
       {
-        "vendorId": "c8ca4cca-3d01-4647-9cbe-920cfa45a04a",
-        "vendorName": "Decuspena GmbH",
+        "vendorId": "aef5c7de-2073-443b-ae96-be955e4a4433",
+        "vendorName": "Tresolar AG",
         "vendorAddress": {
           "countryId": "CH",
-          "street": "Binningerstrasse 156",
-          "city": "Allschwil",
-          "postalCode": "4123",
-          "cantonId": "BS"
+          "street": "Ruessenstrasse 8",
+          "city": "Baar",
+          "postalCode": "6340",
+          "cantonId": "ZG"
         },
         "price": {
           "currency": "chf",
-          "price": 603983.15,
+          "price": 477276.7,
           "vatType": "full"
         },
         "note": {
@@ -165,7 +165,7 @@
         "rank": null
       }
     ],
-    "numberOfSubmissions": 4,
+    "numberOfSubmissions": 5,
     "totalPriceSelection": "price_of_selected_offers",
     "totalPriceSelectionNote": {
       "de": null,
@@ -178,9 +178,9 @@
       "vatType": null,
       "range": null
     },
-    "awardDecisionDate": "2026-08-11",
+    "awardDecisionDate": "2026-02-16",
     "awardDecisionJustification": {
-      "de": "Das berücksichtigte Angebot hat aufgrund seiner Merkmale und Vorteile die meisten Nutzwertpunkte (NWP) erzielt. Die Zuschlagskriterien (ZK) wurden wie folgt bewertet:\n\nZK 1 Preis: 350 von 350 NWP\nZK 2 Referenzauftrag Anbieter: 112.50 von 150 NWP\nTotal: 462.50 von 500 NWP\n\nDie Anbietenden können sich unabhängig von einer allfälligen Beschwerde für ein informelles Debriefing über kfoeb@bs.ch bei der Kantonalen Fachstelle für öffentliche Beschaffungen melden.",
+      "de": "Günstigstes Angebot und beste Bewertung der Zuschlagsentscheide.",
       "en": null,
       "fr": null,
       "it": null
@@ -198,7 +198,7 @@
       "it": null
     },
     "remediesNotice": {
-      "de": "Gegen diese Verfügung kann innert 20 Tagen seit der Eröffnung auf www.simap.ch beim Verwaltungsgericht Basel-Stadt, Bäumleingasse 1, 4051 Basel, schriftlich Beschwerde erhoben werden. Die Beschwerdeschrift muss einen Antrag, dessen Begründung sowie eine genaue Bezeichnung der Beweismittel enthalten. Die angefochtene Verfügung und, soweit möglich, die genannten Beweismittel sind beizulegen.",
+      "de": "Gegen diesen Zuschlag kann innert 20 Tagen, von der Publikation an gerechnet, beim Verwaltungsgericht des Kantons Zürich, Freischützgasse 1, Postfach, 8090 Zürich, schriftlich Beschwerde eingereicht werden. Die Beschwerdeschrift ist im Doppel einzureichen. Sie muss einen Antrag und dessen Begründung enthalten. Die angefochtene Verfügung ist beizulegen. Die angerufenen Beweismittel sind genau zu bezeichnen und, soweit möglich, beizulegen.",
       "en": null,
       "fr": null,
       "it": null
@@ -211,19 +211,19 @@
         "name": "simap.ch"
       }
     ],
-    "publicationId": "71b8c08e-e1c3-43ec-a5eb-b52ae02804c2",
+    "publicationId": "3628dbc0-1f93-45ba-839c-620fd17669a2",
     "pubType": "tender",
     "projectType": "tender",
     "processType": "open",
     "corrected": false,
-    "publicationNumber": "26921-01",
-    "publicationDate": "2025-11-22"
+    "publicationNumber": "24255-01",
+    "publicationDate": "2025-09-30"
   },
   "base": {
-    "publicationTed": false,
-    "id": "e8a78435-6e0f-4e5e-ad59-b6f1cfa7f1a4",
+    "publicationTed": true,
+    "id": "246db041-10e0-4a67-a3dd-ff5cc991c126",
     "title": {
-      "de": "FV-MBSG – Maulbeerstrasse / Sandgrubenstrasse Umnutzung, BKP 258 Kücheneinrichtung",
+      "de": "BGER HIN l 13602 l BKP 231 PV-Anlage Fassade",
       "en": null,
       "fr": null,
       "it": null
@@ -233,17 +233,17 @@
     "lotsType": "without",
     "stateContractArea": true,
     "type": "award",
-    "publicationNumber": "26921-02",
-    "projectId": "47dd2de9-d325-47e4-9ff1-991ecf60079b",
-    "publicationDate": "2026-08-14",
+    "publicationNumber": "24255-02",
+    "projectId": "f82cc889-2095-492a-92b0-54ca898246ef",
+    "publicationDate": "2026-08-29",
     "creationLanguage": "de",
     "translationLanguages": [],
-    "procOfficeId": "9f9c3c3b-1315-46ed-9fcc-78e253e036e9",
+    "procOfficeId": "729ef210-b118-4bbb-a8b1-0ae47d87332d",
     "publishers": [
       "c92c5781-c89a-4f93-94b1-f2061c35e556"
     ],
-    "projectNumber": "26921",
-    "referencingPubId": "71b8c08e-e1c3-43ec-a5eb-b52ae02804c2",
+    "projectNumber": "24255",
+    "referencingPubId": "3628dbc0-1f93-45ba-839c-620fd17669a2",
     "referencingLotId": null
   },
   "hasProjectDocuments": false,
