@@ -95,6 +95,34 @@ Meldung liefen ganz ohne Codex-Auslöser, dort hat niemand gemessen.
 In der Zwischenzeit sind 32 PRs mit formal erfülltem Häkchen gemergt worden,
 ohne dass jemand hineingesehen hat, und am 22.8. noch einmal 43.
 
+**Am 29.8.2026 war das Kontingent wieder weg.** Das ist eine zweite Sperre und
+nicht die Fortsetzung der ersten: am 23.8. liefen 42 Reviews durch. Was in den
+sechs Tagen dazwischen war, hat niemand gemessen — die Sperren wiederholen sich
+also, aber ihre Frequenz gibt keine dieser Beobachtungen her.
+
+Gemessen an `swiss-procurement-mcp` PR #68: als Draft angelegt um 09:23:59, in
+dieser Zeit kein Kommentar (auf Drafts läuft Codex nicht an), auf ready
+umgestellt, gemergt um 09:28:42. `get_reviews` liefert `[]`, und der einzige
+Kommentar steht um 09:28:42:
+
+```
+You have reached your Codex usage limits for code reviews. You can see your
+limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).
+```
+
+**Der Text ist gewachsen.** Die Fassung vom 21.8. endete nach dem ersten Satz;
+seit dem 29.8. hängt ein Verweis aufs Dashboard daran. Wer auf den ganzen Satz
+vergleicht statt auf seinen Anfang, hält die neue Fassung für einen unbekannten
+fünften Fall — und wer den Abschnitt danach umschreibt, hat aus einer
+Textänderung einen Befund gemacht.
+
+**Und die Meldung sagt nichts über die Environment.** Die Prüfungen liegen
+hintereinander, das Kontingent zuerst; die Meldung kommt also auch dann, wenn
+für das Repo gar keine Environment existiert. Für `swiss-procurement-mcp` ist
+damit weiterhin offen, ob eine da ist. Das ist die Umkehrung der Regel weiter
+unten: Wie eine verschwundene Limit-Meldung keine Entwarnung ist, ist eine
+vorhandene kein Nachweis, dass danach alles stünde.
+
 **Vier** Gründe, warum Codex schweigt, und nur einer davon ist harmlos:
 
 - **Kein Befund** — dann schreibt er einen gewöhnlichen Issue-Kommentar:
@@ -109,7 +137,8 @@ ohne dass jemand hineingesehen hat, und am 22.8. noch einmal 43.
   Reaktion («otherwise it will react with 👍») — am 23.8. kam in sechs Repos
   die Meldung und in keinem die Reaktion. Der Kasten ist keine Quelle.
 - **Der PR ist ein Draft** — darauf läuft Codex nicht an.
-- **Das Kontingent ist weg** — dann schreibt er die Meldung oben.
+- **Das Kontingent ist weg** — dann schreibt er die Meldung oben, seit dem
+  29.8. mit einem angehängten Verweis aufs Dashboard.
 - **Für das Repo fehlt eine Environment** — dann schreibt er:
 
   ```
@@ -169,9 +198,20 @@ Findet nur, wo er *kommentiert* hat. Repos ohne PR-Aktivität tauchen nicht auf
 
 Zweiter Weg, den Prüfer zu verlieren, ganz ohne Kontingentproblem: zu schnell
 mergen. Am 21./22.8. lagen zwischen «ready for review» und Merge mehrfach drei
-bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst und
-braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
-nicht abgewartet.
+bis fünf Sekunden, am 29.8. bei PR #68 rund zwei. Codex wird beim Umschalten von
+Draft auf ready ausgelöst und braucht danach Zeit; wer sofort mergt, hat das
+Häkchen gesetzt und den Review nicht abgewartet.
+
+Bei #68 kostete die Eile nichts, weil die Absage selbst in dieselbe Sekunde
+fiel wie der Merge. Die Ausfallmeldung kommt also binnen zwei Sekunden, während
+ein Review länger braucht als die drei bis fünf, die ihm am 21./22.8. gelassen
+wurden — sonst wären jene Reviews nicht verlorengegangen. Wie viel länger,
+sagt keine dieser Beobachtungen: Die 42 Reviews vom 23.8. verteilen sich über
+neun Minuten, das ist die Dauer eines Stapels und nicht die eines Reviews.
+
+Als Handgriff taugt daraus nur die schwache Richtung: Ein Kommentar, der binnen
+Sekunden dasteht, ist eher eine Absage als ein Urteil. Entschieden wird weiter
+am Text, nicht an der Uhr.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
