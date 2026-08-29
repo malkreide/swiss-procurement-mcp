@@ -1,35 +1,49 @@
 {
   "procurement": {
-    "additionalCpvCodes": [],
     "projectType": "tender",
     "processType": "open",
     "pubType": "award",
-    "orderType": "supply",
+    "orderType": "service",
     "orderDescription": {
-      "de": "<p>Dieses Los umfasst die Beschaffung von Marketing- und Werbeartikeln des tieferen Preissegments, die primär als Streuartikel bei Messen, Veranstaltungen, Informationsständen und für breite Öffentlichkeitskampagnen eingesetzt werden. Es handelt sich um Produkte, die in grösseren Stückzahlen zu möglichst günstigen Stückpreisen benötigt werden, ohne dabei auf die grundlegenden Anforderungen an Qualität und Branding zu verzichten. Der Anbieter soll ein vielseitiges Sortiment anbieten können, eine Individualisierung gemäss CI/CD sicherstellen sowie kurze Lieferfristen garantieren. Hochwertige Präsent- und Geschenkartikel sind nicht Bestandteil dieses Loses.</p>",
+      "de": "<p><strong>94-022-1885A</strong> Drehgestellrahmen bearb.+ Farbanstr. TDG129</p><ul><li>Mengengerüst Fixe Menge 129 Stk.</li><li>Mengengerüst Optionale Menge 70 Stk.</li></ul><p><br></p><p><strong>94-022-1886A</strong> Drehgestellrahmen bearb.+ Farbanstr. LDG169</p><ul><li>Mengengerüst Fixe Menge 169 Stk.</li><li>Mengengerüst Optionale Menge 93 Stk.</li></ul><p><br></p><p><strong>94-022-1887A</strong> Drehgestellrahmen bearb.+Farbanstr. ELDG46</p><ul><li>Mengengerüst Fixe Menge 46 Stk.</li><li>Mengengerüst Optionale Menge 27 Stk.</li></ul><p><br></p><p><strong>Details siehe Ausschreibungsunterlagen Teil 4 Preistabelle.</strong></p><p><br></p>",
       "en": null,
-      "fr": null,
+      "fr": "<p><strong>94-022-1885A </strong> Cadre de bogie usiné + finition de peinture TDG 129</p><ul><li>Structure quantitative Quantité ferme 129 unités</li><li>Structure quantitative Quantité optionnelle 70 unités</li></ul><p><br></p><p><strong>94-022-1886A</strong> Cadre de bogie usiné + peinture BP 169</p><ul><li>Structure quantitative Quantité ferme 169 unités</li><li>Structure quantitative Quantité optionnelle 93 unités</li></ul><p><br></p><p><strong>94-022-1887A</strong> Cadre de bogie usiné + peinture ELDG46</p><ul><li>Structure quantitative Quantité ferme 46 unités</li><li>Structure quantitative Quantité optionnelle 27 unités</li></ul><p><br></p><p><br></p><p><strong>Pour plus de détails, vous reporter aux documents d’appel d’offres à la partie 4 Barème de prix.</strong></p><p><br></p>",
       "it": null
     },
-    "supplyType": "buy",
+    "additionalCpvCodes": [
+      {
+        "code": "34600000",
+        "label": {
+          "de": "Eisenbahn- und Strassenbahnlokomotiven und rollendes Material sowie zugehörige Teile",
+          "en": "Railway and tramway locomotives and rolling stock and associated parts",
+          "fr": "Locomotives et matériel roulant de chemin de fer et de tramway et pièces détachées",
+          "it": "Locomotive e materiale rotabile e parti associate ferrotranviarie"
+        }
+      }
+    ],
+    "bkpCodes": [],
+    "ebkphCodes": [],
+    "ebkptCodes": [],
+    "npkCodes": [],
+    "cpcCode": null,
     "cpvCode": {
-      "code": "18530000",
+      "code": "34600000",
       "label": {
-        "de": "Geschenkartikel",
-        "en": "Presents and rewards",
-        "fr": "Cadeaux et prix",
-        "it": "Regali e premi"
+        "de": "Eisenbahn- und Strassenbahnlokomotiven und rollendes Material sowie zugehörige Teile",
+        "en": "Railway and tramway locomotives and rolling stock and associated parts",
+        "fr": "Locomotives et matériel roulant de chemin de fer et de tramway et pièces détachées",
+        "it": "Locomotive e materiale rotabile e parti associate ferrotranviarie"
       }
     },
     "projectOrderDescription": {
-      "de": "<p>Die Kommunikationsabteilung der Kantonspolizei Bern verfügt über ein breites Sortiment sogenannter Marketingartikel. Unter diesem Begriff werden sämtliche Gegenstände verstanden, welche von der Kantonspolizei Bern – bzw. von ihren Abteilungen, Diensten und Mitarbeitenden – an Dritte abgegeben werden, etwa als Sympathieträger, Geschenk, Dankeszeichen, zur präventiven Kommunikation oder zur Imagepflege.</p><p><br></p><p>Die Verwendung dieser Artikel verfolgt das Ziel, die unternehmerischen Leitlinien der Kantonspolizei Bern zu unterstützen, das Vertrauen in die Organisation zu stärken, die positive Identifikation mit der Polizei zu fördern sowie gezielte Zielgruppen und Partnerinstitutionen anzusprechen.</p><p><br></p><p>Aktuell verfügt die Kantonspolizei Bern über das in Anhang 3a (Gesamtsortiment Los 1) und Anhang 3b (Gesamtsortiment Los 2) beschriebene Sortiment. Dieses Sortiment soll teilweise weiterbestehen, zeitnah erweitert werden und auch zukünftig nach Bedürfnissen ausgebaut werden. Bei den Mengen handelt es sich um die Menge der letzten Bestellung, was ungefähr dem zu erwartenden Jahresvolumen entspricht. Es wird jedoch keine Mindestbestellmenge garantiert.</p>",
+      "de": "<p>Zur weiteren Erhöhung des Fahrkomforts der FV-Dosto-Flotte werden Drehgestelle ohne Wankkompensation technisch optimiert.</p><p><br></p><p>Gegenstand der Beschaffung ist die Bearbeitung der bestehenden Drehgestellrahmen gemäss den technischen Vorgaben der SBB.</p><p><br></p><p>Der Einbau der bearbeiteten Drehgestellrahmen erfolgt durch die SBB in ihrem Industriewerk in Yverdon-les-Bains (CH) im Rahmen der planmässigen Revisionen der Drehgestelle. Die vorliegende Ausschreibung umfasst ausschliesslich die Bearbeitung der Drehgestellrahmen; Montageleistungen sind nicht Bestandteil des Leistungsumfangs.</p><p><br></p><p>Die Beschaffung wird in zwei Lose mit jeweils identischen Bestellmengen, Optionen sowie identischen Eignungs- und Zuschlagskriterien aufgeteilt.</p><p><br></p><p>Jede Anbieterin kann sich lediglich für eines der beiden Lose bewerben und folglich auch nur für eines der Lose den Zuschlag erhalten.</p><p><br></p><p>Weitere Einzelheiten sind den Ausschreibungsunterlagen zu entnehmen.</p>",
       "en": null,
-      "fr": null,
+      "fr": "<p>Une optimisation technique des bogies sans compensation du roulis sera réalisée pour continuer à améliorer le confort de roulement de la flotte de duplex TGL.</p><p><br></p><p>L’objet du marché est l’usinage des cadres de bogies existants conformément aux prescriptions techniques des CFF.</p><p><br></p><p>Les cadres de bogies usinés sont posés par les CFF dans leurs ateliers d’Yverdon-les-Bains (CH) dans le cadre des révisions planifiées des bogies. Le présent appel d’offres porte uniquement sur l’usinage des cadres de bogies; les prestations de montage ne font pas partie des prestations.</p><p><br></p><p>Le marché est divisé en deux lots, présentant des quantités de commande, des options et des critères de qualification et d’adjudication identiques.</p><p><br></p><p>Chaque soumissionnaire ne peut se porter candidat qu’à l’un des deux lots et ne peut donc se voir adjuger qu’un seul des lots.</p><p><br></p><p>De plus amples détails figurent dans les documents d’appel d’offres.</p>",
       "it": null
     },
     "externalReference": null
   },
-  "id": "ebadc6da-a432-419c-bab1-b51359aec800",
+  "id": "85f4c967-6165-42df-a7f4-41f78f497dc8",
   "type": "award",
   "projectType": "tender",
   "publishers": [
@@ -40,14 +54,14 @@
   ],
   "project-info": {
     "procOfficeAddress": {
-      "postalCode": "3011",
+      "postalCode": "3000",
       "countryId": "CH",
       "cantonId": "BE",
-      "id": "517ef766-1753-4f32-92c8-b06e378fded4",
+      "id": "36ec8b57-012d-4725-818f-6cd3a03d0320",
       "name": {
-        "de": "Kantonspolizei Bern",
+        "de": "Schweizerische Bundesbahnen SBB Division Produktion Personenverkehr",
         "en": null,
-        "fr": null,
+        "fr": "Chemins de fer fédéraux suisses CFF Division Production Voyageurs",
         "it": null
       },
       "contactPerson": {
@@ -56,104 +70,104 @@
         "fr": null,
         "it": null
       },
-      "phone": "+41316387878",
-      "email": "ausschreibungen@police.be.ch",
+      "phone": "+41512852325",
+      "email": "x001305@sbb.ch",
       "url": {
-        "de": "https://www.police.be.ch",
+        "de": "https://www.sbb.ch",
         "en": null,
-        "fr": null,
+        "fr": "https://www.cff.ch",
         "it": null
       },
       "reference": null,
       "street": {
-        "de": "Waisenhausplatz 32",
+        "de": "Trüsselstrasse 2",
         "en": null,
-        "fr": null,
+        "fr": "Trüsselstrasse 2",
         "it": null
       },
       "city": {
-        "de": "Bern",
+        "de": "Bern 65",
         "en": null,
-        "fr": null,
+        "fr": "Berne 65",
         "it": null
       }
     },
     "procurementRecipientAddress": {
-      "postalCode": "3011",
+      "postalCode": "3000",
       "countryId": "CH",
       "cantonId": "BE",
-      "id": "09e4a466-2538-42df-8397-b1759a17ae70",
+      "id": "dda15d23-c407-4512-bf0f-168baf205ed3",
       "name": {
-        "de": "Kantonspolizei Bern",
+        "de": "Schweizerische Bundesbahnen SBB Division Produktion Personenverkehr",
         "en": null,
-        "fr": null,
+        "fr": "Chemins de fer fédéraux suisses CFF Division Production Voyageurs",
         "it": null
       },
       "contactPerson": {
-        "de": "Kommunikation",
+        "de": "Markus Morgan",
         "en": null,
-        "fr": null,
+        "fr": "Markus Morgan",
         "it": null
       },
-      "phone": "+41316387878",
-      "email": "ausschreibungen@police.be.ch",
+      "phone": "+41798762263",
+      "email": "markus.morgan@sbb.ch",
       "url": {
-        "de": "https://www.police.be.ch",
+        "de": "https://www.sbb.ch",
         "en": null,
-        "fr": null,
+        "fr": "https://www.cff.ch",
         "it": null
       },
       "reference": null,
       "street": {
-        "de": "Waisenhausplatz 32",
+        "de": "Trüsselstrasse 2",
         "en": null,
-        "fr": null,
+        "fr": "Trüsselstrasse 2",
         "it": null
       },
       "city": {
-        "de": "Bern",
+        "de": "Bern 65",
         "en": null,
-        "fr": null,
+        "fr": "Berne 65",
         "it": null
       }
     },
     "title": {
-      "de": "Marketingartikel",
+      "de": "Bearbeitung Drehgestellrahmen",
       "en": null,
-      "fr": null,
+      "fr": "Traitement du cadre du bogie",
       "it": null
     },
     "stateContractArea": true,
-    "publicationTed": true
+    "publicationTed": false
   },
   "decision": {
     "awardDecisionWithJustification": true,
     "vendors": [
       {
-        "vendorId": "d322015f-1761-48df-9221-5340004cc5e0",
-        "vendorName": "bb trading werbeartikel ag",
+        "vendorId": "287b580c-b15d-4e80-aa43-6ddca6159f52",
+        "vendorName": "LRS Engineering AG",
         "vendorAddress": {
           "countryId": "CH",
-          "street": "Bernstrasse 90",
-          "city": "Dietikon",
-          "postalCode": "8953",
-          "cantonId": "ZH"
+          "street": "Seestrasse 16",
+          "city": "Kreuzlingen",
+          "postalCode": "8280",
+          "cantonId": "TG"
         },
         "price": {
           "currency": "chf",
-          "price": 153163.65,
+          "price": 6480253.0,
           "vatType": "full"
         },
         "note": {
-          "de": null,
+          "de": "Prix avec options incluses",
           "en": null,
-          "fr": null,
+          "fr": "Prix incl. options",
           "it": null
         },
         "rank": null
       }
     ],
-    "numberOfSubmissions": 11,
+    "numberOfSubmissions": 2,
     "totalPriceSelection": "price_of_selected_offers",
     "totalPriceSelectionNote": {
       "de": null,
@@ -166,11 +180,11 @@
       "vatType": null,
       "range": null
     },
-    "awardDecisionDate": "2026-08-13",
+    "awardDecisionDate": "2026-08-20",
     "awardDecisionJustification": {
-      "de": "Die für den Zuschlag massgebenden Merkmale und Vorteile des berücksichtigten Angebots (Art. 51 Abs. 3 lit. c IVöB) sind folgende:\n\nDas berücksichtigte Angebot erzielte 87 von 100 möglichen Punkten und war somit das vorteilhafteste der gültigen Angebote. Insbesondere überzeugte das Angebot mit der Regionalität der Produktion sowie der hohen Bereitschaft zur Weiterentwicklung und dem Ausbau des Sortiments, was sich in der Bewertung niederschlug.",
+      "de": "Das Angebot der Zuschlagsempfängerin ist das gemäss den vorgängig definierten Kriterien insgesamt vorteilhafteste Angebot im Sinne von Art. 41 des Bundesgesetzes über das öffentliche Beschaffungswesen (BöB). Insbesondere erzielte es die beste Bewertung bei dem Kriterium Wirtschaftlichkeit.",
       "en": null,
-      "fr": null,
+      "fr": "Évaluée selon les critères définis au préalable, l’offre de l’adjudicataire est globalement la plus avantageuse au sens de l’art. 41 de la loi fédérale sur les marchés publics (LMP). En particulier, il a obtenu la meilleure note pour le critère de rentabilité.",
       "it": null
     },
     "awardDecisionJuryDescription": {
@@ -180,15 +194,15 @@
       "it": null
     },
     "awardDecisionNote": {
-      "de": "Soweit Anbietenden der Verfahrensausschluss brieflich mitgeteilt und diese informell in Anwendung von Art. 44 IVöB vom Verfahren ausgeschlossen worden sind, wird darauf hingewiesen, dass mit vorliegender Publikation eine nunmehr anfechtbare Verfügung des Ausschlusses ergeht, in dem Sinne, als ihnen dagegen die Beschwerdemöglichkeit eingeräumt wird (vgl. Rechtsmittelbelehrung).",
+      "de": null,
       "en": null,
       "fr": null,
       "it": null
     },
     "remediesNotice": {
-      "de": "Diese Verfügung kann innert 20 Tagen seit Eröffnung schriftlich mittels Beschwerde bei der Sicherheitsdirektion des Kantons Bern, Kramgasse 20, 3011 Bern, angefochten werden. Eine allfällige Beschwerde muss einen Antrag, die Angabe von Tatsachen und Beweismitteln, eine Begründung sowie eine Unterschrift enthalten. Die angefochtene Ausschreibung und greifbare Beweismittel sind beizulegen. Einer allfälligen Beschwerde kommt grundsätzlich keine aufschiebende Wirkung zu.",
+      "de": "Gegen diese Verfügung kann gemäss Art. 56 Abs. 1 des Bundesgesetzes über das öffentliche Beschaffungswesen (BöB) innert 20 Tagen seit Eröffnung schriftlich Beschwerde beim Bundesverwaltungsgericht, Postfach, 9023 St. Gallen, erhoben werden. Die Beschwerde ist im Doppel einzureichen und hat die Begehren, deren Begründung mit Angabe der Beweismittel sowie die Unterschrift der beschwerdeführenden Person oder ihrer Vertretung zu enthalten. Eine Kopie der vorliegenden Verfügung und vorhandene Beweismittel sind beizulegen.\nDie Bestimmungen des Verwaltungsverfahrensgesetzes (VwVG) über den Fristenstillstand finden gemäss Art. 56 Abs. 2 BöB keine Anwendung.\n",
       "en": null,
-      "fr": null,
+      "fr": "Conformément à l'art. 56, al. 1, de la loi fédérale sur les marchés publics (LMP), la présente décision peut être attaquée, dans un délai de 20 jours à compter de sa notification, auprès du Tribunal administratif fédéral, case postale, 9023 Saint-Gall. Présenté en deux exemplaires, le mémoire de recours doit indiquer les conclusions, les motifs et les moyens de preuve et porter la signature de la partie recourante ou de son représentant ; y seront jointes une copie de la présente décision et les pièces invoquées comme moyens de preuve, lorsqu'elles sont disponibles.\nConformément à l'art. 56, al. 2, LMP, les dispositions de la Loi fédérale sur la procédure administrative (PA) relatives à la suspension des délais ne s'appliquent pas.",
       "it": null
     }
   },
@@ -199,21 +213,21 @@
         "name": "simap.ch"
       }
     ],
-    "publicationId": "67e82b56-14a5-4e37-8191-1afc41937c32",
+    "publicationId": "3d07ce89-3a8a-4325-8df5-3409c2245d71",
     "pubType": "tender",
     "projectType": "tender",
     "processType": "open",
-    "corrected": true,
-    "publicationNumber": "28066-03",
-    "publicationDate": "2026-02-14"
+    "corrected": false,
+    "publicationNumber": "29653-02",
+    "publicationDate": "2026-02-16"
   },
   "base": {
-    "publicationTed": true,
-    "id": "ebadc6da-a432-419c-bab1-b51359aec800",
+    "publicationTed": false,
+    "id": "85f4c967-6165-42df-a7f4-41f78f497dc8",
     "title": {
-      "de": "Marketingartikel",
+      "de": "Bearbeitung Drehgestellrahmen",
       "en": null,
-      "fr": null,
+      "fr": "Traitement du cadre du bogie",
       "it": null
     },
     "projectType": "tender",
@@ -221,30 +235,35 @@
     "lotsType": "with",
     "stateContractArea": true,
     "type": "award",
-    "publicationNumber": "28066-04",
-    "projectId": "11d690da-91aa-4023-867e-088f2992d0f6",
-    "publicationDate": "2026-08-14",
+    "publicationNumber": "29653-03",
+    "projectId": "b35fd18a-37df-4d08-bdb0-d0b12a0a02fb",
+    "publicationDate": "2026-08-28",
     "creationLanguage": "de",
-    "translationLanguages": [],
-    "procOfficeId": "263be2e3-98df-4b09-89de-dbd7c63a7eea",
+    "translationLanguages": [
+      {
+        "language": "fr",
+        "type": "complete"
+      }
+    ],
+    "procOfficeId": "62827a6a-cb68-46ed-8278-b52a21552221",
     "publishers": [
       "c92c5781-c89a-4f93-94b1-f2061c35e556"
     ],
-    "projectNumber": "28066",
-    "referencingPubId": "67e82b56-14a5-4e37-8191-1afc41937c32",
-    "referencingLotId": "0235f958-aea1-407c-b007-65d51bf503ec"
+    "projectNumber": "29653",
+    "referencingPubId": "3d07ce89-3a8a-4325-8df5-3409c2245d71",
+    "referencingLotId": "1c0e3d2f-060a-485b-aebd-9bd0084e58b2"
   },
   "hasProjectDocuments": false,
   "ted": null,
   "lot": {
-    "id": "0235f958-aea1-407c-b007-65d51bf503ec",
+    "id": "1c0e3d2f-060a-485b-aebd-9bd0084e58b2",
     "lotNumber": 1,
     "title": {
-      "de": "Streuartikel (Give-Aways) - Marketingartikel des tieferen Preissegments",
+      "de": "Drehgestellrahmen bearb.+ Farbanstrich (94-022-1885A, 94-022-1886A, 94-022-1887A)",
       "en": null,
-      "fr": null,
+      "fr": "Traitement du cadre du bogie + peinture  (94-022-1885A, 94-022-1886A, 94-022-1887A)",
       "it": null
     },
-    "projectSubType": "supply"
+    "projectSubType": "service"
   }
 }

@@ -180,17 +180,69 @@ async def test_live_detailed_search_returns_bodies():
         assert result.results, "hits found but nothing expanded"
 
 
+async def _find(pruef, *, seiten: int = 5, **suche):
+    """First live hit matching `pruef`, paging up to `seiten` pages.
+
+    Picking `results[0]` and hoping is what made this file flaky: whether the
+    newest ZH publication happens to have lots is a property of the day, not of
+    this server. The 2026-08-25 run went red on exactly that coin flip.
+    """
+    cursor = None
+    for _ in range(seiten):
+        page = await search_procurements(SearchInput(cursor=cursor, **suche))
+        for row in page.results:
+            if pruef(row):
+                return row
+        if not page.has_more:
+            return None
+        cursor = page.next_cursor
+    return None
+
+
 async def test_live_publication_history_shape():
     """Runs against a real publication id taken from a live search."""
-    found = await search_procurements(SearchInput(canton="ZH", published_from="2026-01-01"))
-    if not found.results:
-        pytest.skip("no live results to trace history for")
-    first = found.results[0]
+    first = await _find(lambda r: r.lots_type != "with", canton="ZH", published_from="2026-01-01")
+    if first is None:
+        pytest.skip("no live results without lots to trace history for")
 
     history = await get_publication_history(HistoryInput(publication_id=first.publication_id))
     assert history.provenance in {"live_api", "cached"}
     # An empty history is normal for a first publication; a broken shape is not.
     for entry in history.publications:
+        assert entry.publication_id, "history entry without an id — shape changed"
+
+
+async def test_live_history_of_a_lot_publication_needs_its_lot_id():
+    """The regression behind the red run of 2026-08-25.
+
+    A publication with lots answers `past-publications` only when a `lotId`
+    comes with it. Both halves are asserted here, because only the difference
+    between them carries the finding: without the parameter this used to look
+    like an outage, and every lot-based procurement was unreachable through
+    this server. One measured project carried seven earlier publications that
+    were thrown away as "simap.ch is currently unreachable".
+    """
+    mit_losen = await _find(lambda r: r.lots_type == "with" and r.lots, query="Bau")
+    if mit_losen is None:
+        pytest.skip("no live publication with lots in the searched pages")
+
+    lot_id = mit_losen.lots[0].lot_id
+    assert lot_id, "search result carries a lot without an id"
+
+    ohne = await get_publication_history(HistoryInput(publication_id=mit_losen.publication_id))
+    assert ohne.provenance == "degraded", (
+        "upstream accepted a lot publication without lotId — good news, and the "
+        "recorded finding plus this test then belong retired"
+    )
+    assert "lot_id" in (ohne.note or ""), "the refusal must name the parameter it wants"
+
+    mit = await get_publication_history(
+        HistoryInput(publication_id=mit_losen.publication_id, lot_id=lot_id)
+    )
+    assert mit.provenance in {"live_api", "cached"}, (
+        "the same publication must answer once its lot id comes along"
+    )
+    for entry in mit.publications:
         assert entry.publication_id, "history entry without an id — shape changed"
 
 

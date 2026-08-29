@@ -10,6 +10,10 @@ Probe-derived design notes (2026-07-26):
   result. The client injects a default when the caller forgets.
 * Unknown enum values return HTTP 400 with errorCode E0025. These are client
   errors and are not retried.
+* `past-publications` needs `lotId` for a publication that has lots (measured
+  2026-08-29 over 80 publications: 4 with lots answered 400/E0003 without the
+  parameter and 200 with it, 76 without lots answered 200). The spec marks the
+  parameter optional, which it is only for the latter group.
 """
 
 from __future__ import annotations
@@ -45,7 +49,17 @@ CACHE_TTL_SECONDS = 60 * 30  # publications change intraday; keep it short
 
 
 class UpstreamError(RuntimeError):
-    """Upstream unreachable, or a non-retryable client error (4xx)."""
+    """Upstream unreachable, or a non-retryable client error (4xx).
+
+    ``status`` carries the HTTP status when there was a response, so a caller
+    can tell a refusal it can act on apart from an outage it cannot. It is the
+    status alone — never the response body, which OBS-002 keeps away from the
+    model.
+    """
+
+    def __init__(self, *args: Any, status: int | None = None) -> None:
+        super().__init__(*args)
+        self.status = status
 
 
 # --- Retry policy ------------------------------------------------------------
@@ -259,7 +273,9 @@ class SimapClient:
                 status = exc.response.status_code
                 if 400 <= status < 500 and status != 429:
                     body = exc.response.text[:300]
-                    raise UpstreamError(f"HTTP {status} from {path}: {body}") from exc
+                    raise UpstreamError(
+                        f"HTTP {status} from {path}: {body}", status=status
+                    ) from exc
             except (httpx.RequestError, ValueError) as exc:
                 last_error = exc
 
@@ -314,11 +330,27 @@ class SimapClient:
             {"lang": language},
         )
 
-    async def past_publications(self, publication_id: str, language: str) -> tuple[Any, str, str]:
+    async def past_publications(
+        self, publication_id: str, language: str, lot_id: str | None = None
+    ) -> tuple[Any, str, str]:
+        """Earlier publications of one procurement.
+
+        `lotId` is optional in the spec and mandatory in practice for a
+        publication that has lots: without it the endpoint answers HTTP 400
+        (`errorCode: E0003`), with it the same publication answers 200. It is
+        sent only when the caller supplies one — passing a lot id to a
+        publication without lots is a 404, so an unconditional parameter would
+        break the 95% case to serve the other 5%.
+        """
+        params: dict[str, Any] = {"lang": language}
+        key = f"past:{publication_id}:{language}"
+        if lot_id:
+            params["lotId"] = lot_id
+            key = f"{key}:{lot_id}"
         return await self._cached(
-            f"past:{publication_id}:{language}",
+            key,
             f"/publications/v1/publication/{publication_id}/past-publications",
-            {"lang": language},
+            params,
         )
 
     async def code_search(

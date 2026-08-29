@@ -2,7 +2,7 @@
 
 **Erzeugt von `scripts/record_fixtures.py`. Nicht von Hand pflegen.**
 
-Aufgezeichnet am **2026-08-14** von der Quelle dieses Servers: `https://www.simap.ch/api`.
+Aufgezeichnet am **2026-08-29** von der Quelle dieses Servers: `https://www.simap.ch/api`.
 
 Ohne Datum ist «aufgezeichnet» nach zwei Jahren von «ausgedacht» nicht
 mehr zu unterscheiden — die Datei sieht gleich aus.
@@ -21,35 +21,43 @@ beide Formen nie belegt.
 **Lose sind die Auswahlachse dieses Servers.** Publikationen mit Losen
 (`lotsType: "with"`) verhalten sich an mehreren Endpunkten anders:
 `publication-details` fuellt `lot`, der Suchtreffer traegt eine
-verschachtelte `lots`-Liste, und `past-publications` verweigert die
-Auskunft ganz. Aufgezeichnet ist deshalb je ein Fall von beiden.
+verschachtelte `lots`-Liste, und `past-publications` verlangt einen
+`lotId`. Aufgezeichnet ist deshalb je ein Fall von beiden.
 
-## Befund: `past-publications` antwortet auf Lose mit HTTP 400
+## Befund: `past-publications` braucht bei Losen einen `lotId`
 
-Die Publikationshistorie ist an `lotsType` gebunden, und zwar
-ausnahmslos. Gemessen ueber 74 verschiedene Publikationen aus vier
-Suchbegriffen (Bau, Software, Strasse, Reinigung):
+**Dieser Befund ersetzt einen falschen.** Bis zum 29.8.2026 stand hier,
+die Quelle «verweigere die Auskunft ganz», wenn eine Publikation Lose
+hat. Belegt war dafuer nur ein HTTP 400 — und aus einem 400 folgt eine
+Verweigerung nicht. Der Endpunkt fuehrt laut eigener Spec einen
+optionalen Parameter `lotId`; er ist bei Losen nicht optional. Mit ihm
+antwortet dieselbe Publikation mit 200 und liefert ihre Vorgaenger.
 
-| `lotsType` | Antwort auf `past-publications` | Faelle |
-|---|---|---|
-| `without` | HTTP 200 | 65 |
-| `with` | HTTP 400, `errorCode: E0003` | 9 |
+Gemessen am 29.8.2026 ueber 80 Publikationen aus vier Suchbegriffen
+(Bau, Software, Strasse, Reinigung), ausnahmslos:
 
-Beispiel: 28066-04 (mit Losen) → HTTP 400;
-26921-02 (ohne Lose) → HTTP 200.
+| `lotsType` | ohne `lotId` | mit `lotId` | Faelle |
+|---|---|---|---|
+| `without` | HTTP 200 | — (404: ein fremdes Los gibt es dort nicht) | 76 |
+| `with` | HTTP 400, `errorCode: E0003` | HTTP 200 | 4 |
 
-Wirkung: `get_publication_history` behandelt einen 4xx als
-nicht-wiederholbaren Fehler — richtig so — und liefert fuer jede
-losbasierte Beschaffung eine degradierte Antwort mit `count: 0`. Der
-Docstring des Tools nennt die leere Liste «normal fuer eine erste
-Publikation»; bei Losen ist sie das nicht, sondern eine Absage der
-Quelle. Das ist der Stand der Quelle an diesem Tag, kein Fehler dieses
-Servers — die Aufzeichnung haelt ihn datiert fest.
+Beispiel: 29653-03 (mit Losen) → HTTP 400; dieselbe
+Publikation mit `lotId=1c0e3d2f-060a-485b-aebd-9bd0084e58b2` → HTTP 200 mit 2 Vorgaenger(n);
+24255-02 (ohne Lose) → HTTP 200.
 
-`past_publications_lot_400.json` haelt den Fehlerkoerper mitsamt
-`errorCode`. Antwortet die Quelle wieder mit 200, faellt
-`test_die_historie_verweigert_lose` — dann gehoert die Aufzeichnung
-erneuert und dieser Befund gestrichen.
+Wirkung des Fehlschlusses: `get_publication_history` gab fuer jede
+losbasierte Beschaffung eine degradierte Antwort mit `count: 0` und dem
+Hinweis, simap.ch sei «unreachable» — fuer einen Zustand, der weder
+voruebergehend noch der Quelle anzulasten war. Ein gemessener Fall trug
+sieben Vorgaenger, die der Server samt und sonders wegwarf. Die
+Unit-Tests blieben dabei gruen, weil die Aufzeichnung nur den 400er
+hielt und der Test ihm zustimmte.
+
+Beide Antworten liegen deshalb jetzt nebeneinander:
+`past_publications_lot_400.json` (ohne Parameter) und
+`past_publications_lot.json` (mit). Der Unterschied zwischen ihnen ist
+der Befund; eine Aufzeichnung allein von einer der beiden Seiten kann
+ihn nicht tragen.
 
 ## Befund: `dates` gibt es nur bei Ausschreibungen
 
@@ -91,7 +99,7 @@ trifft nicht einen Fehlerfall, sondern jede losbasierte Beschaffung.
 ## `cantons.json`
 
 - **Quelle:** `https://www.simap.ch/api/cantons/v1?lang=de`
-- **Aufgezeichnet:** 2026-08-14
+- **Aufgezeichnet:** 2026-08-29
 - **Auswahl:** vollstaendig; zugleich die Erreichbarkeitsprobe von `get_source_status` und der Aufruf, der die Sitzung eroeffnet
 - **Groesse:** 1426 B
 - **SHA-256:** `e2cc03b1224f161aa4649c21d5b59fc4ea93cbfc3b873cacfb5e71ec21ee2e43`
@@ -99,55 +107,63 @@ trifft nicht einen Fehlerfall, sondern jede losbasierte Beschaffung.
 ## `project_search.json`
 
 - **Quelle:** `https://www.simap.ch/api/publications/v2/project/project-search?lang=de&search=Bau`
-- **Aufgezeichnet:** 2026-08-14
+- **Aufgezeichnet:** 2026-08-29
 - **Auswahl:** Suche nach 'Bau'; 3 von 20 Projekten der Antwort, kein Feld entfernt: ein Zuschlag mit Losen, ein Zuschlag ohne, eine Ausschreibung, darunter eines ohne strukturierte Adresse (`orderAddress.cantonId: null`). `pagination` unveraendert
-- **Groesse:** 4739 B (Quelle: 20 Projekte in der Antwort)
-- **SHA-256:** `b512918467dcff895c43b43fcdc8ef0cdf250f580006b745f1e46c9af80fb65a`
+- **Groesse:** 4648 B (Quelle: 20 Projekte in der Antwort)
+- **SHA-256:** `81962407213edda9d99a14da2404d8ea47c486ffefa12a2876496dd11ef37161`
 
 ## `publication_details.json`
 
-- **Quelle:** `https://www.simap.ch/api/publications/v1/project/47dd2de9-d325-47e4-9ff1-991ecf60079b/publication-details/e8a78435-6e0f-4e5e-ad59-b6f1cfa7f1a4?lang=de`
-- **Aufgezeichnet:** 2026-08-14
-- **Auswahl:** vollstaendig; Publikation 26921-02 aus `project_search.json` — Zuschlag ohne Lose — kein `dates`, `lot` null
-- **Groesse:** 7224 B
-- **SHA-256:** `4d2ba6f6bb079be2580cf9895a735ea1114197c99434eb289902bceb91d8c37f`
+- **Quelle:** `https://www.simap.ch/api/publications/v1/project/f82cc889-2095-492a-92b0-54ca898246ef/publication-details/246db041-10e0-4a67-a3dd-ff5cc991c126?lang=de`
+- **Aufgezeichnet:** 2026-08-29
+- **Auswahl:** vollstaendig; Publikation 24255-02 aus `project_search.json` — Zuschlag ohne Lose — kein `dates`, `lot` null
+- **Groesse:** 6470 B
+- **SHA-256:** `b59bbbba5e9a764cee5bc2963e8a95db7e84c83be4216b2aeab7d2b8022666a3`
 
 ## `publication_details_lot.json`
 
-- **Quelle:** `https://www.simap.ch/api/publications/v1/project/11d690da-91aa-4023-867e-088f2992d0f6/publication-details/ebadc6da-a432-419c-bab1-b51359aec800?lang=de`
-- **Aufgezeichnet:** 2026-08-14
-- **Auswahl:** vollstaendig; Publikation 28066-04 aus `project_search.json` — Zuschlag mit Losen — `lot` gefuellt
-- **Groesse:** 8927 B
-- **SHA-256:** `66b7f6ef8e7082231b45610b413d8d9a01c2ea65bb8f90dce977278b6ea1e019`
+- **Quelle:** `https://www.simap.ch/api/publications/v1/project/b35fd18a-37df-4d08-bdb0-d0b12a0a02fb/publication-details/85f4c967-6165-42df-a7f4-41f78f497dc8?lang=de`
+- **Aufgezeichnet:** 2026-08-29
+- **Auswahl:** vollstaendig; Publikation 29653-03 aus `project_search.json` — Zuschlag mit Losen — `lot` gefuellt
+- **Groesse:** 12608 B
+- **SHA-256:** `8aca64e50b49306f7f631deb0f0290039c064a4c277cd7ea29023516931f63ef`
 
 ## `publication_details_tender.json`
 
-- **Quelle:** `https://www.simap.ch/api/publications/v1/project/dc46405e-c5f2-47e2-9670-2d2d1f1a3418/publication-details/8b42d7d3-7939-4c85-b1dc-59754c006a62?lang=de`
-- **Aufgezeichnet:** 2026-08-14
-- **Auswahl:** vollstaendig; Publikation 34121-04 aus `project_search.json` — Ausschreibung — mit `dates`, `criteria` und `terms`
-- **Groesse:** 30570 B
-- **SHA-256:** `3c2d559bbcc255253560dbcae3cd3d7206fb2bb2d41bfa2764d64f2d636a901b`
+- **Quelle:** `https://www.simap.ch/api/publications/v1/project/0aece617-c897-4c4e-8daf-3b85c2f1cc89/publication-details/af304736-43a8-4c42-8f32-500b77235c7c?lang=de`
+- **Aufgezeichnet:** 2026-08-29
+- **Auswahl:** vollstaendig; Publikation 43130-01 aus `project_search.json` — Ausschreibung — mit `dates`, `criteria` und `terms`
+- **Groesse:** 16712 B
+- **SHA-256:** `aca1a780693563d307636741c78a5416bd215d2938074326daa44f84682f4196`
 
 ## `past_publications.json`
 
-- **Quelle:** `https://www.simap.ch/api/publications/v1/publication/e8a78435-6e0f-4e5e-ad59-b6f1cfa7f1a4/past-publications?lang=de`
-- **Aufgezeichnet:** 2026-08-14
-- **Auswahl:** vollstaendig; Publikation 26921-02 (1 Vorgaenger)
+- **Quelle:** `https://www.simap.ch/api/publications/v1/publication/246db041-10e0-4a67-a3dd-ff5cc991c126/past-publications?lang=de`
+- **Aufgezeichnet:** 2026-08-29
+- **Auswahl:** vollstaendig; Publikation 24255-02 (1 Vorgaenger)
 - **Groesse:** 351 B
-- **SHA-256:** `8d41674158ae8fb5887ce5eea306af60c59565f7429443f2b23bdb767ffbe520`
+- **SHA-256:** `f1314be4045362ebb6e4a0e77daf48d3f13152fc3adb289d8002285de59d9ee9`
 
 ## `past_publications_lot_400.json`
 
-- **Quelle:** `https://www.simap.ch/api/publications/v1/publication/ebadc6da-a432-419c-bab1-b51359aec800/past-publications?lang=de`
-- **Aufgezeichnet:** 2026-08-14
-- **Auswahl:** vollstaendig bis auf `timestamp` (der aendert sich bei jedem Aufruf und erzeugte sonst einen Diff ohne Aussage); Publikation 28066-04 mit Losen — HTTP 400. Kein erfundener Fehlerpfad, sondern die Antwort der Quelle auf einen ganzen Fall; siehe Befund oben
+- **Quelle:** `https://www.simap.ch/api/publications/v1/publication/85f4c967-6165-42df-a7f4-41f78f497dc8/past-publications?lang=de`
+- **Aufgezeichnet:** 2026-08-29
+- **Auswahl:** vollstaendig bis auf `timestamp` (der aendert sich bei jedem Aufruf und erzeugte sonst einen Diff ohne Aussage); Publikation 29653-03 mit Losen, OHNE `lotId` — HTTP 400. Kein erfundener Fehlerpfad, sondern die Antwort der Quelle auf einen fehlenden Parameter; siehe Befund oben
 - **Groesse:** 200 B
-- **SHA-256:** `24696c79a202846f9dc3ae283b814d719478ad380eed0dc55dc457914df7b3d4`
+- **SHA-256:** `942a00cde06593902fa6c7b3c64f3d338cd92fa283a2bb77f830aaab95a0d3e6`
+
+## `past_publications_lot.json`
+
+- **Quelle:** `https://www.simap.ch/api/publications/v1/publication/85f4c967-6165-42df-a7f4-41f78f497dc8/past-publications?lang=de&lotId=1c0e3d2f-060a-485b-aebd-9bd0084e58b2`
+- **Aufgezeichnet:** 2026-08-29
+- **Auswahl:** vollstaendig; dieselbe Publikation 29653-03 wie `past_publications_lot_400.json`, nur mit `lotId` des ersten Loses — HTTP 200, 2 Vorgaenger. Die Gegenprobe zum 400er: derselbe Aufruf, ein Parameter mehr
+- **Groesse:** 669 B
+- **SHA-256:** `c22bede7335ec13a0f4f8c48790e782cf48cebad1573e3d79bf82b2134634d78`
 
 ## `codes_cpv.json`
 
 - **Quelle:** `https://www.simap.ch/api/codes/v1/cpv/search?lang=de&query=Metall&limit=10`
-- **Aufgezeichnet:** 2026-08-14
+- **Aufgezeichnet:** 2026-08-29
 - **Auswahl:** vollstaendig; Suche nach 'Metall', limit 10
 - **Groesse:** 53297 B
 - **SHA-256:** `8ab1465aa98363eb1cd54ef5b79dbae761ccec8da6871d14f0136bb30fe147fa`
@@ -155,7 +171,7 @@ trifft nicht einen Fehlerfall, sondern jede losbasierte Beschaffung.
 ## `codes_bkp.json`
 
 - **Quelle:** `https://www.simap.ch/api/codes/v1/bkp/search?lang=de&query=Fassade&limit=10`
-- **Aufgezeichnet:** 2026-08-14
+- **Aufgezeichnet:** 2026-08-29
 - **Auswahl:** vollstaendig; Suche nach 'Fassade', limit 10
 - **Groesse:** 7426 B
 - **SHA-256:** `89f0332767a9312b2a37f62c3ac9e9bdf35244eaea9afe892fab27d0f9fd6995`
@@ -163,7 +179,7 @@ trifft nicht einen Fehlerfall, sondern jede losbasierte Beschaffung.
 ## `institutions.json`
 
 - **Quelle:** `https://www.simap.ch/api/institutions/v1/institutions?lang=de`
-- **Aufgezeichnet:** 2026-08-14
+- **Aufgezeichnet:** 2026-08-29
 - **Auswahl:** 40 von 463 Eintraegen, kein Feld entfernt: **alle 28 Wurzeln** (`parentInstitutionId: null`) — an ihnen haengt `CANTON_INSTITUTION_IDS` — dazu die vollstaendige Ahnenkette jedes Amtes aus `procoffices.json`, bis zu 4 Ebenen tief. Damit ist die Baumform belegt und die beiden Ausschnitte zeigen nicht aneinander vorbei
 - **Groesse:** 21897 B (Quelle: 463 Eintraege)
 - **SHA-256:** `c864424ddb048088a9b222ed3c32461ab36e65d53ea11263c194cf00f3c345ea`
@@ -171,7 +187,7 @@ trifft nicht einen Fehlerfall, sondern jede losbasierte Beschaffung.
 ## `procoffices.json`
 
 - **Quelle:** `https://www.simap.ch/api/procoffices/v1/po/public?lang=de`
-- **Aufgezeichnet:** 2026-08-14
-- **Auswahl:** 8 von 4882 Aemtern, kein Feld entfernt: je eines pro `type` (cantonal, central_federation, communal, decentral_federation, foreign, other_cantonal, other_communal, other_federation). Die ersten Eintraege der Liste tragen alle denselben Typ, eine Kopfauswahl haette die anderen sieben nie belegt
-- **Groesse:** 2162 B (Quelle: 4882 Aemter, 1160159 B)
+- **Aufgezeichnet:** 2026-08-29
+- **Auswahl:** 8 von 4921 Aemtern, kein Feld entfernt: je eines pro `type` (cantonal, central_federation, communal, decentral_federation, foreign, other_cantonal, other_communal, other_federation). Die ersten Eintraege der Liste tragen alle denselben Typ, eine Kopfauswahl haette die anderen sieben nie belegt
+- **Groesse:** 2162 B (Quelle: 4921 Aemter, 1169387 B)
 - **SHA-256:** `f21a52815e43a65900d84db5344783eac0197ca644f2d2f767addbef70f358e2`

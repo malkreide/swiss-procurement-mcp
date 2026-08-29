@@ -1,82 +1,72 @@
 {
   "projects": [
     {
-      "id": "11d690da-91aa-4023-867e-088f2992d0f6",
+      "id": "b35fd18a-37df-4d08-bdb0-d0b12a0a02fb",
       "title": {
-        "de": "Marketingartikel",
+        "de": "Bearbeitung Drehgestellrahmen",
         "en": null,
-        "fr": "Articles de marketing",
+        "fr": "Traitement du cadre du bogie",
         "it": null
       },
-      "projectNumber": "28066",
+      "projectNumber": "29653",
       "projectType": "tender",
-      "projectSubType": "supply",
+      "projectSubType": "service",
       "processType": "open",
       "lotsType": "with",
-      "publicationId": "ebadc6da-a432-419c-bab1-b51359aec800",
-      "publicationDate": "2026-08-14",
-      "publicationNumber": "28066-04",
+      "publicationId": "85f4c967-6165-42df-a7f4-41f78f497dc8",
+      "publicationDate": "2026-08-28",
+      "publicationNumber": "29653-03",
       "pubType": "award",
       "corrected": false,
       "procOfficeName": {
-        "de": "Kantonspolizei Bern",
+        "de": "Schweizerische Bundesbahnen SBB Division Produktion Personenverkehr",
         "en": null,
-        "fr": null,
+        "fr": "Chemins de fer fédéraux suisses CFF Division Production Voyageurs",
         "it": null
       },
       "lots": [
         {
-          "publicationId": "ebadc6da-a432-419c-bab1-b51359aec800",
-          "publicationDate": "2026-08-14",
-          "publicationNumber": "28066-04",
+          "publicationId": "85f4c967-6165-42df-a7f4-41f78f497dc8",
+          "publicationDate": "2026-08-28",
+          "publicationNumber": "29653-03",
           "pubType": "award",
           "corrected": false,
-          "lotId": "0235f958-aea1-407c-b007-65d51bf503ec",
+          "lotId": "1c0e3d2f-060a-485b-aebd-9bd0084e58b2",
           "lotNumber": 1,
           "lotTitle": {
-            "de": "Streuartikel (Give-Aways) - Marketingartikel des tieferen Preissegments",
+            "de": "Drehgestellrahmen bearb.+ Farbanstrich (94-022-1885A, 94-022-1886A, 94-022-1887A)",
             "en": null,
-            "fr": null,
+            "fr": "Traitement du cadre du bogie + peinture  (94-022-1885A, 94-022-1886A, 94-022-1887A)",
             "it": null
           },
-          "orderAddressOnlyDescription": "no",
+          "orderAddressOnlyDescription": "yes",
           "orderAddress": {
             "countryId": "CH",
-            "cantonId": "BE",
-            "postalCode": "3011",
-            "city": {
-              "de": "Bern",
-              "en": null,
-              "fr": null,
-              "it": null
-            }
+            "cantonId": null,
+            "postalCode": null,
+            "city": null
           }
         },
         {
-          "publicationId": "56cfd075-6a01-4eed-b559-7ed00d29c087",
-          "publicationDate": "2026-08-14",
-          "publicationNumber": "28066-05",
+          "publicationId": "ca9e2458-d770-4f23-b06e-09b3da0950e4",
+          "publicationDate": "2026-08-28",
+          "publicationNumber": "29653-04",
           "pubType": "award",
           "corrected": false,
-          "lotId": "79110fa4-3a9f-43be-a423-e592f59ec6d8",
+          "lotId": "1346091b-80d8-4263-879f-7d9dbffc4a58",
           "lotNumber": 2,
           "lotTitle": {
-            "de": "Geschenkartikel - Marketingartikel des höheren Preissegments",
+            "de": "Drehgestellrahmen bearb.+ Farbanstrich (94-022-1885A, 94-022-1886A, 94-022-1887A)",
             "en": null,
-            "fr": null,
+            "fr": "Traitement du cadre du bogie + peinture  (94-022-1885A, 94-022-1886A, 94-022-1887A)",
             "it": null
           },
-          "orderAddressOnlyDescription": "no",
+          "orderAddressOnlyDescription": "yes",
           "orderAddress": {
             "countryId": "CH",
-            "cantonId": "BE",
-            "postalCode": "3011",
-            "city": {
-              "de": "Bern",
-              "en": null,
-              "fr": null,
-              "it": null
-            }
+            "cantonId": null,
+            "postalCode": null,
+            "city": null
           }
         }
       ],
@@ -84,25 +74,25 @@
       "orderAddress": null
     },
     {
-      "id": "47dd2de9-d325-47e4-9ff1-991ecf60079b",
+      "id": "f82cc889-2095-492a-92b0-54ca898246ef",
       "title": {
-        "de": "FV-MBSG – Maulbeerstrasse / Sandgrubenstrasse Umnutzung, BKP 258 Kücheneinrichtung",
+        "de": "BGER HIN l 13602 l BKP 231 PV-Anlage Fassade",
         "en": null,
-        "fr": "FV-MBSG – Maulbeerstrasse / Sandgrubenstrasse Umnutzung, BKP 258 Kücheneinrichtung",
+        "fr": null,
         "it": null
       },
-      "projectNumber": "26921",
+      "projectNumber": "24255",
       "projectType": "tender",
       "projectSubType": "construction",
       "processType": "open",
       "lotsType": "without",
-      "publicationId": "e8a78435-6e0f-4e5e-ad59-b6f1cfa7f1a4",
-      "publicationDate": "2026-08-14",
-      "publicationNumber": "26921-02",
+      "publicationId": "246db041-10e0-4a67-a3dd-ff5cc991c126",
+      "publicationDate": "2026-08-29",
+      "publicationNumber": "24255-02",
       "pubType": "award",
       "corrected": false,
       "procOfficeName": {
-        "de": "Bau- und Verkehrsdepartement des Kantons Basel-Stadt, Kantonale Fachstelle für öffentliche Beschaffungen (KFöB)",
+        "de": "Hochbauamt, Baubereich B",
         "en": null,
         "fr": null,
         "it": null
@@ -111,10 +101,10 @@
       "orderAddressOnlyDescription": "no",
       "orderAddress": {
         "countryId": "CH",
-        "cantonId": "BS",
-        "postalCode": "4058",
+        "cantonId": "ZH",
+        "postalCode": "8340",
         "city": {
-          "de": "Basel",
+          "de": "Hinwil",
           "en": null,
           "fr": null,
           "it": null
@@ -122,41 +112,46 @@
       }
     },
     {
-      "id": "dc46405e-c5f2-47e2-9670-2d2d1f1a3418",
+      "id": "0aece617-c897-4c4e-8daf-3b85c2f1cc89",
       "title": {
-        "de": "Business Connectivity as a Service",
+        "de": "K / Sanierung Stützmauer Schrutenlochstrasse, Schwyz",
         "en": null,
-        "fr": "Business Connectivity as a Service",
+        "fr": null,
         "it": null
       },
-      "projectNumber": "34121",
+      "projectNumber": "43130",
       "projectType": "tender",
-      "projectSubType": "service",
+      "projectSubType": "construction",
       "processType": "open",
       "lotsType": "without",
-      "publicationId": "8b42d7d3-7939-4c85-b1dc-59754c006a62",
-      "publicationDate": "2026-08-14",
-      "publicationNumber": "34121-04",
+      "publicationId": "af304736-43a8-4c42-8f32-500b77235c7c",
+      "publicationDate": "2026-08-29",
+      "publicationNumber": "43130-01",
       "pubType": "tender",
-      "corrected": true,
+      "corrected": false,
       "procOfficeName": {
-        "de": "SBB CFF FFS Infra-Telecom und Elektroanlagen",
+        "de": "Tiefbauamt Kanton Schwyz",
         "en": null,
-        "fr": "SBB CFF FFS Infra-Telecom und Elektroanlagen",
+        "fr": null,
         "it": null
       },
       "lots": [],
-      "orderAddressOnlyDescription": "yes",
+      "orderAddressOnlyDescription": "no",
       "orderAddress": {
         "countryId": "CH",
-        "cantonId": null,
-        "postalCode": null,
-        "city": null
+        "cantonId": "SZ",
+        "postalCode": "6430",
+        "city": {
+          "de": "Schwyz",
+          "en": null,
+          "fr": null,
+          "it": null
+        }
       }
     }
   ],
   "pagination": {
-    "lastItem": "20260814|37009",
+    "lastItem": "20260828|34086",
     "itemsPerPage": 20
   }
 }

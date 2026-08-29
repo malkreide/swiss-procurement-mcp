@@ -36,6 +36,7 @@ from swiss_procurement_mcp.inputs import (
     SearchInput,
 )
 from swiss_procurement_mcp.server import (
+    _to_summary,
     find_procurement_office,
     get_procurement_details,
     get_publication_history,
@@ -248,16 +249,18 @@ def test_die_historie_fuehrt_keinen_titel():
 
 
 @respx.mock
-async def test_die_historie_verweigert_lose():
-    """Der zweite Befund: bei Losen antwortet die Quelle mit HTTP 400.
+async def test_die_historie_verweigert_lose_ohne_lot_id():
+    """Der zweite Befund: ohne `lotId` antwortet die Quelle bei Losen mit 400.
 
-    Gemessen ueber 74 Publikationen: alle 9 mit Losen antworten 400/E0003, alle
-    65 ohne antworten 200. Das ist kein erfundener Fehlerfall, sondern die
-    Antwort der Quelle auf einen ganzen Fall — jede losbasierte Beschaffung.
+    Gemessen am 29.8.2026 ueber 80 Publikationen: alle 4 mit Losen antworten
+    400/E0003 ohne den Parameter, alle 76 ohne Lose antworten 200. Kein
+    erfundener Fehlerfall, sondern die Antwort der Quelle auf einen fehlenden
+    Parameter.
 
-    Der Server macht daraus richtigerweise eine degradierte Antwort statt eines
-    Absturzes. Faellt dieser Test, weil die Quelle wieder 200 liefert, ist das
-    eine gute Nachricht — dann gehoert die Aufzeichnung erneuert.
+    Der Server macht daraus eine degradierte Antwort statt eines Absturzes —
+    und nennt den Grund. Die alte Fassung dieses Tests hielt fest, die Quelle
+    verweigere Lose ueberhaupt; `test_die_historie_liefert_lose_mit_lot_id`
+    widerlegt das mit derselben Publikation.
     """
     fehler = fixture_json("past_publications_lot_400.json")
     assert fehler["errorCode"] == "E0003"
@@ -274,6 +277,59 @@ async def test_die_historie_verweigert_lose():
     # nennt `E0003` nicht. Das ist Absicht und keine Luecke — der Code steht im
     # Nachweis, wo er hingehoert, und nicht in einer Tool-Antwort.
     assert "E0003" not in (verlauf.note or "")
+    # Und er sagt nicht mehr, die Quelle sei nicht erreichbar. Sie war
+    # erreichbar; ihr fehlte ein Parameter. «Retry shortly» ist auf einen
+    # deterministischen 400 der falsche Rat und liest sich fuer das Modell wie
+    # eine Stoerung — genau so blieb der Befund ein Jahr lang unentdeckt.
+    assert "lot_id" in (verlauf.note or ""), "der Hinweis nennt den fehlenden Parameter nicht"
+    assert "unreachable" not in (verlauf.note or "")
+
+
+@respx.mock
+async def test_die_historie_liefert_lose_mit_lot_id():
+    """Die Gegenprobe, die den alten Befund widerlegt.
+
+    Dieselbe Publikation, ein Parameter mehr: die Quelle antwortet 200 und
+    liefert ihre Vorgaenger. Aufgezeichnet nebeneinander in
+    `past_publications_lot_400.json` (ohne) und `past_publications_lot.json`
+    (mit) — der Unterschied zwischen beiden IST der Befund.
+    """
+    aufzeichnung = fixture_json("past_publications_lot.json")
+    assert aufzeichnung["pastPublications"], "die Aufzeichnung soll Vorgaenger tragen"
+    route = respx.get(url__startswith=f"{SIMAP_BASE}/publications/v1/publication/").mock(
+        return_value=httpx.Response(200, json=aufzeichnung)
+    )
+    projekt = _projekt("award", "with")
+    lot_id = projekt["lots"][0]["lotId"]
+
+    verlauf = await get_publication_history(
+        HistoryInput(publication_id=projekt["publicationId"], lot_id=lot_id)
+    )
+    assert verlauf.provenance == "live_api"
+    assert verlauf.count == len(aufzeichnung["pastPublications"])
+    assert all(e.publication_id for e in verlauf.publications)
+    # Die Mechanik, nicht nur das Ergebnis: ein Test, der bloss den 200er
+    # durchreicht, bliebe gruen, wenn der Client den Parameter gar nicht sendet.
+    assert route.calls.last.request.url.params.get("lotId") == lot_id
+
+
+def test_der_suchtreffer_fuehrt_die_los_ids_mit():
+    """Ohne diese Liste ist `lot_id` fuer keinen Aufrufer beschaffbar.
+
+    Der Mapper liess `lots` fallen. Damit war `get_publication_history` fuer
+    jede losbasierte Beschaffung nicht korrekt aufrufbar — der Parameter, den
+    die Quelle verlangt, stand nirgends, wo ein Aufrufer ihn haette lesen
+    koennen.
+    """
+    projekt = _projekt("award", "with")
+    assert projekt["lots"], "die Aufzeichnung traegt keine Lose — neu aufzeichnen"
+    zusammenfassung = _to_summary(projekt, "de")
+    assert zusammenfassung.lots_type == "with"
+    assert [lot.lot_id for lot in zusammenfassung.lots] == [lot["lotId"] for lot in projekt["lots"]]
+    assert all(lot.lot_number is not None for lot in zusammenfassung.lots)
+
+    ohne = _to_summary(_projekt("award", "without"), "de")
+    assert ohne.lots_type == "without" and ohne.lots == []
 
 
 # --------------------------------------------------------------------------

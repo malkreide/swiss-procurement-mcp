@@ -278,6 +278,13 @@ Siehe [EXAMPLES.md](EXAMPLES.md) für Anwendungsfälle nach Zielgruppe (Schule,
   ebenso findet `search_awards` nur Projekte, deren neueste Publikation ein
   Zuschlag ist — eine spätere Berichtigung verdeckt ihn.
   `get_publication_history` erreicht die früheren Publikationen.
+- **Losbasierte Beschaffungen werden je Los verfolgt.** Die Quelle führt die
+  Publikationshistorie pro Los; `get_publication_history` braucht deshalb eine
+  `lot_id`, sobald der Suchtreffer `lots_type: "with"` zeigt — zu entnehmen der
+  `lots`-Liste desselben Treffers. Ohne sie antwortet die Quelle mit HTTP 400,
+  und das Tool meldet eine degradierte Antwort, die den fehlenden Parameter
+  benennt. Gemessen am 29.8.2026 über 80 Publikationen: alle 4 mit Losen
+  verhielten sich so, alle 76 ohne Lose antworteten direkt.
 - **Mindestens ein Filter ist nötig.** simap beantwortet eine filterlose Abfrage
   mit nichts statt mit allem; die Tools weisen sie deshalb mit genau dieser
   Begründung ab, statt ein leeres Ergebnis zu melden.

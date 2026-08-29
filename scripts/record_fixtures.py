@@ -141,10 +141,16 @@ def main() -> int:
     def erster(pruef) -> dict[str, Any] | None:
         return next((p for p in alle if pruef(p)), None)
 
-    mit_losen = erster(lambda p: p.get("lotsType") == "with")
+    # Beide Achsen pinnen, nicht nur `lotsType`. Diese Zeile nahm die ERSTE
+    # Publikation mit Losen, waehrend die Fixture und ihr Test einen ZUSCHLAG
+    # mit Losen behaupten. Am 29.8.2026 war die erste eine Abbruchpublikation:
+    # die traegt `abandonedLot` statt `lot`, `lot` blieb null, und die
+    # Aufzeichnung belegte still einen anderen Fall als den benannten.
+    mit_losen = erster(lambda p: p.get("lotsType") == "with" and p.get("pubType") == "award")
     ohne_lose = erster(lambda p: p.get("lotsType") == "without" and p.get("pubType") == "award")
     ausschreibung = erster(lambda p: p.get("pubType") == "tender")
-    assert mit_losen and ohne_lose, "die Suche traegt nicht beide `lotsType`-Werte"
+    assert mit_losen, "die Suche traegt keinen Zuschlag mit Losen — Suchbegriff pruefen"
+    assert ohne_lose, "die Suche traegt keinen Zuschlag ohne Lose — Suchbegriff pruefen"
     assert ausschreibung, "die Suche traegt keine Ausschreibung — nur sie fuehrt `dates`"
     gewaehlt: list[dict[str, Any]] = [mit_losen, ohne_lose, ausschreibung]
     # Dritte Achse: eine Publikation ohne strukturierte Adresse. 60.6 Prozent
@@ -213,17 +219,37 @@ def main() -> int:
         f"({len(historie.get('pastPublications') or [])} Vorgaenger)",
     )
 
+    # Dieselbe Los-Publikation zweimal: einmal ohne `lotId`, einmal mit. Der
+    # Unterschied IST der Befund, deshalb stehen beide Antworten nebeneinander.
+    # Eine Aufzeichnung nur des 400ers hat schon einmal die falsche Lehre
+    # gestuetzt, die Quelle verweigere Lose.
     pfad = f"/publications/v1/publication/{mit_losen['publicationId']}/past-publications"
     status, fehler = get(pfad, lang=LANG)
+    assert status == 400, f"past-publications ohne lotId antwortete {status}, erwartet 400"
     write(
         "past_publications_lot_400.json",
         {k: v for k, v in fehler.items() if k != "timestamp"},
         url_of(pfad, lang=LANG),
         f"vollstaendig bis auf `timestamp` (der aendert sich bei jedem Aufruf und "
         f"erzeugte sonst einen Diff ohne Aussage); Publikation "
-        f"{mit_losen['publicationNumber']} mit Losen — HTTP {status}. Kein "
-        "erfundener Fehlerpfad, sondern die Antwort der Quelle auf einen ganzen "
-        "Fall; siehe Befund oben",
+        f"{mit_losen['publicationNumber']} mit Losen, OHNE `lotId` — HTTP {status}. "
+        "Kein erfundener Fehlerpfad, sondern die Antwort der Quelle auf einen "
+        "fehlenden Parameter; siehe Befund oben",
+    )
+
+    lose = mit_losen.get("lots") or []
+    assert lose and lose[0].get("lotId"), "der Suchtreffer mit Losen fuehrt keine `lotId`"
+    lot_id = lose[0]["lotId"]
+    status, mit_lot = get(pfad, lang=LANG, lotId=lot_id)
+    assert status == 200, f"past-publications MIT lotId antwortete {status}, erwartet 200"
+    write(
+        "past_publications_lot.json",
+        mit_lot,
+        url_of(pfad, lang=LANG, lotId=lot_id),
+        f"vollstaendig; dieselbe Publikation {mit_losen['publicationNumber']} wie "
+        f"`past_publications_lot_400.json`, nur mit `lotId` des ersten Loses — "
+        f"HTTP {status}, {len(mit_lot.get('pastPublications') or [])} Vorgaenger. "
+        "Die Gegenprobe zum 400er: derselbe Aufruf, ein Parameter mehr",
     )
 
     # --- Code-Suche: flach und verschachtelt -----------------------------
@@ -298,40 +324,53 @@ def main() -> int:
         f"{len(aemter)} Aemter, {len(json.dumps(po))} B",
     )
 
-    befund = _befund(mit_losen, ohne_lose, status_400=400) + _befund_datum()
+    befund = (
+        _befund(mit_losen, ohne_lose, lot_id, len(mit_lot.get("pastPublications") or []))
+        + _befund_datum()
+    )
     _write_provenance(recorded_at, entries, befund)
     print(f"\nPROVENANCE.md geschrieben, Aufzeichnungsdatum {recorded_at}")
     return _warne_bei_ignorierten(entries)
 
 
-def _befund(mit_losen: dict[str, Any], ohne_lose: dict[str, Any], status_400: int) -> list[str]:
+def _befund(
+    mit_losen: dict[str, Any], ohne_lose: dict[str, Any], lot_id: str, vorgaenger: int
+) -> list[str]:
     return [
-        f"## Befund: `past-publications` antwortet auf Lose mit HTTP {status_400}",
+        "## Befund: `past-publications` braucht bei Losen einen `lotId`",
         "",
-        "Die Publikationshistorie ist an `lotsType` gebunden, und zwar",
-        "ausnahmslos. Gemessen ueber 74 verschiedene Publikationen aus vier",
-        "Suchbegriffen (Bau, Software, Strasse, Reinigung):",
+        "**Dieser Befund ersetzt einen falschen.** Bis zum 29.8.2026 stand hier,",
+        "die Quelle «verweigere die Auskunft ganz», wenn eine Publikation Lose",
+        "hat. Belegt war dafuer nur ein HTTP 400 — und aus einem 400 folgt eine",
+        "Verweigerung nicht. Der Endpunkt fuehrt laut eigener Spec einen",
+        "optionalen Parameter `lotId`; er ist bei Losen nicht optional. Mit ihm",
+        "antwortet dieselbe Publikation mit 200 und liefert ihre Vorgaenger.",
         "",
-        "| `lotsType` | Antwort auf `past-publications` | Faelle |",
-        "|---|---|---|",
-        "| `without` | HTTP 200 | 65 |",
-        f"| `with` | HTTP {status_400}, `errorCode: E0003` | 9 |",
+        "Gemessen am 29.8.2026 ueber 80 Publikationen aus vier Suchbegriffen",
+        "(Bau, Software, Strasse, Reinigung), ausnahmslos:",
         "",
-        f"Beispiel: {mit_losen['publicationNumber']} (mit Losen) → HTTP {status_400};",
+        "| `lotsType` | ohne `lotId` | mit `lotId` | Faelle |",
+        "|---|---|---|---|",
+        "| `without` | HTTP 200 | — (404: ein fremdes Los gibt es dort nicht) | 76 |",
+        "| `with` | HTTP 400, `errorCode: E0003` | HTTP 200 | 4 |",
+        "",
+        f"Beispiel: {mit_losen['publicationNumber']} (mit Losen) → HTTP 400; dieselbe",
+        f"Publikation mit `lotId={lot_id}` → HTTP 200 mit {vorgaenger} Vorgaenger(n);",
         f"{ohne_lose['publicationNumber']} (ohne Lose) → HTTP 200.",
         "",
-        "Wirkung: `get_publication_history` behandelt einen 4xx als",
-        "nicht-wiederholbaren Fehler — richtig so — und liefert fuer jede",
-        "losbasierte Beschaffung eine degradierte Antwort mit `count: 0`. Der",
-        "Docstring des Tools nennt die leere Liste «normal fuer eine erste",
-        "Publikation»; bei Losen ist sie das nicht, sondern eine Absage der",
-        "Quelle. Das ist der Stand der Quelle an diesem Tag, kein Fehler dieses",
-        "Servers — die Aufzeichnung haelt ihn datiert fest.",
+        "Wirkung des Fehlschlusses: `get_publication_history` gab fuer jede",
+        "losbasierte Beschaffung eine degradierte Antwort mit `count: 0` und dem",
+        "Hinweis, simap.ch sei «unreachable» — fuer einen Zustand, der weder",
+        "voruebergehend noch der Quelle anzulasten war. Ein gemessener Fall trug",
+        "sieben Vorgaenger, die der Server samt und sonders wegwarf. Die",
+        "Unit-Tests blieben dabei gruen, weil die Aufzeichnung nur den 400er",
+        "hielt und der Test ihm zustimmte.",
         "",
-        "`past_publications_lot_400.json` haelt den Fehlerkoerper mitsamt",
-        "`errorCode`. Antwortet die Quelle wieder mit 200, faellt",
-        "`test_die_historie_verweigert_lose` — dann gehoert die Aufzeichnung",
-        "erneuert und dieser Befund gestrichen.",
+        "Beide Antworten liegen deshalb jetzt nebeneinander:",
+        "`past_publications_lot_400.json` (ohne Parameter) und",
+        "`past_publications_lot.json` (mit). Der Unterschied zwischen ihnen ist",
+        "der Befund; eine Aufzeichnung allein von einer der beiden Seiten kann",
+        "ihn nicht tragen.",
         "",
     ]
 
@@ -423,8 +462,8 @@ def _write_provenance(recorded_at: str, entries: list[dict[str, Any]], befund: l
         "**Lose sind die Auswahlachse dieses Servers.** Publikationen mit Losen",
         '(`lotsType: "with"`) verhalten sich an mehreren Endpunkten anders:',
         "`publication-details` fuellt `lot`, der Suchtreffer traegt eine",
-        "verschachtelte `lots`-Liste, und `past-publications` verweigert die",
-        "Auskunft ganz. Aufgezeichnet ist deshalb je ein Fall von beiden.",
+        "verschachtelte `lots`-Liste, und `past-publications` verlangt einen",
+        "`lotId`. Aufgezeichnet ist deshalb je ein Fall von beiden.",
         "",
         *befund,
         "Fehlerpfade — Timeouts, 5xx, ein maskierter Verbindungsabbruch — bleiben",

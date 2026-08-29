@@ -1,7 +1,7 @@
 {
   "status": 400,
   "error": "Bad Request",
-  "path": "/api/publications/v1/publication/ebadc6da-a432-419c-bab1-b51359aec800/past-publications",
+  "path": "/api/publications/v1/publication/85f4c967-6165-42df-a7f4-41f78f497dc8/past-publications",
   "errorCode": "E0003",
   "message": "Bad request!"
 }
