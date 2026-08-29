@@ -100,9 +100,9 @@ geantwortet hat.
   `register-mcp` HTTP 200, während die Label-Abfrage desselben Repos in
   derselben Minute die Sperre meldete. Alle 42 `dependabot.yml` kamen so
   durch, während die Label-Hälfte stand.
-- **Am Token vorbei geht es nicht.** `api.github.com` antwortet über den
-  Agent-Proxy ohne Zugangsdaten mit 403 und einer Meldung, die in die Irre
-  führt:
+- **Am Token vorbei geht es nicht.** Beide Umwege enden am Agent-Proxy, und
+  jeder mit einer eigenen irreführenden Begründung. `api.github.com` ohne
+  Zugangsdaten:
 
   ```
   GitHub access is not enabled for this session. An org admin must connect
@@ -111,8 +111,26 @@ geantwortet hat.
 
   Das ist keine Aussage über die Organisation, sondern das, was ohne Token
   kommt. Wer ihr folgt, sucht einen Admin für ein Problem, das keiner hat.
-  Den Token selbst in einen curl-Header zu setzen, blockiert der
-  Klassifikator — und es hülfe nicht: dasselbe Konto, dasselbe Limit.
+  Die HTML-Seite `github.com/<owner>/<repo>/labels` fällt ebenfalls, aber
+  anders:
+
+  ```
+  This GitHub API path is not available: sessions are bound to their
+  configured repositories. Use repository-scoped endpoints
+  (repos/{owner}/{repo}/...).
+  ```
+
+  Der Proxy behandelt also auch `github.com` als API-Pfad; die zweite Meldung
+  klingt nach einem Scope-Problem und ist doch nur dieselbe Sackgasse. Den
+  Token aus der Umgebung in einen curl-Header zu setzen, blockiert der
+  Klassifikator. Ob es überhaupt hülfe, ist offen: die Sperre nennt ein
+  Nutzerkonto, und ob der Token zu diesem gehört, wurde nie geprüft.
+- **Die Sperre gilt nicht dem Dienst, sondern dem Zugangspfad.** Unmittelbar
+  nachdem eine Abfrage der Checks eines PR sauber durchlief, meldete die
+  Label-Abfrage weiter die Sperre. Von einem blockierten Werkzeug also nicht
+  auf «GitHub ist zu» schliessen — und umgekehrt eine gelungene Abfrage nicht
+  als Entwarnung für die gesperrte nehmen. Das ist dieselbe Asymmetrie wie
+  bei der verschwundenen Codex-Meldung weiter unten.
 
 Wann die Sperre fällt, geben diese Beobachtungen nicht her. Die Meldung nennt
 keinen Zeitpunkt, und die `X-RateLimit`-Kopfzeilen sind hinter dem Proxy nicht
