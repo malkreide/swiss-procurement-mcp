@@ -233,9 +233,21 @@ Auslöser wieder, waren es zwei kurze Sperren und nie eine von 25 Stunden.
 Untergrenze einer *einzelnen* Sperre sind die 25 h 15 min nur unter genau dieser
 Annahme — und die ist unbelegt.
 
-Nach oben trägt die Rechnung dagegen. Die längste mit den Beobachtungen
-verträgliche Sperre reicht vom letzten Erfolg um 08:41 bis zur abweichenden
-Meldung um 08:22, also **47 h 41 min**; länger kann keine einzelne gewesen sein.
+Nach oben trägt die Rechnung nur mit einer Zusatzannahme. Die längste mit den
+Beobachtungen verträgliche Sperre reicht vom letzten Erfolg um 08:41 bis zur
+abweichenden Meldung um 08:22, also **47 h 41 min**. Dass jene Meldung das Ende
+der Sperre markiert, folgt aber allein daraus, dass an ihrer Stelle keine
+Kontingent-Meldung mehr stand — und das setzt die Reihenfolge der Prüfungen
+voraus, deren Beweis weiter unten selbst auf einer ungeprüften Annahme steht.
+Läuft die Environment-Prüfung zuerst, kann ihre Meldung erscheinen, während das
+Kontingent noch weg ist; dann begrenzt sie gar nichts.
+
+Sauber wäre die Obergrenze über einen **gelungenen** Review am 23.8. — davon gab
+es 42 —, denn ein durchgelaufener Review belegt das Kontingent unmittelbar und
+braucht keine Reihenfolge. Das ist dieselbe Asymmetrie wie bei der Environment
+weiter unten: Der Lauf trägt, die Meldung nicht. Die Uhrzeit des ersten dieser
+42 hat hier aber niemand festgehalten; solange sie fehlt, ist die Obergrenze so
+gut wie die Annahme, auf der sie steht.
 Wer stattdessen ab der ersten Limit-Meldung rechnet, unterschlägt die 67
 Minuten, in denen das Kontingent schon weg gewesen sein kann, und nennt die
 Spanne zwischen zwei Beobachtungen eine Obergrenze.
@@ -488,6 +500,15 @@ review is running … reacts with 👍 once all reviews finish with no findings�
 
 Die alte Zeile war damit nicht vorsichtig, sondern **falsch**: Sie hat aus einer
 Messung am falschen Ort auf eine Lüge geschlossen. Der Kasten stimmt hier.
+
+**«Am PR» gilt aber nicht für jeden Auslöser.** Am 30.8.2026 auf
+`swiss-procurement-mcp#76` trug der auslösende `@codex review`-Kommentar selbst
+`eyes: 1`, während der Lauf ging. Wo die Reaktion landet, hängt also davon ab,
+was den Lauf angestossen hat — beim ready-Auslöser am PR, beim Kommentar-Auslöser
+am Kommentar. Wer nur eine der beiden Stellen abfragt, misst wieder am falschen
+Objekt, bloss andersherum als beim ersten Mal. Auch hier bleibt der Vorbehalt aus
+demselben Abschnitt: `reactions` ist eine Summe ohne Urheber, und eindeutig ist
+der Fall nur, weil ausser Codex niemand den PR angefasst hatte.
 
 Das ändert nichts an der Beweisregel, sondern nur an ihrer Begründung: Belegt
 ist eine Prüfung durch ein Review-Objekt oder eine Befundlos-Meldung, das
