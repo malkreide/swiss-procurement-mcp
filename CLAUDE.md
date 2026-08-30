@@ -416,10 +416,19 @@ wie der Code: Nichts ist rot, weil nichts geprüft wird, worauf es ankommt.
 ## Teil 2 — Dieses Repo
 
 
-**ruff: eine Quelle.** `pyproject.toml`, `dev`-Extra, `ruff==0.16.3`. Die CI
-hat keinen eigenen Pin-Schritt — der Install über `ci.yml` genügt, lokal wie
-dort. Eine `.pre-commit-config.yaml` gibt es nicht; wenn eine dazukommt, muss
-sie dieselbe Version aus `pyproject.toml` beziehen und keine zweite nennen.
+**ruff: eine Quelle.** Der Pin steht im `dev`-Extra von `pyproject.toml` und
+sonst nirgends — auch nicht hier: **diese Datei nennt die Version bewusst
+nicht.** Die CI hat keinen eigenen Pin-Schritt, der Install über `ci.yml`
+genügt, lokal wie dort. Eine `.pre-commit-config.yaml` gibt es nicht; wenn eine
+dazukommt, muss sie dieselbe Version aus `pyproject.toml` beziehen und keine
+zweite nennen.
+
+Bis zum 30.8.2026 stand die Version hier ausgeschrieben — und war nach einem
+Dependabot-Bump still falsch, unter der Überschrift «eine Quelle». Kein Gate
+merkte es: `check_ruff_pin.py` liest `pyproject.toml`, nicht die Prosa, und
+nennt jene im eigenen Docstring die «einzige Quelle». Eine ausgeschriebene
+Version in dieser Datei ist deshalb keine Bequemlichkeit, sondern die zweite
+Quelle. `tests/test_ruff_pin_doc.py` fängt sie ab.
 
 Vor dem Lauf `ruff --version` prüfen: ein älteres ruff früher im `PATH`
 schlägt den Pin, ohne dass der Install etwas meldet.
