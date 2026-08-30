@@ -347,10 +347,15 @@ weiterhin stimmen; ihr Beweis steht auf einer Annahme, die niemand geprüft hat.
 
 Praktisch heisst das: **Eine verschwundene Limit-Meldung ist keine Entwarnung.**
 Sie kann bedeuten, dass das Kontingent wieder da ist — und dass jetzt etwas
-anderes den Review verhindert. Belegt ist eine Prüfung erst durch ein
-Review-Objekt **oder** eine Befundlos-Meldung — **und beide zählen nur für den
-Commit, den sie selbst nennen** (weiter unten, «Nennt das jüngste
-Codex-Ergebnis den aktuellen Head»). Wer nur das Objekt gelten lässt, zählt
+anderes den Review verhindert. Belegt ist eine Prüfung erst durch einen
+Statusbericht auf `✅ Completed`, ein Review-Objekt **oder** eine
+Befundlos-Meldung — **und alle drei zählen nur für den Commit, den sie selbst
+nennen** (weiter unten, «Nennt das jüngste Codex-Ergebnis den aktuellen Head»).
+Der Bericht steht dabei zuerst und nicht bloss der Vollständigkeit halber: Er
+ist der einzige der drei, den es auch dann gibt, wenn kein Ergebnis mehr
+gepostet wird — der Fall des geschlossenen PR weiter unten hat genau ihn und
+sonst nichts. Er belegt «geprüft», nicht «sauber». Wer nur das Objekt gelten
+lässt, zählt
 jeden befundlosen Review als ungeprüft — und baut sich denselben Fehlalarm ein,
 den dieser Abschnitt verhindern soll, nur in die andere Richtung.
 
@@ -413,12 +418,19 @@ Zwei Anker, in dieser Reihenfolge:
 Was in keinem Fall trägt: die blosse Anwesenheit eines Review-Objekts oder
 einer Befundlos-Meldung, ohne den Commit darin zu lesen.
 
-**Wird der PR während des Laufs gemergt, entfällt das Ergebnis.** Am 30.8.2026
-auf `swiss-efv-mcp#68`: «ready for review» um 08:13:31, Merge um 08:13:34, und
-der dadurch ausgelöste Lauf startete um 08:13:35 — eine Sekunde *nach* dem
-Merge. Um 08:14:41 stand `✅ Completed` auf `34021a9`. Ein Review-Objekt gibt
-es nicht, eine Befundlos-Meldung auch nicht: Auf einem geschlossenen PR postet
-Codex sie nicht mehr.
+**Ist der PR geschlossen, wenn der Lauf endet, entfällt das Ergebnis.** Am
+30.8.2026 auf `swiss-efv-mcp#68`: «ready for review» um 08:13:31, Merge um
+08:13:34, und der dadurch ausgelöste Lauf startete um 08:13:35 — eine Sekunde
+*nach* dem Merge. Um 08:14:41 stand `✅ Completed` auf `34021a9`. Ein
+Review-Objekt gibt es nicht, eine Befundlos-Meldung auch nicht: Auf einem
+geschlossenen PR postet Codex sie nicht mehr.
+
+**Die Überschrift sagt bewusst nicht «während des Laufs gemergt».** Beobachtet
+ist ein Lauf, der eine Sekunde *nach* dem Merge begann — der PR war die ganze
+Zeit zu. Ob ein Merge, der einen bereits laufenden Review unterbricht, dasselbe
+tut, hat niemand gemessen. Für den Handgriff macht es keinen Unterschied, weil
+in beiden Fällen ein geschlossener PR am Ende steht; für die Behauptung schon,
+und die Beobachtung trägt nur die schwächere.
 
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
 also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist in diesem
