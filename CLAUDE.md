@@ -612,10 +612,13 @@ verpackt —, aber mit der **umgekehrten** Handlungsanweisung als beim 400er:
 - Beim 400er war die Absage deterministisch und wiederholbar; ein
   Wiederholungsrat wäre dort falsch gewesen, gesucht werden musste der fehlende
   Parameter.
-- Hier trennt genau ein Wiederholungslauf «stabil» von «Aussetzer», und er
-  kostet nichts. **Erst wiederholen, dann konfigurieren.** Wer der Meldung
-  sofort folgt, legt eine Environment an, die es schon gibt, und hält das
-  Problem danach für gelöst.
+- Hier trennt ein Wiederholungslauf einen einmaligen Aussetzer ab, und er
+  verlangt keine Konfigurationsänderung. Umsonst ist er deshalb nicht: Er wird
+  per Kommentar ausgelöst und zählt damit ins Kontingent wie jeder
+  GitHub-getriggerte Lauf — billiger als eine überflüssige Environment, aber
+  nicht gratis. **Erst wiederholen, dann konfigurieren.** Wer der Meldung sofort
+  folgt, legt eine Environment an, die es schon gibt, und hält das Problem
+  danach für gelöst.
 
 Wiederholt sich die Meldung, ist sie **stabil** — mehr nicht. Auch das belegt
 keine fehlende Environment: Ein Aussetzer, der zwei Anläufe überdauert, sieht
