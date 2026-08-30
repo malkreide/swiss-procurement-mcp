@@ -233,9 +233,21 @@ Auslöser wieder, waren es zwei kurze Sperren und nie eine von 25 Stunden.
 Untergrenze einer *einzelnen* Sperre sind die 25 h 15 min nur unter genau dieser
 Annahme — und die ist unbelegt.
 
-Nach oben trägt die Rechnung dagegen. Die längste mit den Beobachtungen
-verträgliche Sperre reicht vom letzten Erfolg um 08:41 bis zur abweichenden
-Meldung um 08:22, also **47 h 41 min**; länger kann keine einzelne gewesen sein.
+Nach oben trägt die Rechnung nur mit einer Zusatzannahme. Die längste mit den
+Beobachtungen verträgliche Sperre reicht vom letzten Erfolg um 08:41 bis zur
+abweichenden Meldung um 08:22, also **47 h 41 min**. Dass jene Meldung das Ende
+der Sperre markiert, folgt aber allein daraus, dass an ihrer Stelle keine
+Kontingent-Meldung mehr stand — und das setzt die Reihenfolge der Prüfungen
+voraus, deren Beweis weiter unten selbst auf einer ungeprüften Annahme steht.
+Läuft die Environment-Prüfung zuerst, kann ihre Meldung erscheinen, während das
+Kontingent noch weg ist; dann begrenzt sie gar nichts.
+
+Sauber wäre die Obergrenze über einen **gelungenen** Review am 23.8. — davon gab
+es 42 —, denn ein durchgelaufener Review belegt das Kontingent unmittelbar und
+braucht keine Reihenfolge. Das ist dieselbe Asymmetrie wie bei der Environment
+weiter unten: Der Lauf trägt, die Meldung nicht. Die Uhrzeit des ersten dieser
+42 hat hier aber niemand festgehalten; solange sie fehlt, ist die Obergrenze so
+gut wie die Annahme, auf der sie steht.
 Wer stattdessen ab der ersten Limit-Meldung rechnet, unterschlägt die 67
 Minuten, in denen das Kontingent schon weg gewesen sein kann, und nennt die
 Spanne zwischen zwei Beobachtungen eine Obergrenze.
@@ -252,9 +264,8 @@ sechs Tagen dazwischen war, hat niemand gemessen — die Sperren wiederholen sic
 also, aber ihre Frequenz gibt keine dieser Beobachtungen her.
 
 Gemessen an `swiss-procurement-mcp` PR #68: als Draft angelegt um 09:23:59, in
-dieser Zeit kein Kommentar (auf Drafts läuft Codex nicht an), auf ready
-umgestellt, gemergt um 09:28:42. `get_reviews` liefert `[]`, und der einzige
-Kommentar steht um 09:28:42:
+dieser Zeit kein Kommentar, auf ready umgestellt, gemergt um 09:28:42.
+`get_reviews` liefert `[]`, und der einzige Kommentar steht um 09:28:42:
 
 ```
 You have reached your Codex usage limits for code reviews. You can see your
@@ -264,17 +275,30 @@ limits in the [Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/u
 **Der Text ist gewachsen.** Die Fassung vom 21.8. endete nach dem ersten Satz;
 seit dem 29.8. hängt ein Verweis aufs Dashboard daran. Wer auf den ganzen Satz
 vergleicht statt auf seinen Anfang, hält die neue Fassung für einen unbekannten
-fünften Fall — und wer den Abschnitt danach umschreibt, hat aus einer
+weiteren Fall — und wer den Abschnitt danach umschreibt, hat aus einer
 Textänderung einen Befund gemacht.
 
-**Und die Meldung sagt nichts über die Environment.** Die Prüfungen liegen
-hintereinander, das Kontingent zuerst; die Meldung kommt also auch dann, wenn
-für das Repo gar keine Environment existiert. Für `swiss-procurement-mcp` ist
-damit weiterhin offen, ob eine da ist. Das ist die Umkehrung der Regel weiter
-unten: Wie eine verschwundene Limit-Meldung keine Entwarnung ist, ist eine
-vorhandene kein Nachweis, dass danach alles stünde.
+**Und die Meldung sagt nichts über die Environment.** Sie erwähnt sie nicht,
+und keine Beobachtung verbindet die beiden — das allein genügt schon, um aus
+einer Kontingent-Meldung nichts über die Konfiguration zu schliessen. Die
+Reihenfolge der Prüfungen (Kontingent zuerst) macht es zusätzlich plausibel,
+trägt hier aber nichts: Ihr Beweis steht selbst auf einer ungeprüften Annahme,
+wie unten beim vierten Grund vermerkt. Für `swiss-procurement-mcp` blieb
+damit offen, ob eine da ist. Das ist die Umkehrung der Regel weiter unten: Wie
+eine verschwundene Limit-Meldung keine Entwarnung ist, ist eine vorhandene kein
+Nachweis, dass danach alles stünde.
 
-**Vier** Gründe, warum Codex schweigt, und nur einer davon ist harmlos:
+**Am 30.8.2026 war das Kontingent wieder offen.** Auf `swiss-procurement-mcp`
+PR #75 lief um 09:09:18 ein Review an, keine 24 Stunden nach der Absage auf #68.
+Die zweite Sperre hat sich also gelöst wie die erste; wie lange sie stand, sagen
+diese zwei Beobachtungen nicht — es sind zwei Zeitpunkte, keine Messreihe.
+
+Nebenbei beantwortet derselbe Lauf die Frage darüber — in der Richtung, die
+trägt. Die beiden Belege sind nicht gleich stark: Eine Environment-Meldung
+belegt keine fehlende Environment (unten gemessen), ein durchgelaufener Review
+aber eine vorhandene. Für dieses Repo sind es an jenem Tag zwei.
+
+**Fünf** Gründe, warum Codex schweigt, und nur einer davon ist harmlos:
 
 - **Kein Befund** — dann schreibt er einen gewöhnlichen Issue-Kommentar:
 
@@ -283,18 +307,28 @@ vorhandene kein Nachweis, dass danach alles stünde.
   ```
 
   Der Schlusssatz wechselt bei jedem Lauf («Delightful!», «Keep it up!»,
-  «More of your lovely PRs please.»); stabil ist nur der Satz davor. Der
-  Infokasten, den Codex unter jeden Review setzt, behauptet weiterhin eine
-  Reaktion («otherwise it will react with 👍») — am 23.8. kam in sechs Repos
-  die Meldung und in keinem die Reaktion. Der Kasten ist keine Quelle.
-- **Der PR ist ein Draft** — darauf läuft Codex nicht an.
-- **Das Kontingent ist weg** — dann schreibt er die Meldung oben, seit dem
-  29.8. mit einem angehängten Verweis aufs Dashboard.
-- **Für das Repo fehlt eine Environment** — dann schreibt er:
+  «More of your lovely PRs please.»); stabil ist nur der Satz davor.
+- **Der PR ist ein Draft** — die *automatischen* Auslöser greifen dort nicht.
+  Von Hand angestossen läuft Codex sehr wohl auf einem Draft: am 29.8.2026 auf
+  `swiss-efv-mcp#64`, 16 Sekunden nach dem Anlegen, Auslöser «Manual request».
+  Das ist zugleich der Weg, einen Draft prüfen zu lassen, **bevor** man ihn auf
+  ready stellt — und damit das Gegenmittel zu den Sekunden zwischen «ready» und
+  Merge weiter unten.
+- **Das Kontingent ist weg** — dann schreibt er die Meldung oben.
+- **Codex meldet eine fehlende Environment** — dann schreibt er:
 
   ```
   To use Codex here, create an environment for this repo.
   ```
+
+  «Meldet», nicht «fehlt»: Der Text ist keine verlässliche Auskunft über die
+  Konfiguration — am 29.8.2026 stand er in einem Repo, das eine hatte, und war
+  eine Minute später weg. Erst wiederholen, dann konfigurieren; die Messung
+  steht unten im Abschnitt über die Environment.
+- **Es lief gar kein Auslöser** — und ein Push ist keiner. Codex zählt sie
+  selbst im Infokasten auf: einen PR zum Review öffnen, einen Draft auf ready
+  stellen, «@codex review» kommentieren. Wer einen Befund behebt und pusht,
+  bekommt deshalb keinen zweiten Lauf, sondern gar nichts.
 
 Der vierte kam erst zum Vorschein, als der dritte wegfiel, und das ist kein
 Zufall: Die Prüfungen liegen hintereinander. Dass es diese Reihenfolge ist und
@@ -305,32 +339,216 @@ Environment-Prüfung vorn, hätte #54 sie schon am Vortag gesehen; die Environme
 fehlte ja bereits. Zwei Meldungen aus demselben Repo schlagen hier jede
 Vermutung über die Reihenfolge.
 
+Diese Ableitung hat eine Voraussetzung, die seit dem 29.8.2026 nicht mehr
+sicher ist: dass die Environment am 22.8. schon fehlte. Geschlossen wurde das
+aus der Meldung vom 23.8. — und die Meldung ist, wie unten gemessen, kein
+verlässlicher Beleg für eine fehlende Environment. Die Reihenfolge kann
+weiterhin stimmen; ihr Beweis steht auf einer Annahme, die niemand geprüft hat.
+
 Praktisch heisst das: **Eine verschwundene Limit-Meldung ist keine Entwarnung.**
 Sie kann bedeuten, dass das Kontingent wieder da ist — und dass jetzt etwas
-anderes den Review verhindert. Belegt ist eine Prüfung erst durch ein
-Review-Objekt **oder** eine Befundlos-Meldung. Wer nur das Objekt gelten lässt,
-zählt jeden befundlosen Review als ungeprüft — und baut sich denselben Fehlalarm
-ein, den dieser Abschnitt verhindern soll, nur in die andere Richtung.
+anderes den Review verhindert. Belegt ist eine Prüfung erst durch einen
+Statusbericht auf `✅ Completed`, ein Review-Objekt **oder** eine
+Befundlos-Meldung — **und alle drei zählen nur für den Commit, den sie selbst
+nennen** (weiter unten, «Nennt das jüngste Codex-Ergebnis den aktuellen Head»).
+Der Bericht steht dabei zuerst und nicht bloss der Vollständigkeit halber: Er
+ist der einzige der drei, den es auch dann gibt, wenn kein Ergebnis mehr
+gepostet wird — der Fall des geschlossenen PR weiter unten hat genau ihn und
+sonst nichts. Er belegt «geprüft», nicht «sauber». Wer nur das Objekt gelten
+lässt, zählt
+jeden befundlosen Review als ungeprüft — und baut sich denselben Fehlalarm ein,
+den dieser Abschnitt verhindern soll, nur in die andere Richtung.
 
 «Kein Kommentar» heisst also nicht «geprüft und sauber». Unterscheiden lässt es
 sich an der Form: Ein Review **mit** Befund ist ein Review-Objekt
 («💡 Codex Review», mit Commit-Angabe); ein Review **ohne** Befund und die
 beiden Ausfallmeldungen — Kontingent wie Environment — sind gewöhnliche
-Issue-Kommentare und trennen sich nur im Text. Beim Draft gibt es überhaupt
-nichts, weil Codex nicht anläuft; ein kommentarloser Draft ist deshalb kein
-Beleg, sondern ein nicht durchgeführter Test.
+Issue-Kommentare und trennen sich nur im Text. Beim Draft greift ohne
+manuellen Anstoss kein Auslöser, dort steht dann überhaupt nichts; ein
+kommentarloser Draft ist deshalb kein Beleg, sondern ein nicht durchgeführter
+Test. Ein von Hand angestossener Lauf hinterlässt dagegen auch auf einem Draft
+dieselben Spuren wie sonst — Statusbericht, Review-Objekt oder
+Befundlos-Meldung —, und die zählen dort genauso.
+
+Der fünfte Grund ist der gefährlichste, weil er nicht wie eine Lücke aussieht,
+sondern wie ein Beleg: Nach einem Push steht das Review-Objekt des *vorigen*
+Commits weiter im PR. Am 29.8.2026 auf `swiss-efv-mcp#62` — Review auf
+`cd2046c` um 11:58:08 (Auslöser «Draft marked ready») mit einem P2-Befund; Fix
+als `ca00672` gepusht, dessen CI um 12:01:47 durch war; um 12:02 nannte die
+Zusammenfassung weiterhin nur `cd2046c` und war seit 11:58:12 nicht angefasst.
+Erst ein «@codex review» von Hand erzeugte um 12:02:55 den zweiten Lauf, der um
+12:05:23 befundlos endete. Ohne ihn wäre ausgerechnet der Fix-Commit ungeprüft
+geblieben, während im PR ein echtes Review stand und das Häkchen erfüllt
+aussah — dieselbe Klasse wie die drei bis fünf Sekunden zwischen «ready» und
+Merge weiter unten, nur schwerer zu bemerken, weil hier etwas *da* ist.
+
+Die richtige Frage ist deshalb nie «steht ein Review im PR», sondern **«nennt
+das jüngste Codex-Ergebnis den aktuellen Head»**. Wer nach einem Push
+weiterarbeiten will, kommentiert «@codex review» — sonst gilt der eigene Fix als
+geprüft, ohne es zu sein.
+
+**In einem zweiten Repo bestätigt.** Am 30.8.2026 auf `swiss-procurement-mcp#75`
+bekam der Fix-Commit `a1984c6` nach dem Push keinen Lauf; der Statusbericht
+nannte weiter den Commit davor. Erst ein «@codex review» von Hand erzeugte um
+09:14:48 den zweiten Lauf, der um 09:16:39 befundlos endete. Zwei Repos, zwei
+Fix-Commits, derselbe Ablauf — das ist kein Einzelfall eines Repos.
+
+Nur gegen das Review-**Objekt** zu prüfen reicht dafür nicht, und zwar in beide
+Richtungen falsch:
+
+- Ein befundloser Lauf erzeugt gar kein Review-Objekt, sondern einen
+  Issue-Kommentar. Nach einem befundlosen Wiederholungslauf zeigt das noch
+  vorhandene Objekt weiter auf den **alten** Commit — der Head ist geprüft, die
+  Prüfung meldet Fehlalarm. Genau so lag es auf `swiss-efv-mcp#62`: Objekt auf
+  `cd2046c`, befundloser Lauf auf `ca00672` nur als Kommentar.
+- Umgekehrt bleibt eine ältere Befundlos-Meldung nach dem nächsten Push
+  einfach stehen. «Es gibt eine Befundlos-Meldung» belegt damit gar nichts.
+
+Zwei Anker, in dieser Reihenfolge:
+
+1. **Der Statusbericht.** Seine Zeile `✅ Completed` nennt den geprüften Commit
+   und ist das einzige Objekt, das beide Ausgänge gleich behandelt. Stimmt der
+   Commit mit dem Head, ist der Head geprüft — geprüft, nicht notwendig sauber:
+   Den Ausgang nennt der Bericht nicht.
+2. **Fehlt der Bericht**, trägt jedes Codex-Ergebnis seinen Commit selbst — das
+   Review-Objekt wie die Befundlos-Meldung, beide als «Reviewed commit». Dann
+   das **jüngste** von beiden nehmen und dessen Commit vergleichen; das ältere
+   sagt nichts über den Head.
+
+Was in keinem Fall trägt: die blosse Anwesenheit eines Review-Objekts oder
+einer Befundlos-Meldung, ohne den Commit darin zu lesen.
+
+**Ist der PR schon geschlossen, wenn der Lauf beginnt, entfällt das Ergebnis.**
+Am
+30.8.2026 auf `swiss-efv-mcp#68`: «ready for review» um 08:13:31, Merge um
+08:13:34, und der dadurch ausgelöste Lauf startete um 08:13:35 — eine Sekunde
+*nach* dem Merge. Um 08:14:41 stand `✅ Completed` auf `34021a9`. Ein
+Review-Objekt gibt es nicht, eine Befundlos-Meldung auch nicht: Auf einem
+geschlossenen PR postet Codex sie nicht mehr.
+
+**Die Überschrift sagt bewusst «beginnt», nicht «endet».** Beobachtet ist ein
+Lauf, der eine Sekunde *nach* dem Merge begann — der PR war die ganze Zeit zu.
+Ob ein Merge, der einen bereits laufenden Review unterbricht, dasselbe tut, hat
+niemand gemessen; die Regel oben gilt für ihn deshalb nicht. Praktisch läuft
+beides auf dieselbe Vorsicht hinaus — wer mergt, während etwas läuft, kann das
+Ergebnis verlieren —, behauptet ist aber nur der gemessene Fall.
+
+Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
+also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit im
+Regelfall von aussen nicht feststellbar** — auf `#68` ausnahmsweise doch, und
+warum, steht gleich darunter.
+
+Naheliegend wäre, ihn aus der 👍-Reaktion am PR zu lesen. Das trägt nicht:
+
+- Das Feld `reactions` aus `issue_read` ist eine **Summe ohne Urheber**. Ein
+  Mensch, der die PR-Beschreibung mit 👍 quittiert, erzeugt dasselbe `+1: 1`.
+  Zusammen mit `✅ Completed` liesse sich daraus «sauber» ableiten, auch wenn
+  Codex einen Befund hatte, der nach dem Merge nicht mehr gepostet wurde.
+- Den Urheber nachzuschlagen geht aus den Agent-Sessions nicht: Der
+  REST-Endpunkt `/issues/{n}/reactions` ist dort gesperrt, und kein
+  MCP-Werkzeug liefert ihn.
+
+**Auf `#68` lässt sich der Ausgang trotzdem lesen**, weil dort drei Umstände
+zusammenkommen, die sonst fehlen: Der PR trägt `+1: 1` und sonst nichts, ausser
+Codex hat ihn niemand angefasst, und der Zeitstempel bindet die Reaktion an den
+Lauf — fertig um 08:14:41, PR zuletzt verändert um 08:14:44. Drei Sekunden. Nach
+der oben gemessenen Zuordnung heisst 👍 «befundlos»; jener Lauf hatte also
+keinen Befund.
+
+**Das ist ein Sonderfall, keine Regel.** Fehlt einer der drei Umstände, bleibt
+`reactions` das, was es ist — eine Summe ohne Urheber. Ohne sie ist der Ausgang
+eines solchen Laufs nicht feststellbar, und ein neuer Lauf holt ihn nicht
+zurück: Er fällt ein eigenes, unabhängiges Urteil — dasselbe Argument wie
+weiter unten, wo derselbe Text in 42 Läufen 36-mal einen Befund und 6-mal keinen
+bekam. Was bleibt, ist ein Ersatz, keine Rekonstruktion: eine frische Prüfung
+auf dem Merge-Commit oder in einem Folge-PR, deren Ergebnis für sich steht.
+
+Ein Statusbericht ohne Ergebnis heisst also «geprüft, Ausgang offen» — offen,
+bis etwas anderes ihn bindet, und das ist eine ehrlichere Auskunft als eine
+Summe, die zwei Urheber nicht trennt.
+
+Zwei Fassungen lang stand hier «der Ausgang bleibt dauerhaft unbekannt», zwei
+Zeilen unter dem Satz, die Reaktion auf `#68` sei eindeutig. Beides zugleich
+geht nicht, und aufgefallen ist es einem Codex-Review. Aufgelöst hat es nicht
+das Nachdenken, sondern eine Abfrage: `issue_read` auf `#68`. Wer den
+Widerspruch ohne sie glattzieht, wählt zwischen drei Auflösungen und rät.
 
 Das sind verschiedene Abfragen — `get_reviews` fürs Objekt, `get_comments` für
-alles andere; wer nur eine nimmt, übersieht den Rest. Genau so ist die
-Limit-Meldung zuerst durchgerutscht.
+die Kommentare; wer nur eine nimmt, übersieht den Rest. Genau so ist die
+Limit-Meldung zuerst durchgerutscht. «Alles andere» deckt `get_comments` aber
+nicht ab: Die Reaktion am PR liegt in keiner der beiden — sie steht im Feld
+`reactions` von `issue_read`, und weil das eine Summe ohne Urheber ist, taugt
+sie ohnehin nicht als Beleg (oben, und weiter unten ausführlicher).
 
 Der Kommentarzähler allein reicht ohnehin nicht: `comments: 1` kann die
-Befundlos-, die Kontingent- **oder** die Environment-Meldung sein — drei
-gegensätzliche Bedeutungen unter derselben Zahl. Den Text lesen, nicht die Zahl.
-Und einen unbekannten vierten Text wörtlich zitieren, statt ihn in eine der
-bekannten Schubladen zu zwingen: Dieser Abschnitt musste schon einmal von drei
-auf vier Gründe wachsen, und die 👍-Reaktion stand hier zwei Fassungen lang als
-Tatsache.
+Befundlos-, die Kontingent- **oder** die Environment-Meldung sein — und seit dem
+29.8.2026 auch einen blossen Statusbericht, der überhaupt kein Ergebnis meldet:
+
+```
+## Codex Review Summary
+
+| Review         | Status                     | Commit    | Review trigger |
+| 📝 Code Review | 🔄 Running since 12:02:55  | ca00672   | Manual request |
+```
+
+Vier gegensätzliche Bedeutungen unter derselben Zahl. Den Text lesen, nicht die
+Zahl. Und einen unbekannten fünften Text wörtlich zitieren, statt ihn in eine
+der bekannten Schubladen zu zwingen: Dieser Abschnitt musste schon zweimal
+wachsen — von drei auf vier Gründe und dann auf fünf.
+
+Dieser Bericht trägt den HTML-Marker `codex-pull-request-review-summary` und
+wird **an Ort und Stelle aktualisiert**, nicht neu geschrieben. Die
+Fertigmeldung («✅ Completed») kam deshalb als `issue_comment.edited`: Wer auf
+einen *neuen* Kommentar wartet, verpasst sie, und wer den Zähler beobachtet,
+sieht gar nichts, weil er sich nicht ändert. Dass «Running» dort steht, heisst
+warten, nicht urteilen — ein Lauf ohne Ergebnis ist weder Befund noch Freispruch.
+
+Sein eigentlicher Wert steht in der Spalte daneben: Der Bericht nennt den
+geprüften Commit und den Auslöser, beantwortet also genau die Frage, die der
+fünfte Grund oben aufwirft.
+
+**Zur 👍-Reaktion: zwei Fassungen lang wurde am falschen Objekt gemessen.**
+Hier stand, der Infokasten sei keine Quelle — belegt mit sechs Repos am 23.8., in
+denen die Befundlos-Meldung kam «und in keinem die Reaktion». Gesucht wurde an
+den Kommentaren. Dort ist nie eine.
+
+Die Reaktion sitzt **am PR**. Am 29.8.2026 auf `swiss-efv-mcp#64` durchgemessen,
+an einem PR, den ausser Codex niemand angefasst hatte:
+
+| Zeitpunkt | Zustand des Laufs | Reaktionen am PR |
+|---|---|---|
+| 16:54:30 | gestartet | `eyes: 1` |
+| 16:56:27 | fertig, **mit** Befund | `total_count: 0` — 👀 wieder entfernt |
+
+Und auf `#62` nach einem befundlosen Lauf: `+1: 1` am PR, `0` an jedem der drei
+Kommentare. Codex setzt die Reaktion also, nimmt sie zurück und unterscheidet
+die Ausgänge — genau wie der Kasten es beschreibt («reacts with 👀 while any
+review is running … reacts with 👍 once all reviews finish with no findings»).
+
+Die alte Zeile war damit nicht vorsichtig, sondern **falsch**: Sie hat aus einer
+Messung am falschen Ort auf eine Lüge geschlossen. Der Kasten stimmt hier.
+
+**«Am PR» gilt aber nicht für jeden Auslöser.** Am 30.8.2026 auf
+`swiss-procurement-mcp#76` trug der auslösende `@codex review`-Kommentar selbst
+`eyes: 1`, während der Lauf ging. Wo die Reaktion landet, hängt also davon ab,
+was den Lauf angestossen hat — beim ready-Auslöser am PR, beim Kommentar-Auslöser
+am Kommentar. Wer nur eine der beiden Stellen abfragt, misst wieder am falschen
+Objekt, bloss andersherum als beim ersten Mal. Auch hier bleibt der Vorbehalt aus
+demselben Abschnitt: `reactions` ist eine Summe ohne Urheber, und eindeutig ist
+der Fall nur, weil ausser Codex niemand den PR angefasst hatte.
+
+Das ändert nichts an der Beweisregel, sondern nur an ihrer Begründung: Belegt
+ist eine Prüfung durch einen Statusbericht auf `✅ Completed`, ein
+Review-Objekt oder eine Befundlos-Meldung, die jeweils den aktuellen Head
+nennen. Die Reaktion taugt dafür nicht — und der Grund ist genau der Commit:
+Sie nennt keinen und wird beim nächsten Lauf
+überschrieben. Sie sagt «gerade läuft etwas» oder «der letzte Lauf war sauber»,
+nie «dieser Head ist geprüft».
+
+Das gilt auch im Fall des geschlossenen PR oben, wo sie als einzige Quelle
+für den Ausgang übrig zu bleiben scheint: Die Summe im Feld `reactions` trennt
+Codex nicht von einem Menschen, und den Urheber liefert hier kein Werkzeug.
+Was dort fehlt, holt man mit einem neuen Lauf, nicht mit einer Reaktion.
 
 Und ein befundloser Lauf ist kein Freispruch. Am 23.8. lief derselbe Text durch
 42 Reviews: 36 meldeten denselben P2-Befund, 6 die Befundlos-Meldung — gleiche
@@ -349,20 +567,24 @@ Findet nur, wo er *kommentiert* hat. Repos ohne PR-Aktivität tauchen nicht auf
 
 Zweiter Weg, den Prüfer zu verlieren, ganz ohne Kontingentproblem: zu schnell
 mergen. Am 21./22.8. lagen zwischen «ready for review» und Merge mehrfach drei
-bis fünf Sekunden, am 29.8. bei PR #68 rund zwei. Codex wird beim Umschalten von
-Draft auf ready ausgelöst und braucht danach Zeit; wer sofort mergt, hat das
-Häkchen gesetzt und den Review nicht abgewartet.
+bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst und
+braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
+nicht abgewartet.
 
-Bei #68 kostete die Eile nichts, weil die Absage selbst in dieselbe Sekunde
-fiel wie der Merge. Die Ausfallmeldung kommt also binnen zwei Sekunden, während
-ein Review länger braucht als die drei bis fünf, die ihm am 21./22.8. gelassen
-wurden — sonst wären jene Reviews nicht verlorengegangen. Wie viel länger,
-sagt keine dieser Beobachtungen: Die 42 Reviews vom 23.8. verteilen sich über
-neun Minuten, das ist die Dauer eines Stapels und nicht die eines Reviews.
+Bei `swiss-procurement-mcp` PR #68 waren es am 29.8. rund zwei Sekunden. Die
+Eile kostete dort nichts, weil die Absage in dieselbe Sekunde fiel wie der
+Merge — die Ausfallmeldung kommt binnen Sekunden, ein Review nicht.
 
-Als Handgriff taugt daraus nur die schwache Richtung: Ein Kommentar, der binnen
-Sekunden dasteht, ist eher eine Absage als ein Urteil. Entschieden wird weiter
-am Text, nicht an der Uhr.
+**Wie lange ein Review braucht, ist seit dem Statusbericht direkt messbar.** Er
+nennt Start und Ende; vorher liess sich nur die Dauer eines ganzen Stapels
+ablesen, und die 42 Reviews vom 23.8. über neun Minuten sind kein Wert für einen
+einzelnen Lauf. Auf `swiss-procurement-mcp#75` am 30.8.: **103 s**
+(09:09:18 → 09:11:01) und **111 s** (09:14:48 → 09:16:39).
+
+Zwei Läufe in einem Repo sind keine Verteilung, und eine Wartezeit lässt sich
+daraus nicht ableiten. Als Handgriff taugt weiter nur die schwache Richtung: Ein
+Kommentar, der binnen Sekunden dasteht, ist eher eine Absage als ein Urteil.
+Entschieden wird am Text, nicht an der Uhr.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne
@@ -379,11 +601,51 @@ das ein bekannter Fehler bei mehreren verbundenen Konten — dann den
 GitHub-Connector in den Codex-Einstellungen trennen und neu verbinden.
 
 Die Environment legt man unter `chatgpt.com/codex/cloud/settings/environments`
-an, und zwar **je Repo**. Die Meldung sagt es selbst («for this repo»), und am
-23.8. war es genau so: In `swiss-public-data-mcp` fehlte sie, dort kam kein
-Review; in den übrigen Repos lief Codex am selben Morgen durch. Eine
-Environment fürs Konto genügt also nicht — wer eine anlegt und den Rest für
-erledigt hält, mergt weiter Ungeprüftes.
+an, und zwar **je Repo**. Am 23.8. sah es genau danach aus: In
+`swiss-public-data-mcp` kam kein Review, in den übrigen Repos lief Codex am
+selben Morgen durch. Eine Environment fürs Konto genügt also nicht — wer eine
+anlegt und den Rest für erledigt hält, mergt weiter Ungeprüftes.
+
+**Die Meldung selbst ist aber kein Beleg dafür, dass eine fehlt.** Am
+29.8.2026 auf `swiss-efv-mcp#66`:
+
+| Zeit (UTC) | Ereignis |
+|---|---|
+| 16:56, 17:01, 17:05 | drei Codex-Reviews in diesem Repo, alle durchgelaufen |
+| 18:38:34 | «To use Codex here, create an environment for this repo» |
+| 18:39:34 | nach «@codex review»: Lauf startet normal, auf demselben Commit |
+| 18:44:28 | befundlos fertig |
+
+Sechzig Sekunden zwischen der Meldung und einem gelungenen Lauf, dasselbe Repo,
+derselbe Commit, an den Einstellungen nichts geändert. Der Text behauptet eine
+Konfigurationslücke; belegt ist nur, dass kein Lauf zustande kam.
+
+Das ist dieselbe Klasse wie der 403 weiter oben — eine Störung, als Auskunft
+verpackt —, aber mit der **umgekehrten** Handlungsanweisung als beim 400er:
+
+- Beim 400er war die Absage deterministisch und wiederholbar; ein
+  Wiederholungsrat wäre dort falsch gewesen, gesucht werden musste der fehlende
+  Parameter.
+- Hier trennt ein Wiederholungslauf einen einmaligen Aussetzer ab, und er
+  verlangt keine Konfigurationsänderung. Umsonst ist er deshalb nicht: Er wird
+  per Kommentar ausgelöst und zählt damit ins Kontingent wie jeder
+  GitHub-getriggerte Lauf — billiger als eine überflüssige Environment, aber
+  nicht gratis. **Erst wiederholen, dann konfigurieren.** Wer der Meldung sofort
+  folgt, legt eine Environment an, die es schon gibt, und hält das Problem
+  danach für gelöst.
+
+Wiederholt sich die Meldung, ist sie **stabil** — mehr nicht. Auch das belegt
+keine fehlende Environment: Ein Aussetzer, der zwei Anläufe überdauert, sieht
+genauso aus. Die Wiederholung sagt, dass sich ein Blick in die Konfiguration
+lohnt; entschieden wird dort und nicht an der Meldung.
+
+**Am 30.8.2026 wurde es noch enger.** Auf `swiss-procurement-mcp#76` stand die
+Environment-Meldung um 11:47:50 — in **derselben Sekunde**, in der der Review
+auf `c7f750b` anlief, ohne Wiederholung und ohne Eingriff. Auf `swiss-efv-mcp`
+lagen noch sechzig Sekunden und ein «@codex review» dazwischen, hier gar nichts.
+Meldung und laufender Review schliessen sich also nicht einmal zeitlich aus. Wer
+die Meldung für eine Auskunft über die Konfiguration hält, liest ein Ereignis,
+das im selben Moment widerlegt wird.
 
 ### Wenn zwei Agenten dasselbe tun
 
