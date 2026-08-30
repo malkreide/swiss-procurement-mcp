@@ -418,19 +418,20 @@ Zwei Anker, in dieser Reihenfolge:
 Was in keinem Fall trägt: die blosse Anwesenheit eines Review-Objekts oder
 einer Befundlos-Meldung, ohne den Commit darin zu lesen.
 
-**Ist der PR geschlossen, wenn der Lauf endet, entfällt das Ergebnis.** Am
+**Ist der PR schon geschlossen, wenn der Lauf beginnt, entfällt das Ergebnis.**
+Am
 30.8.2026 auf `swiss-efv-mcp#68`: «ready for review» um 08:13:31, Merge um
 08:13:34, und der dadurch ausgelöste Lauf startete um 08:13:35 — eine Sekunde
 *nach* dem Merge. Um 08:14:41 stand `✅ Completed` auf `34021a9`. Ein
 Review-Objekt gibt es nicht, eine Befundlos-Meldung auch nicht: Auf einem
 geschlossenen PR postet Codex sie nicht mehr.
 
-**Die Überschrift sagt bewusst nicht «während des Laufs gemergt».** Beobachtet
-ist ein Lauf, der eine Sekunde *nach* dem Merge begann — der PR war die ganze
-Zeit zu. Ob ein Merge, der einen bereits laufenden Review unterbricht, dasselbe
-tut, hat niemand gemessen. Für den Handgriff macht es keinen Unterschied, weil
-in beiden Fällen ein geschlossener PR am Ende steht; für die Behauptung schon,
-und die Beobachtung trägt nur die schwächere.
+**Die Überschrift sagt bewusst «beginnt», nicht «endet».** Beobachtet ist ein
+Lauf, der eine Sekunde *nach* dem Merge begann — der PR war die ganze Zeit zu.
+Ob ein Merge, der einen bereits laufenden Review unterbricht, dasselbe tut, hat
+niemand gemessen; die Regel oben gilt für ihn deshalb nicht. Praktisch läuft
+beides auf dieselbe Vorsicht hinaus — wer mergt, während etwas läuft, kann das
+Ergebnis verlieren —, behauptet ist aber nur der gemessene Fall.
 
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
 also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist in diesem
@@ -523,13 +524,14 @@ demselben Abschnitt: `reactions` ist eine Summe ohne Urheber, und eindeutig ist
 der Fall nur, weil ausser Codex niemand den PR angefasst hatte.
 
 Das ändert nichts an der Beweisregel, sondern nur an ihrer Begründung: Belegt
-ist eine Prüfung durch ein Review-Objekt oder eine Befundlos-Meldung, das
-jeweils den aktuellen Head nennt. Die Reaktion taugt dafür nicht — und der
-Grund ist genau der Commit: Sie nennt keinen und wird beim nächsten Lauf
+ist eine Prüfung durch einen Statusbericht auf `✅ Completed`, ein
+Review-Objekt oder eine Befundlos-Meldung, die jeweils den aktuellen Head
+nennen. Die Reaktion taugt dafür nicht — und der Grund ist genau der Commit:
+Sie nennt keinen und wird beim nächsten Lauf
 überschrieben. Sie sagt «gerade läuft etwas» oder «der letzte Lauf war sauber»,
 nie «dieser Head ist geprüft».
 
-Das gilt auch im Merge-während-des-Laufs-Fall oben, wo sie als einzige Quelle
+Das gilt auch im Fall des geschlossenen PR oben, wo sie als einzige Quelle
 für den Ausgang übrig zu bleiben scheint: Die Summe im Feld `reactions` trennt
 Codex nicht von einem Menschen, und den Urheber liefert hier kein Werkzeug.
 Was dort fehlt, holt man mit einem neuen Lauf, nicht mit einer Reaktion.
