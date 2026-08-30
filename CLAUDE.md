@@ -266,9 +266,12 @@ vergleicht statt auf seinen Anfang, hält die neue Fassung für einen unbekannte
 weiteren Fall — und wer den Abschnitt danach umschreibt, hat aus einer
 Textänderung einen Befund gemacht.
 
-**Und die Meldung sagt nichts über die Environment.** Die Prüfungen liegen
-hintereinander, das Kontingent zuerst; die Meldung kommt also auch dann, wenn
-für das Repo gar keine Environment existiert. Für `swiss-procurement-mcp` blieb
+**Und die Meldung sagt nichts über die Environment.** Sie erwähnt sie nicht,
+und keine Beobachtung verbindet die beiden — das allein genügt schon, um aus
+einer Kontingent-Meldung nichts über die Konfiguration zu schliessen. Die
+Reihenfolge der Prüfungen (Kontingent zuerst) macht es zusätzlich plausibel,
+trägt hier aber nichts: Ihr Beweis steht selbst auf einer ungeprüften Annahme,
+wie unten beim vierten Grund vermerkt. Für `swiss-procurement-mcp` blieb
 damit offen, ob eine da ist. Das ist die Umkehrung der Regel weiter unten: Wie
 eine verschwundene Limit-Meldung keine Entwarnung ist, ist eine vorhandene kein
 Nachweis, dass danach alles stünde.
@@ -579,8 +582,18 @@ verpackt —, aber mit der **umgekehrten** Handlungsanweisung als beim 400er:
   sofort folgt, legt eine Environment an, die es schon gibt, und hält das
   Problem danach für gelöst.
 
-Wiederholt sich die Meldung, ist sie stabil — dann gilt der Absatz darüber und
-die Environment fehlt wirklich.
+Wiederholt sich die Meldung, ist sie **stabil** — mehr nicht. Auch das belegt
+keine fehlende Environment: Ein Aussetzer, der zwei Anläufe überdauert, sieht
+genauso aus. Die Wiederholung sagt, dass sich ein Blick in die Konfiguration
+lohnt; entschieden wird dort und nicht an der Meldung.
+
+**Am 30.8.2026 wurde es noch enger.** Auf `swiss-procurement-mcp#76` stand die
+Environment-Meldung um 11:47:50 — in **derselben Sekunde**, in der der Review
+auf `c7f750b` anlief, ohne Wiederholung und ohne Eingriff. Auf `swiss-efv-mcp`
+lagen noch sechzig Sekunden und ein «@codex review» dazwischen, hier gar nichts.
+Meldung und laufender Review schliessen sich also nicht einmal zeitlich aus. Wer
+die Meldung für eine Auskunft über die Konfiguration hält, liest ein Ereignis,
+das im selben Moment widerlegt wird.
 
 ### Wenn zwei Agenten dasselbe tun
 
