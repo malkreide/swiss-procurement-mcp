@@ -434,8 +434,9 @@ beides auf dieselbe Vorsicht hinaus — wer mergt, während etwas läuft, kann d
 Ergebnis verlieren —, behauptet ist aber nur der gemessene Fall.
 
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
-also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist in diesem
-Fall von aussen nicht feststellbar.**
+also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit im
+Regelfall von aussen nicht feststellbar** — auf `#68` ausnahmsweise doch, und
+warum, steht gleich darunter.
 
 Naheliegend wäre, ihn aus der 👍-Reaktion am PR zu lesen. Das trägt nicht:
 
@@ -447,17 +448,30 @@ Naheliegend wäre, ihn aus der 👍-Reaktion am PR zu lesen. Das trägt nicht:
   REST-Endpunkt `/issues/{n}/reactions` ist dort gesperrt, und kein
   MCP-Werkzeug liefert ihn.
 
-Auf `#68` war die Reaktion trotzdem eindeutig — aber nur, weil ausser Codex
-niemand den PR angefasst hatte. Das ist ein Sonderfall, keine Regel.
+**Auf `#68` lässt sich der Ausgang trotzdem lesen**, weil dort drei Umstände
+zusammenkommen, die sonst fehlen: Der PR trägt `+1: 1` und sonst nichts, ausser
+Codex hat ihn niemand angefasst, und der Zeitstempel bindet die Reaktion an den
+Lauf — fertig um 08:14:41, PR zuletzt verändert um 08:14:44. Drei Sekunden. Nach
+der oben gemessenen Zuordnung heisst 👍 «befundlos»; jener Lauf hatte also
+keinen Befund.
 
-**Der Ausgang jenes Laufs bleibt dauerhaft unbekannt.** Ein neuer Lauf holt ihn
-nicht zurück, er fällt ein eigenes, unabhängiges Urteil — dasselbe Argument wie
+**Das ist ein Sonderfall, keine Regel.** Fehlt einer der drei Umstände, bleibt
+`reactions` das, was es ist — eine Summe ohne Urheber. Ohne sie ist der Ausgang
+eines solchen Laufs nicht feststellbar, und ein neuer Lauf holt ihn nicht
+zurück: Er fällt ein eigenes, unabhängiges Urteil — dasselbe Argument wie
 weiter unten, wo derselbe Text in 42 Läufen 36-mal einen Befund und 6-mal keinen
 bekam. Was bleibt, ist ein Ersatz, keine Rekonstruktion: eine frische Prüfung
 auf dem Merge-Commit oder in einem Folge-PR, deren Ergebnis für sich steht.
 
-Ein Statusbericht ohne Ergebnis heisst also «geprüft, Ausgang unbekannt» — und
-das ist eine ehrlichere Auskunft als eine Summe, die zwei Urheber nicht trennt.
+Ein Statusbericht ohne Ergebnis heisst also «geprüft, Ausgang offen» — offen,
+bis etwas anderes ihn bindet, und das ist eine ehrlichere Auskunft als eine
+Summe, die zwei Urheber nicht trennt.
+
+Zwei Fassungen lang stand hier «der Ausgang bleibt dauerhaft unbekannt», zwei
+Zeilen unter dem Satz, die Reaktion auf `#68` sei eindeutig. Beides zugleich
+geht nicht, und aufgefallen ist es einem Codex-Review. Aufgelöst hat es nicht
+das Nachdenken, sondern eine Abfrage: `issue_read` auf `#68`. Wer den
+Widerspruch ohne sie glattzieht, wählt zwischen drei Auflösungen und rät.
 
 Das sind verschiedene Abfragen — `get_reviews` fürs Objekt, `get_comments` für
 die Kommentare; wer nur eine nimmt, übersieht den Rest. Genau so ist die
