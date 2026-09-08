@@ -243,8 +243,20 @@ def main() -> int:
     # 32705-42: 1 von 39 Losen antwortete, 38 gaben 404. Genau darauf lief der
     # rote Lauf vom 5.9.2026 — hier wie im Live-Test wurde das erste Los
     # genommen und sein 404 als «der Parameter hilft nicht mehr» gelesen.
-    lose = [lot for lot in (mit_losen.get("lots") or []) if lot.get("lotId")]
+    # Was nicht sondiert werden kann, ist nicht «geprueft». Ein Los ohne `lotId`
+    # und eine Publikation mit `lotsType: "with"` und leerer `lots`-Liste sind
+    # beide genau die Regression, die `_lot_publication_that_answers` im
+    # Live-Test bewusst als Fehlschlag behandelt — der Mapper liess `lots` schon
+    # einmal fallen. Wer sie hier still ueberspringt, kann anschliessend auf
+    # eine luekenhafte Sondierung hin loeschen.
+    unsondierbar: list[str] = []
+    alle_lose = mit_losen.get("lots") or []
+    lose = [lot for lot in alle_lose if lot.get("lotId")]
     assert lose, "der Suchtreffer mit Losen fuehrt keine `lotId`"
+    if len(lose) != len(alle_lose):
+        unsondierbar.append(
+            f"{mit_losen['publicationNumber']}: {len(alle_lose) - len(lose)} Los(e) ohne `lotId`"
+        )
 
     lot_id = None
     mit_lot: Any = None
@@ -295,15 +307,18 @@ def main() -> int:
         weitere = [
             pr
             for pr in alle
-            if pr.get("lotsType") == "with"
-            and pr.get("lots")
-            and pr["publicationId"] != mit_losen["publicationId"]
+            if pr.get("lotsType") == "with" and pr["publicationId"] != mit_losen["publicationId"]
         ]
         for projekt in weitere:
             anderer = f"/publications/v1/publication/{projekt['publicationId']}/past-publications"
-            for lot in projekt["lots"]:
-                if not lot.get("lotId"):
-                    continue
+            kandidaten = [lot for lot in (projekt.get("lots") or []) if lot.get("lotId")]
+            if len(kandidaten) != len(projekt.get("lots") or []) or not kandidaten:
+                unsondierbar.append(
+                    f'{projekt["publicationNumber"]}: `lotsType` "with", aber '
+                    f"{len(kandidaten)} von {len(projekt.get('lots') or [])} Los(en) "
+                    "mit `lotId`"
+                )
+            for lot in kandidaten:
                 status, koerper = get(anderer, lang=LANG, lotId=lot["lotId"])
                 if status == 404:
                     stummes_lot, stumme_antwort, stumm_aus = lot["lotId"], koerper, projekt
@@ -319,10 +334,14 @@ def main() -> int:
     # Eine unvollstaendige Sondierung darf nicht in eine Loeschung muenden.
     # Abbrechen statt weitermachen: ein halber Nachweis ist schlechter als
     # keiner, und die Aufzeichnung bleibt so unangetastet.
-    assert stummes_lot is not None or not unklar, (
-        f"die Sondierung der Lose bekam unerwartete Statuscodes {sorted(set(unklar))} — "
-        "damit ist nicht festgestellt, ob noch ein Los mit 404 antwortet. Erst wenn "
-        "jede Sonde 200 oder 404 liefert, traegt das Ergebnis eine Entscheidung"
+    assert stummes_lot is not None or not (unklar or unsondierbar), (
+        "die Sondierung der Lose blieb unvollstaendig — damit ist nicht festgestellt, "
+        "ob noch ein Los mit 404 antwortet, und eine Loeschung stuende auf einer "
+        "Luecke statt auf einer Messung. "
+        + (f"unerwartete Statuscodes: {sorted(set(unklar))}. " if unklar else "")
+        + (f"nicht sondierbar: {unsondierbar}. " if unsondierbar else "")
+        + "Erst wenn jede Los-Referenz erreichbar ist und jede Sonde 200 oder 404 "
+        "liefert, traegt das Ergebnis eine Entscheidung"
     )
 
     # Der dritte Fall, und der Grund, warum es ihn gibt: eine Aufzeichnung nur
