@@ -337,6 +337,22 @@ def main() -> int:
             weitere += [pr for pr in folge.get("projects", []) if pr.get("lotsType") == "with"]
             cursor = folge.get("pagination", {}).get("lastItem")
 
+        # Steht hier noch ein Cursor, ist die Suche nicht erschoepft — dann ist
+        # «kein Los antwortete 404» eine Aussage ueber die ersten Seiten und
+        # nicht ueber die Quelle. Die Kappung war sonst genau die Luecke, die
+        # dieser Abschnitt eine Ebene tiefer schon zweimal geschlossen hat.
+        #
+        # Praktisch heisst das: solange die Suche laenger ist als die Kappung,
+        # loescht der Recorder nicht mehr von selbst, sondern bricht ab und
+        # nennt den Grund. Das ist Absicht — die Loeschung ist destruktiv, und
+        # ein Mensch, der den Befund zurueckziehen will, soll das entscheiden
+        # und nicht eine Stichprobe.
+        if cursor:
+            unsondierbar.append(
+                f"Suche nach {SEARCH_TERM!r} nach {SONDIER_SEITEN} Folgeseiten noch "
+                "nicht erschoepft"
+            )
+
         for projekt in weitere:
             anderer = f"/publications/v1/publication/{projekt['publicationId']}/past-publications"
             kandidaten = [lot for lot in (projekt.get("lots") or []) if lot.get("lotId")]
