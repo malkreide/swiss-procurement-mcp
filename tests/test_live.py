@@ -237,8 +237,14 @@ async def _lot_publication_that_answers(*, seiten: int = 5, **suche):
     for _ in range(seiten):
         page = await search_procurements(SearchInput(cursor=cursor, **suche))
         for row in page.results:
-            if row.lots_type != "with" or not row.lots:
+            if row.lots_type != "with":
                 continue
+            # Vor der `lots`-Pruefung gezaehlt, nicht danach: eine Zeile mit
+            # `lots_type == "with"` und leerer `lots`-Liste ist selbst schon die
+            # Regression. Genau die gab es hier — der Mapper liess `lots` fallen,
+            # und damit war `lot_id` fuer keinen Aufrufer mehr beschaffbar. Wer
+            # erst zaehlt, wenn Lose da sind, laesst diesen Fall als Skip
+            # durchgehen.
             gesehen += 1
             for lot in row.lots:
                 if not lot.lot_id:
@@ -253,9 +259,10 @@ async def _lot_publication_that_answers(*, seiten: int = 5, **suche):
         cursor = page.next_cursor
 
     assert gesehen == 0, (
-        f"{gesehen} Los-Publikation(en) gefunden, aber kein einziges ihrer Lose "
-        "lieferte Historie — dann traegt `lotId` den Befund nicht mehr, und das "
-        "gehoert gemessen statt uebersprungen"
+        f"{gesehen} Publikation(en) mit `lots_type == 'with'` gefunden, aber kein "
+        "einziges Los lieferte Historie — entweder traegt `lotId` den Befund nicht "
+        "mehr, oder die `lots`-Listen kommen leer an. Beides gehoert gemessen "
+        "statt uebersprungen"
     )
     return None
 

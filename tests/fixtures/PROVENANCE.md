@@ -94,8 +94,10 @@ Vorgaenger», wo die Publikation gar nicht existiert. Er bleibt
 degradiert und nennt beide Moeglichkeiten, ohne zwischen ihnen zu
 entscheiden.
 
-`past_publications_lot_404.json` haelt diese dritte Antwort fest —
-dieselbe Publikation wie die beiden anderen, ein anderes Los.
+`past_publications_lot_404.json` haelt diese dritte Antwort fest. Aus
+welcher Publikation das stumme Los stammt, sagt die Auswahlregel jener
+Datei: dieselbe wie die beiden anderen Aufzeichnungen, wenn dort eines
+zu finden war, sonst eine weitere Los-Publikation derselben Suche.
 
 ## Befund: `dates` gibt es nur bei Ausschreibungen
 

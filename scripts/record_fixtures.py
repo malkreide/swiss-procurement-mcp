@@ -250,12 +250,22 @@ def main() -> int:
     mit_lot: Any = None
     stummes_lot = None
     stumme_antwort: Any = None
+    # Nur 200 und 404 sind hier eine Auskunft. Jeder andere Status ist eine
+    # Stoerung, und eine Stoerung als «antwortet normal» zu zaehlen ist genau
+    # der Fehler, den CLAUDE.md am 403 festhaelt: entscheidend ist nicht der
+    # Statuscode, sondern ob die Quelle ueberhaupt geantwortet hat. Ein 429
+    # oder 500 mitten in der Sondierung liesse `stummes_lot` sonst leer — und
+    # das Skript loeschte Aufzeichnung und Befund, ohne je festgestellt zu
+    # haben, dass die Lose jetzt antworten.
+    unklar: list[int] = []
     for lot in lose:
         status, koerper = get(pfad, lang=LANG, lotId=lot["lotId"])
         if status == 200 and lot_id is None:
             lot_id, mit_lot = lot["lotId"], koerper
         elif status == 404 and stummes_lot is None:
             stummes_lot, stumme_antwort = lot["lotId"], koerper
+        elif status not in (200, 404):
+            unklar.append(status)
         if lot_id is not None and stummes_lot is not None:
             break
 
@@ -298,11 +308,22 @@ def main() -> int:
                 if status == 404:
                     stummes_lot, stumme_antwort, stumm_aus = lot["lotId"], koerper, projekt
                     break
+                if status != 200:
+                    unklar.append(status)
             if stummes_lot is not None:
                 break
         geprueft = 1 + len(weitere)
     else:
         geprueft = 1
+
+    # Eine unvollstaendige Sondierung darf nicht in eine Loeschung muenden.
+    # Abbrechen statt weitermachen: ein halber Nachweis ist schlechter als
+    # keiner, und die Aufzeichnung bleibt so unangetastet.
+    assert stummes_lot is not None or not unklar, (
+        f"die Sondierung der Lose bekam unerwartete Statuscodes {sorted(set(unklar))} — "
+        "damit ist nicht festgestellt, ob noch ein Los mit 404 antwortet. Erst wenn "
+        "jede Sonde 200 oder 404 liefert, traegt das Ergebnis eine Entscheidung"
+    )
 
     # Der dritte Fall, und der Grund, warum es ihn gibt: eine Aufzeichnung nur
     # des 200ers kann nicht zeigen, dass ein 404 hier keine Stoerung ist.
@@ -521,8 +542,10 @@ def _befund(
             "degradiert und nennt beide Moeglichkeiten, ohne zwischen ihnen zu",
             "entscheiden.",
             "",
-            "`past_publications_lot_404.json` haelt diese dritte Antwort fest —",
-            "dieselbe Publikation wie die beiden anderen, ein anderes Los.",
+            "`past_publications_lot_404.json` haelt diese dritte Antwort fest. Aus",
+            "welcher Publikation das stumme Los stammt, sagt die Auswahlregel jener",
+            "Datei: dieselbe wie die beiden anderen Aufzeichnungen, wenn dort eines",
+            "zu finden war, sonst eine weitere Los-Publikation derselben Suche.",
             "",
         ]
     )
