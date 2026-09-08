@@ -313,6 +313,72 @@ async def test_die_historie_liefert_lose_mit_lot_id():
     assert route.calls.last.request.url.params.get("lotId") == lot_id
 
 
+@respx.mock
+async def test_ein_los_ohne_eigene_historie_ist_keine_stoerung():
+    """Der dritte Befund, und der Grund fuer den roten Lauf vom 5.9.2026.
+
+    Die Historie wird je Los gefuehrt: ein Los ohne eigene Vorgaengerpublikation
+    antwortet 404 statt 200 mit leerer Liste. Gemessen am 8.9.2026 an derselben
+    Publikation 29653-03, die auch die beiden anderen Aufzeichnungen tragen —
+    Los 1 antwortet mit 200 und zwei Vorgaengern, Los 2 mit diesem 404. Die
+    Aufzeichnung vom 29.8. nahm `lots[0]` und hatte damit schlicht Glueck.
+
+    Geprueft wird hier die Einordnung, nicht die Quelle: ein 404 ist
+    deterministisch, und der generische Hinweis «unreachable ... retry shortly»
+    ist darauf der falsche Rat — dieselbe Verwechslung, die den 400er ein Jahr
+    lang als Stoerung durchgehen liess. Der Live-Test misst dafuer den rohen
+    Status; hier steht die Formulierung, die beim Modell ankommt.
+    """
+    fehler = fixture_json("past_publications_lot_404.json")
+    assert fehler["code"] == "404"
+    projekt = _projekt("award", "with")
+    respx.get(url__startswith=f"{SIMAP_BASE}/publications/v1/publication/").mock(
+        return_value=httpx.Response(404, json=fehler)
+    )
+    verlauf = await get_publication_history(
+        HistoryInput(publication_id=projekt["publicationId"], lot_id=projekt["lots"][0]["lotId"])
+    )
+
+    assert verlauf.provenance == "degraded"
+    assert verlauf.count == 0 and not verlauf.publications
+    note = verlauf.note or ""
+    # Der Kern: kein Wiederholungsrat auf eine Absage, die sich wiederholt.
+    assert "retry" not in note.lower(), (
+        "ein deterministischer 404 darf nicht als voruebergehende Stoerung gelten"
+    )
+    assert "unreachable" not in note.lower(), "die Quelle hat geantwortet"
+    # Und keine Auskunft, die die Quelle gar nicht hergibt: denselben Koerper
+    # liefert sie fuer eine erfundene Id. «Keine Vorgaenger» waere hier
+    # erfunden, nicht gemessen.
+    assert "lot" in note.lower(), "der Hinweis nennt die Los-Ebene nicht"
+
+
+@respx.mock
+@pytest.mark.parametrize("status", [403, 500])
+async def test_die_generische_absage_bleibt_fuer_das_ungemessene(status):
+    """Die Gegenprobe zu den benannten Faellen: erklaert der Server zu viel weg,
+    ist der Hinweis keine Auskunft mehr, sondern Dekoration.
+
+    Beide Faelle stehen hier, weil sie den Server auf verschiedenen Wegen
+    erreichen — das hat eine Gegenprobe erst sichtbar gemacht. Ein 4xx wirft
+    sofort und traegt seinen `status`; ein 5xx laeuft durch die Wiederholungen
+    und kommt am Ende **ohne** `status` an. Ein Test allein mit dem 500er kann
+    deshalb gar nicht widerlegen, dass die Statusweiche zu weit greift: dort
+    ist der Status ohnehin None. Der 403er ist der Fall, der es kann.
+
+    Und anders als bei 400 und 404 ist der Rat, es spaeter erneut zu
+    versuchen, hier der richtige.
+    """
+    respx.get(url__startswith=f"{SIMAP_BASE}/publications/v1/publication/").mock(
+        return_value=httpx.Response(status, json={})
+    )
+    verlauf = await get_publication_history(
+        HistoryInput(publication_id=_projekt("award", "without")["publicationId"])
+    )
+    assert verlauf.provenance == "degraded"
+    assert "retry" in (verlauf.note or "").lower()
+
+
 def test_der_suchtreffer_fuehrt_die_los_ids_mit():
     """Ohne diese Liste ist `lot_id` fuer keinen Aufrufer beschaffbar.
 

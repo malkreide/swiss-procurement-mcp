@@ -59,6 +59,44 @@ Beide Antworten liegen deshalb jetzt nebeneinander:
 der Befund; eine Aufzeichnung allein von einer der beiden Seiten kann
 ihn nicht tragen.
 
+### Nachtrag 8.9.2026: der Parameter allein genuegt nicht
+
+Die Tabelle oben liest sich, als antworte jede Los-Publikation mit
+`lotId` mit 200. Das gilt fuer die Publikation, nicht fuer jedes Los.
+Die Historie wird **je Los** gefuehrt, und ein Los ohne eigene
+Vorgaengerpublikation antwortet 404 — nicht 200 mit leerer Liste.
+
+| Publikation | Lose | davon HTTP 200 | davon HTTP 404 |
+|---|---|---|---|
+| 32705-42 | 39 | 1 | 38 |
+| 39386-02 | 4 | 1 | 3 |
+| 36106-03 | 9 | 9 | 0 |
+| 43734-01 | 7 | 7 (je 0 Vorgaenger) | 0 |
+
+43734-01 ist die Zeile, die eine einfache Regel verbietet: dort ist die
+leere Historie ein 200 mit `pastPublications: []`, kein 404. Was den
+einen Fall vom anderen trennt, ist damit **nicht gemessen** — nur, dass
+beide vorkommen.
+
+Wirkung: der geplante Live-Lauf vom 5.9.2026 lief rot, weil Test und
+Recorder `lots[0]` nahmen und dessen 404 als «der Parameter hilft nicht
+mehr» lasen. Das ist dieselbe Falle wie `results[0]` — eine Zusicherung
+ueber den Tag statt ueber den Server. Produktiv wog schwerer, dass der
+404 in den generischen Hinweis fiel: «unreachable ... please retry
+shortly», fuer eine Absage, die sich bei jeder Wiederholung wiederholt.
+
+Die Quelle trennt die Ursachen nicht. Denselben Koerper
+(`Document not found.`) liefert sie fuer ein echtes Los ohne Historie,
+eine erfundene `lotId` und eine erfundene `publicationId` — gemessen am
+8.9.2026. Der Server darf den 404 deshalb **nicht** als leere Historie
+ausgeben: bei einer vertippten Id behauptete er sonst «keine
+Vorgaenger», wo die Publikation gar nicht existiert. Er bleibt
+degradiert und nennt beide Moeglichkeiten, ohne zwischen ihnen zu
+entscheiden.
+
+`past_publications_lot_404.json` haelt diese dritte Antwort fest —
+dieselbe Publikation wie die beiden anderen, ein anderes Los.
+
 ## Befund: `dates` gibt es nur bei Ausschreibungen
 
 Der Detail-Endpunkt schneidet seine Bloecke nach Publikationsart zu.
@@ -159,6 +197,14 @@ trifft nicht einen Fehlerfall, sondern jede losbasierte Beschaffung.
 - **Auswahl:** vollstaendig; dieselbe Publikation 29653-03 wie `past_publications_lot_400.json`, nur mit `lotId` des ersten Loses — HTTP 200, 2 Vorgaenger. Die Gegenprobe zum 400er: derselbe Aufruf, ein Parameter mehr
 - **Groesse:** 669 B
 - **SHA-256:** `c22bede7335ec13a0f4f8c48790e782cf48cebad1573e3d79bf82b2134634d78`
+
+## `past_publications_lot_404.json`
+
+- **Quelle:** `https://www.simap.ch/api/publications/v1/publication/85f4c967-6165-42df-a7f4-41f78f497dc8/past-publications?lang=de&lotId=1346091b-80d8-4263-879f-7d9dbffc4a58`
+- **Aufgezeichnet:** 2026-09-08
+- **Auswahl:** vollstaendig bis auf `requestCorrelator` (aendert sich bei jedem Aufruf); dieselbe Publikation 29653-03 wie `past_publications_lot.json`, ein anderes Los — HTTP 404. Kein erfundener Fehlerpfad: die Antwort der Quelle auf ein Los ohne eigene Vorgaengerpublikation. Denselben Koerper liefert sie fuer eine erfundene `publicationId` und eine erfundene `lotId`, sie trennt die Faelle also nicht
+- **Groesse:** 56 B
+- **SHA-256:** `5f1b0c8bc338c8c5d2b8475659d100d3109de9f827239271f35d40136784a08e`
 
 ## `codes_cpv.json`
 

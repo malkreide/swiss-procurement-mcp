@@ -5,7 +5,7 @@ import re
 import httpx
 import pytest
 
-from swiss_procurement_mcp.client import SimapClient
+from swiss_procurement_mcp.client import SimapClient, UpstreamError
 from swiss_procurement_mcp.constants import (
     CANTON_IDS,
     CANTON_INSTITUTION_IDS,
@@ -212,6 +212,38 @@ async def test_live_publication_history_shape():
         assert entry.publication_id, "history entry without an id — shape changed"
 
 
+async def _lot_publication_that_answers(*, seiten: int = 5, **suche):
+    """A live lot publication together with one lot id that actually answers.
+
+    `lots[0]` is not that lot. The history is kept per lot, and a lot carrying
+    no earlier publication of its own answers 404 — measured 2026-09-08 on
+    publication 32705-42, where 1 of 39 lots answered and 38 did not. The run
+    of 2026-09-05 went red on exactly that: it took the first lot of a 39-lot
+    publication and read its 404 as "the parameter no longer helps".
+
+    So the lot gets searched the same way the publication does, and the caller
+    gets both halves of the finding or nothing at all.
+    """
+    cursor = None
+    for _ in range(seiten):
+        page = await search_procurements(SearchInput(cursor=cursor, **suche))
+        for row in page.results:
+            if row.lots_type != "with" or not row.lots:
+                continue
+            for lot in row.lots:
+                if not lot.lot_id:
+                    continue
+                treffer = await get_publication_history(
+                    HistoryInput(publication_id=row.publication_id, lot_id=lot.lot_id)
+                )
+                if treffer.provenance in {"live_api", "cached"}:
+                    return row, lot.lot_id, treffer
+        if not page.has_more:
+            return None
+        cursor = page.next_cursor
+    return None
+
+
 async def test_live_history_of_a_lot_publication_needs_its_lot_id():
     """The regression behind the red run of 2026-08-25.
 
@@ -221,13 +253,15 @@ async def test_live_history_of_a_lot_publication_needs_its_lot_id():
     like an outage, and every lot-based procurement was unreachable through
     this server. One measured project carried seven earlier publications that
     were thrown away as "simap.ch is currently unreachable".
-    """
-    mit_losen = await _find(lambda r: r.lots_type == "with" and r.lots, query="Bau")
-    if mit_losen is None:
-        pytest.skip("no live publication with lots in the searched pages")
 
-    lot_id = mit_losen.lots[0].lot_id
-    assert lot_id, "search result carries a lot without an id"
+    What this test does NOT assert is that every lot answers — that is the
+    separate finding of 2026-09-05, covered by
+    `test_live_a_lot_without_own_history_is_not_an_outage`.
+    """
+    gefunden = await _lot_publication_that_answers(query="Bau")
+    if gefunden is None:
+        pytest.skip("no live lot publication with an answering lot in the searched pages")
+    mit_losen, _lot_id, mit = gefunden
 
     ohne = await get_publication_history(HistoryInput(publication_id=mit_losen.publication_id))
     assert ohne.provenance == "degraded", (
@@ -236,14 +270,55 @@ async def test_live_history_of_a_lot_publication_needs_its_lot_id():
     )
     assert "lot_id" in (ohne.note or ""), "the refusal must name the parameter it wants"
 
-    mit = await get_publication_history(
-        HistoryInput(publication_id=mit_losen.publication_id, lot_id=lot_id)
-    )
+    # The contrast is the finding: same publication, one parameter more.
     assert mit.provenance in {"live_api", "cached"}, (
         "the same publication must answer once its lot id comes along"
     )
     for entry in mit.publications:
         assert entry.publication_id, "history entry without an id — shape changed"
+
+
+async def test_live_a_lot_without_own_history_answers_404_not_empty():
+    """The drift watch behind the red run of 2026-09-05.
+
+    `past-publications` keeps the history per lot, and a lot with no earlier
+    publication of its own answers 404 rather than 200 with an empty list —
+    measured 2026-09-08 on publication 32705-42, where 1 of 39 lots answered
+    and 38 gave this 404.
+
+    Measured at the raw status on purpose. Asserting against `provenance ==
+    "degraded"` would pass just as well when the source is genuinely down, and
+    it would stay green if the 404 fell back into the generic "retry shortly"
+    note — the very regression this exists to catch. The note itself is pinned
+    deterministically in `test_recorded_fixtures.py`; live, only the contract
+    with the source belongs.
+
+    Skips when every lot answers: that is the source changing for the better,
+    and then it is the recorded finding that belongs retired, not this file.
+    """
+    cursor = None
+    async with SimapClient() as client:
+        for _ in range(5):
+            page = await search_procurements(SearchInput(cursor=cursor, query="Bau"))
+            for row in page.results:
+                if row.lots_type != "with":
+                    continue
+                for lot in row.lots:
+                    if not lot.lot_id:
+                        continue
+                    try:
+                        await client.past_publications(row.publication_id, "de", lot.lot_id)
+                    except UpstreamError as exc:
+                        assert exc.status == 404, (
+                            f"a lot answered HTTP {exc.status}, not the measured 404 — "
+                            "the contract with the source moved"
+                        )
+                        return
+            if not page.has_more:
+                break
+            cursor = page.next_cursor
+
+    pytest.skip("every live lot answered — nothing to measure the 404 against")
 
 
 async def test_live_construction_codes_bkp():

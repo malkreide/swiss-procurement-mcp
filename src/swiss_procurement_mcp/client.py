@@ -341,6 +341,12 @@ class SimapClient:
         sent only when the caller supplies one — passing a lot id to a
         publication without lots is a 404, so an unconditional parameter would
         break the 95% case to serve the other 5%.
+
+        A 200 is not guaranteed by the parameter alone. The history is kept per
+        lot, and a lot with no earlier publication of its own answers 404 rather
+        than 200 with an empty list — measured 2026-09-08 on publication
+        32705-42, where 1 of 39 lots answered and 38 gave a 404. Whoever picks
+        `lots[0]` and expects an answer is asserting a property of the day.
         """
         params: dict[str, Any] = {"lang": language}
         key = f"past:{publication_id}:{language}"
