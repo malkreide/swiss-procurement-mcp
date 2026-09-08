@@ -62,6 +62,11 @@ CODE_QUERIES = (("cpv", "Metall"), ("bkp", "Fassade"))
 # Je Ausschnitt: wie viele Eintraege ueber die gezielte Auswahl hinaus.
 BEISPIELE_JE_TYP = 1
 
+# Wie viele Folgeseiten die Sondierung nach einem stummen Los durchgeht, bevor
+# sie die 404-Aufzeichnung zurueckzieht. Nur fuer diese eine, destruktive
+# Entscheidung — die Aufzeichnungen selbst bleiben bei der ersten Antwort.
+SONDIER_SEITEN = 5
+
 
 def _opener() -> urllib.request.OpenerDirector:
     jar = http.cookiejar.CookieJar()
@@ -243,19 +248,41 @@ def main() -> int:
     # 32705-42: 1 von 39 Losen antwortete, 38 gaben 404. Genau darauf lief der
     # rote Lauf vom 5.9.2026 — hier wie im Live-Test wurde das erste Los
     # genommen und sein 404 als «der Parameter hilft nicht mehr» gelesen.
-    lose = [lot for lot in (mit_losen.get("lots") or []) if lot.get("lotId")]
+    # Was nicht sondiert werden kann, ist nicht «geprueft». Ein Los ohne `lotId`
+    # und eine Publikation mit `lotsType: "with"` und leerer `lots`-Liste sind
+    # beide genau die Regression, die `_lot_publication_that_answers` im
+    # Live-Test bewusst als Fehlschlag behandelt — der Mapper liess `lots` schon
+    # einmal fallen. Wer sie hier still ueberspringt, kann anschliessend auf
+    # eine luekenhafte Sondierung hin loeschen.
+    unsondierbar: list[str] = []
+    alle_lose = mit_losen.get("lots") or []
+    lose = [lot for lot in alle_lose if lot.get("lotId")]
     assert lose, "der Suchtreffer mit Losen fuehrt keine `lotId`"
+    if len(lose) != len(alle_lose):
+        unsondierbar.append(
+            f"{mit_losen['publicationNumber']}: {len(alle_lose) - len(lose)} Los(e) ohne `lotId`"
+        )
 
     lot_id = None
     mit_lot: Any = None
     stummes_lot = None
     stumme_antwort: Any = None
+    # Nur 200 und 404 sind hier eine Auskunft. Jeder andere Status ist eine
+    # Stoerung, und eine Stoerung als «antwortet normal» zu zaehlen ist genau
+    # der Fehler, den CLAUDE.md am 403 festhaelt: entscheidend ist nicht der
+    # Statuscode, sondern ob die Quelle ueberhaupt geantwortet hat. Ein 429
+    # oder 500 mitten in der Sondierung liesse `stummes_lot` sonst leer — und
+    # das Skript loeschte Aufzeichnung und Befund, ohne je festgestellt zu
+    # haben, dass die Lose jetzt antworten.
+    unklar: list[int] = []
     for lot in lose:
         status, koerper = get(pfad, lang=LANG, lotId=lot["lotId"])
         if status == 200 and lot_id is None:
             lot_id, mit_lot = lot["lotId"], koerper
         elif status == 404 and stummes_lot is None:
             stummes_lot, stumme_antwort = lot["lotId"], koerper
+        elif status not in (200, 404):
+            unklar.append(status)
         if lot_id is not None and stummes_lot is not None:
             break
 
@@ -273,22 +300,134 @@ def main() -> int:
         "Vorgaenger. Die Gegenprobe zum 400er: derselbe Aufruf, ein Parameter mehr",
     )
 
+    # Findet sich in DIESER Publikation kein stummes Los, ist der Befund damit
+    # nicht widerlegt: die Tabelle im Nachweis fuehrt selbst Publikationen, bei
+    # denen jedes Los antwortet (36106-03 9 von 9, 43734-01 7 von 7). Aus einer
+    # dynamisch gewaehlten Publikation auf die Quelle zu schliessen, waere
+    # genau die `lots[0]`-Falle ein drittes Mal — nur mit einem geloeschten
+    # richtigen Befund als Folge. Also erst die uebrigen Los-Publikationen der
+    # Suchantwort durchgehen.
+    stumm_aus = mit_losen
+    if stummes_lot is None:
+        # Und nicht nur die erste Seite: die Suchantwort fuehrt `lastItem`, und
+        # am 8.9.2026 trug Seite 1 von «Bau» ueberhaupt keine Los-Publikation,
+        # waehrend die stummen Lose auf spaeteren Seiten lagen. Eine Loeschung
+        # aus einer Ein-Seiten-Stichprobe waere dieselbe Falle eine Ebene
+        # hoeher. Nur die Sondierung paginiert; aufgezeichnet wird weiter aus
+        # der einen Antwort, und stammt das stumme Los von einer spaeteren
+        # Seite, nennt die Auswahlregel dessen Publikation.
+        weitere = [
+            pr
+            for pr in alle
+            if pr.get("lotsType") == "with" and pr["publicationId"] != mit_losen["publicationId"]
+        ]
+        cursor = suche.get("pagination", {}).get("lastItem")
+        for _ in range(SONDIER_SEITEN):
+            if not cursor:
+                break
+            st, folge = get(
+                "/publications/v2/project/project-search",
+                lang=LANG,
+                search=SEARCH_TERM,
+                lastItem=cursor,
+            )
+            if st != 200:
+                unklar.append(st)
+                break
+            weitere += [pr for pr in folge.get("projects", []) if pr.get("lotsType") == "with"]
+            cursor = folge.get("pagination", {}).get("lastItem")
+
+        # Steht hier noch ein Cursor, ist die Suche nicht erschoepft — dann ist
+        # «kein Los antwortete 404» eine Aussage ueber die ersten Seiten und
+        # nicht ueber die Quelle. Die Kappung war sonst genau die Luecke, die
+        # dieser Abschnitt eine Ebene tiefer schon zweimal geschlossen hat.
+        #
+        # Praktisch heisst das: solange die Suche laenger ist als die Kappung,
+        # loescht der Recorder nicht mehr von selbst, sondern bricht ab und
+        # nennt den Grund. Das ist Absicht — die Loeschung ist destruktiv, und
+        # ein Mensch, der den Befund zurueckziehen will, soll das entscheiden
+        # und nicht eine Stichprobe.
+        if cursor:
+            unsondierbar.append(
+                f"Suche nach {SEARCH_TERM!r} nach {SONDIER_SEITEN} Folgeseiten noch "
+                "nicht erschoepft"
+            )
+
+        for projekt in weitere:
+            anderer = f"/publications/v1/publication/{projekt['publicationId']}/past-publications"
+            kandidaten = [lot for lot in (projekt.get("lots") or []) if lot.get("lotId")]
+            if len(kandidaten) != len(projekt.get("lots") or []) or not kandidaten:
+                unsondierbar.append(
+                    f'{projekt["publicationNumber"]}: `lotsType` "with", aber '
+                    f"{len(kandidaten)} von {len(projekt.get('lots') or [])} Los(en) "
+                    "mit `lotId`"
+                )
+            for lot in kandidaten:
+                status, koerper = get(anderer, lang=LANG, lotId=lot["lotId"])
+                if status == 404:
+                    stummes_lot, stumme_antwort, stumm_aus = lot["lotId"], koerper, projekt
+                    break
+                if status != 200:
+                    unklar.append(status)
+            if stummes_lot is not None:
+                break
+        geprueft = 1 + len(weitere)  # inkl. der Los-Publikationen der Folgeseiten
+    else:
+        geprueft = 1
+
+    # Eine unvollstaendige Sondierung darf nicht in eine Loeschung muenden.
+    # Abbrechen statt weitermachen: ein halber Nachweis ist schlechter als
+    # keiner, und die Aufzeichnung bleibt so unangetastet.
+    assert stummes_lot is not None or not (unklar or unsondierbar), (
+        "die Sondierung der Lose blieb unvollstaendig — damit ist nicht festgestellt, "
+        "ob noch ein Los mit 404 antwortet, und eine Loeschung stuende auf einer "
+        "Luecke statt auf einer Messung. "
+        + (f"unerwartete Statuscodes: {sorted(set(unklar))}. " if unklar else "")
+        + (f"nicht sondierbar: {unsondierbar}. " if unsondierbar else "")
+        + "Erst wenn jede Los-Referenz erreichbar ist und jede Sonde 200 oder 404 "
+        "liefert, traegt das Ergebnis eine Entscheidung"
+    )
+
     # Der dritte Fall, und der Grund, warum es ihn gibt: eine Aufzeichnung nur
     # des 200ers kann nicht zeigen, dass ein 404 hier keine Stoerung ist.
     if stummes_lot is not None:
+        stumm_pfad = f"/publications/v1/publication/{stumm_aus['publicationId']}/past-publications"
+        woher = (
+            f"dieselbe Publikation {mit_losen['publicationNumber']}, ein anderes Los"
+            if stumm_aus is mit_losen
+            else (
+                f"Publikation {stumm_aus['publicationNumber']} aus derselben Suche — "
+                f"in {mit_losen['publicationNumber']} lieferte kein sondiertes Los "
+                "einen 404"
+            )
+        )
         write(
             "past_publications_lot_404.json",
             {k: v for k, v in stumme_antwort.items() if k != "requestCorrelator"},
-            url_of(pfad, lang=LANG, lotId=stummes_lot),
+            url_of(stumm_pfad, lang=LANG, lotId=stummes_lot),
             f"vollstaendig bis auf `requestCorrelator` (aendert sich bei jedem "
-            f"Aufruf); dieselbe Publikation {mit_losen['publicationNumber']}, ein "
-            "anderes Los — HTTP 404. Kein erfundener Fehlerpfad: die Antwort der "
-            "Quelle auf ein Los ohne eigene Vorgaengerpublikation. Denselben "
+            f"Aufruf); {woher} — HTTP 404. Kein erfundener Fehlerpfad: die Antwort "
+            "der Quelle auf ein Los ohne eigene Vorgaengerpublikation. Denselben "
             "Koerper liefert sie fuer eine erfundene `publicationId` und eine "
             "erfundene `lotId`, sie trennt die Faelle also nicht",
         )
     else:
-        print("  --  past_publications_lot_404.json  jedes Los antwortete, nichts aufgezeichnet")
+        # Antwortet kein Los mehr mit 404, ist der Befund weg — und dann muss die
+        # Aufzeichnung mit. Bliebe sie liegen, liefe der Fixture-Test weiter
+        # gruen gegen eine Datei, die die Quelle nicht mehr hergibt, waehrend der
+        # Nachweis das verschwundene Verhalten unveraendert behauptet. Genau die
+        # Konstellation, aus der der falsche 400er-Befund entstand: eine
+        # Aufzeichnung, der niemand mehr widersprechen kann.
+        #
+        # Geloescht wird deshalb erst, wenn KEINE der Los-Publikationen dieser
+        # Suche ein stummes Los mehr hat — eine reicht dafuer nicht.
+        veraltet = FIXTURES / "past_publications_lot_404.json"
+        hinweis = f"kein Los aus {geprueft} Los-Publikation(en) antwortete 404"
+        if veraltet.exists():
+            veraltet.unlink()
+            print(f"  weg past_publications_lot_404.json    {hinweis}")
+        else:
+            print(f"  --  past_publications_lot_404.json  {hinweis}")
 
     # --- Code-Suche: flach und verschachtelt -----------------------------
     for system, frage in CODE_QUERIES:
@@ -363,7 +502,13 @@ def main() -> int:
     )
 
     befund = (
-        _befund(mit_losen, ohne_lose, lot_id, len(mit_lot.get("pastPublications") or []))
+        _befund(
+            mit_losen,
+            ohne_lose,
+            lot_id,
+            len(mit_lot.get("pastPublications") or []),
+            mit_404=stummes_lot is not None,
+        )
         + _befund_datum()
     )
     _write_provenance(recorded_at, entries, befund)
@@ -372,8 +517,20 @@ def main() -> int:
 
 
 def _befund(
-    mit_losen: dict[str, Any], ohne_lose: dict[str, Any], lot_id: str, vorgaenger: int
+    mit_losen: dict[str, Any],
+    ohne_lose: dict[str, Any],
+    lot_id: str,
+    vorgaenger: int,
+    *,
+    mit_404: bool,
 ) -> list[str]:
+    """`mit_404` haelt den Nachtrag an seinen Beleg.
+
+    Antwortet kein Los mehr mit 404, ist die Aufzeichnung dazu geloescht — dann
+    darf der Nachweis das Verhalten nicht weiter behaupten. Ein Befund, der
+    seine Aufzeichnung ueberlebt, ist wieder eine undatierte Behauptung ueber
+    die Quelle.
+    """
     return [
         "## Befund: `past-publications` braucht bei Losen einen `lotId`",
         "",
@@ -410,45 +567,52 @@ def _befund(
         "der Befund; eine Aufzeichnung allein von einer der beiden Seiten kann",
         "ihn nicht tragen.",
         "",
-        "### Nachtrag 8.9.2026: der Parameter allein genuegt nicht",
-        "",
-        "Die Tabelle oben liest sich, als antworte jede Los-Publikation mit",
-        "`lotId` mit 200. Das gilt fuer die Publikation, nicht fuer jedes Los.",
-        "Die Historie wird **je Los** gefuehrt, und ein Los ohne eigene",
-        "Vorgaengerpublikation antwortet 404 — nicht 200 mit leerer Liste.",
-        "",
-        "| Publikation | Lose | davon HTTP 200 | davon HTTP 404 |",
-        "|---|---|---|---|",
-        "| 32705-42 | 39 | 1 | 38 |",
-        "| 39386-02 | 4 | 1 | 3 |",
-        "| 36106-03 | 9 | 9 | 0 |",
-        "| 43734-01 | 7 | 7 (je 0 Vorgaenger) | 0 |",
-        "",
-        "43734-01 ist die Zeile, die eine einfache Regel verbietet: dort ist die",
-        "leere Historie ein 200 mit `pastPublications: []`, kein 404. Was den",
-        "einen Fall vom anderen trennt, ist damit **nicht gemessen** — nur, dass",
-        "beide vorkommen.",
-        "",
-        "Wirkung: der geplante Live-Lauf vom 5.9.2026 lief rot, weil Test und",
-        "Recorder `lots[0]` nahmen und dessen 404 als «der Parameter hilft nicht",
-        "mehr» lasen. Das ist dieselbe Falle wie `results[0]` — eine Zusicherung",
-        "ueber den Tag statt ueber den Server. Produktiv wog schwerer, dass der",
-        "404 in den generischen Hinweis fiel: «unreachable ... please retry",
-        "shortly», fuer eine Absage, die sich bei jeder Wiederholung wiederholt.",
-        "",
-        "Die Quelle trennt die Ursachen nicht. Denselben Koerper",
-        "(`Document not found.`) liefert sie fuer ein echtes Los ohne Historie,",
-        "eine erfundene `lotId` und eine erfundene `publicationId` — gemessen am",
-        "8.9.2026. Der Server darf den 404 deshalb **nicht** als leere Historie",
-        "ausgeben: bei einer vertippten Id behauptete er sonst «keine",
-        "Vorgaenger», wo die Publikation gar nicht existiert. Er bleibt",
-        "degradiert und nennt beide Moeglichkeiten, ohne zwischen ihnen zu",
-        "entscheiden.",
-        "",
-        "`past_publications_lot_404.json` haelt diese dritte Antwort fest —",
-        "dieselbe Publikation wie die beiden anderen, ein anderes Los.",
-        "",
-    ]
+    ] + (
+        []
+        if not mit_404
+        else [
+            "### Nachtrag 8.9.2026: der Parameter allein genuegt nicht",
+            "",
+            "Die Tabelle oben liest sich, als antworte jede Los-Publikation mit",
+            "`lotId` mit 200. Das gilt fuer die Publikation, nicht fuer jedes Los.",
+            "Die Historie wird **je Los** gefuehrt, und ein Los ohne eigene",
+            "Vorgaengerpublikation antwortet 404 — nicht 200 mit leerer Liste.",
+            "",
+            "| Publikation | Lose | davon HTTP 200 | davon HTTP 404 |",
+            "|---|---|---|---|",
+            "| 32705-42 | 39 | 1 | 38 |",
+            "| 39386-02 | 4 | 1 | 3 |",
+            "| 36106-03 | 9 | 9 | 0 |",
+            "| 43734-01 | 7 | 7 (je 0 Vorgaenger) | 0 |",
+            "",
+            "43734-01 ist die Zeile, die eine einfache Regel verbietet: dort ist die",
+            "leere Historie ein 200 mit `pastPublications: []`, kein 404. Was den",
+            "einen Fall vom anderen trennt, ist damit **nicht gemessen** — nur, dass",
+            "beide vorkommen.",
+            "",
+            "Wirkung: der geplante Live-Lauf vom 5.9.2026 lief rot, weil Test und",
+            "Recorder `lots[0]` nahmen und dessen 404 als «der Parameter hilft nicht",
+            "mehr» lasen. Das ist dieselbe Falle wie `results[0]` — eine Zusicherung",
+            "ueber den Tag statt ueber den Server. Produktiv wog schwerer, dass der",
+            "404 in den generischen Hinweis fiel: «unreachable ... please retry",
+            "shortly», fuer eine Absage, die sich bei jeder Wiederholung wiederholt.",
+            "",
+            "Die Quelle trennt die Ursachen nicht. Denselben Koerper",
+            "(`Document not found.`) liefert sie fuer ein echtes Los ohne Historie,",
+            "eine erfundene `lotId` und eine erfundene `publicationId` — gemessen am",
+            "8.9.2026. Der Server darf den 404 deshalb **nicht** als leere Historie",
+            "ausgeben: bei einer vertippten Id behauptete er sonst «keine",
+            "Vorgaenger», wo die Publikation gar nicht existiert. Er bleibt",
+            "degradiert und nennt beide Moeglichkeiten, ohne zwischen ihnen zu",
+            "entscheiden.",
+            "",
+            "`past_publications_lot_404.json` haelt diese dritte Antwort fest. Aus",
+            "welcher Publikation das stumme Los stammt, sagt die Auswahlregel jener",
+            "Datei: dieselbe wie die beiden anderen Aufzeichnungen, wenn dort eines",
+            "zu finden war, sonst eine weitere Los-Publikation derselben Suche.",
+            "",
+        ]
+    )
 
 
 def _befund_datum() -> list[str]:

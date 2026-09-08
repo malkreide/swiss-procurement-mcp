@@ -328,6 +328,12 @@ async def test_ein_los_ohne_eigene_historie_ist_keine_stoerung():
     ist darauf der falsche Rat — dieselbe Verwechslung, die den 400er ein Jahr
     lang als Stoerung durchgehen liess. Der Live-Test misst dafuer den rohen
     Status; hier steht die Formulierung, die beim Modell ankommt.
+
+    Faellt dieser Test mit einer fehlenden Aufzeichnung, ist das kein Defekt:
+    der Recorder loescht `past_publications_lot_404.json`, sobald kein Los mehr
+    404 antwortet. Dann ist der Befund weg, und dieser Test gehoert mit ihm
+    gestrichen — nicht wiederbelebt durch eine handgeschriebene Fixture, die
+    genau die Annahme kodierte, der die Quelle gerade widersprochen hat.
     """
     fehler = fixture_json("past_publications_lot_404.json")
     assert fehler["code"] == "404"
