@@ -223,13 +223,23 @@ async def _lot_publication_that_answers(*, seiten: int = 5, **suche):
 
     So the lot gets searched the same way the publication does, and the caller
     gets both halves of the finding or nothing at all.
+
+    `None` means one thing only: the searched pages held no lot publication, so
+    there was nothing to measure. "Lot publications were there and not one lot
+    of any of them answered" is the opposite — the finding gone, `lotId` no
+    longer reaching history at all — and it raises here instead. Both would
+    otherwise leave through the same return and reach the suite as a skip,
+    which would keep the live run green for exactly the breakage this file
+    exists to catch.
     """
     cursor = None
+    gesehen = 0
     for _ in range(seiten):
         page = await search_procurements(SearchInput(cursor=cursor, **suche))
         for row in page.results:
             if row.lots_type != "with" or not row.lots:
                 continue
+            gesehen += 1
             for lot in row.lots:
                 if not lot.lot_id:
                     continue
@@ -239,8 +249,14 @@ async def _lot_publication_that_answers(*, seiten: int = 5, **suche):
                 if treffer.provenance in {"live_api", "cached"}:
                     return row, lot.lot_id, treffer
         if not page.has_more:
-            return None
+            break
         cursor = page.next_cursor
+
+    assert gesehen == 0, (
+        f"{gesehen} Los-Publikation(en) gefunden, aber kein einziges ihrer Lose "
+        "lieferte Historie — dann traegt `lotId` den Befund nicht mehr, und das "
+        "gehoert gemessen statt uebersprungen"
+    )
     return None
 
 

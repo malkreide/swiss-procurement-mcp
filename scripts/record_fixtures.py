@@ -288,7 +288,18 @@ def main() -> int:
             "erfundene `lotId`, sie trennt die Faelle also nicht",
         )
     else:
-        print("  --  past_publications_lot_404.json  jedes Los antwortete, nichts aufgezeichnet")
+        # Antwortet kein Los mehr mit 404, ist der Befund weg — und dann muss die
+        # Aufzeichnung mit. Bliebe sie liegen, liefe der Fixture-Test weiter
+        # gruen gegen eine Datei, die die Quelle nicht mehr hergibt, waehrend der
+        # Nachweis das verschwundene Verhalten unveraendert behauptet. Genau die
+        # Konstellation, aus der der falsche 400er-Befund entstand: eine
+        # Aufzeichnung, der niemand mehr widersprechen kann.
+        veraltet = FIXTURES / "past_publications_lot_404.json"
+        if veraltet.exists():
+            veraltet.unlink()
+            print("  weg past_publications_lot_404.json    kein Los antwortete 404")
+        else:
+            print("  --  past_publications_lot_404.json  kein Los antwortete 404")
 
     # --- Code-Suche: flach und verschachtelt -----------------------------
     for system, frage in CODE_QUERIES:
@@ -363,7 +374,13 @@ def main() -> int:
     )
 
     befund = (
-        _befund(mit_losen, ohne_lose, lot_id, len(mit_lot.get("pastPublications") or []))
+        _befund(
+            mit_losen,
+            ohne_lose,
+            lot_id,
+            len(mit_lot.get("pastPublications") or []),
+            mit_404=stummes_lot is not None,
+        )
         + _befund_datum()
     )
     _write_provenance(recorded_at, entries, befund)
@@ -372,8 +389,20 @@ def main() -> int:
 
 
 def _befund(
-    mit_losen: dict[str, Any], ohne_lose: dict[str, Any], lot_id: str, vorgaenger: int
+    mit_losen: dict[str, Any],
+    ohne_lose: dict[str, Any],
+    lot_id: str,
+    vorgaenger: int,
+    *,
+    mit_404: bool,
 ) -> list[str]:
+    """`mit_404` haelt den Nachtrag an seinen Beleg.
+
+    Antwortet kein Los mehr mit 404, ist die Aufzeichnung dazu geloescht — dann
+    darf der Nachweis das Verhalten nicht weiter behaupten. Ein Befund, der
+    seine Aufzeichnung ueberlebt, ist wieder eine undatierte Behauptung ueber
+    die Quelle.
+    """
     return [
         "## Befund: `past-publications` braucht bei Losen einen `lotId`",
         "",
@@ -410,45 +439,50 @@ def _befund(
         "der Befund; eine Aufzeichnung allein von einer der beiden Seiten kann",
         "ihn nicht tragen.",
         "",
-        "### Nachtrag 8.9.2026: der Parameter allein genuegt nicht",
-        "",
-        "Die Tabelle oben liest sich, als antworte jede Los-Publikation mit",
-        "`lotId` mit 200. Das gilt fuer die Publikation, nicht fuer jedes Los.",
-        "Die Historie wird **je Los** gefuehrt, und ein Los ohne eigene",
-        "Vorgaengerpublikation antwortet 404 — nicht 200 mit leerer Liste.",
-        "",
-        "| Publikation | Lose | davon HTTP 200 | davon HTTP 404 |",
-        "|---|---|---|---|",
-        "| 32705-42 | 39 | 1 | 38 |",
-        "| 39386-02 | 4 | 1 | 3 |",
-        "| 36106-03 | 9 | 9 | 0 |",
-        "| 43734-01 | 7 | 7 (je 0 Vorgaenger) | 0 |",
-        "",
-        "43734-01 ist die Zeile, die eine einfache Regel verbietet: dort ist die",
-        "leere Historie ein 200 mit `pastPublications: []`, kein 404. Was den",
-        "einen Fall vom anderen trennt, ist damit **nicht gemessen** — nur, dass",
-        "beide vorkommen.",
-        "",
-        "Wirkung: der geplante Live-Lauf vom 5.9.2026 lief rot, weil Test und",
-        "Recorder `lots[0]` nahmen und dessen 404 als «der Parameter hilft nicht",
-        "mehr» lasen. Das ist dieselbe Falle wie `results[0]` — eine Zusicherung",
-        "ueber den Tag statt ueber den Server. Produktiv wog schwerer, dass der",
-        "404 in den generischen Hinweis fiel: «unreachable ... please retry",
-        "shortly», fuer eine Absage, die sich bei jeder Wiederholung wiederholt.",
-        "",
-        "Die Quelle trennt die Ursachen nicht. Denselben Koerper",
-        "(`Document not found.`) liefert sie fuer ein echtes Los ohne Historie,",
-        "eine erfundene `lotId` und eine erfundene `publicationId` — gemessen am",
-        "8.9.2026. Der Server darf den 404 deshalb **nicht** als leere Historie",
-        "ausgeben: bei einer vertippten Id behauptete er sonst «keine",
-        "Vorgaenger», wo die Publikation gar nicht existiert. Er bleibt",
-        "degradiert und nennt beide Moeglichkeiten, ohne zwischen ihnen zu",
-        "entscheiden.",
-        "",
-        "`past_publications_lot_404.json` haelt diese dritte Antwort fest —",
-        "dieselbe Publikation wie die beiden anderen, ein anderes Los.",
-        "",
-    ]
+    ] + (
+        []
+        if not mit_404
+        else [
+            "### Nachtrag 8.9.2026: der Parameter allein genuegt nicht",
+            "",
+            "Die Tabelle oben liest sich, als antworte jede Los-Publikation mit",
+            "`lotId` mit 200. Das gilt fuer die Publikation, nicht fuer jedes Los.",
+            "Die Historie wird **je Los** gefuehrt, und ein Los ohne eigene",
+            "Vorgaengerpublikation antwortet 404 — nicht 200 mit leerer Liste.",
+            "",
+            "| Publikation | Lose | davon HTTP 200 | davon HTTP 404 |",
+            "|---|---|---|---|",
+            "| 32705-42 | 39 | 1 | 38 |",
+            "| 39386-02 | 4 | 1 | 3 |",
+            "| 36106-03 | 9 | 9 | 0 |",
+            "| 43734-01 | 7 | 7 (je 0 Vorgaenger) | 0 |",
+            "",
+            "43734-01 ist die Zeile, die eine einfache Regel verbietet: dort ist die",
+            "leere Historie ein 200 mit `pastPublications: []`, kein 404. Was den",
+            "einen Fall vom anderen trennt, ist damit **nicht gemessen** — nur, dass",
+            "beide vorkommen.",
+            "",
+            "Wirkung: der geplante Live-Lauf vom 5.9.2026 lief rot, weil Test und",
+            "Recorder `lots[0]` nahmen und dessen 404 als «der Parameter hilft nicht",
+            "mehr» lasen. Das ist dieselbe Falle wie `results[0]` — eine Zusicherung",
+            "ueber den Tag statt ueber den Server. Produktiv wog schwerer, dass der",
+            "404 in den generischen Hinweis fiel: «unreachable ... please retry",
+            "shortly», fuer eine Absage, die sich bei jeder Wiederholung wiederholt.",
+            "",
+            "Die Quelle trennt die Ursachen nicht. Denselben Koerper",
+            "(`Document not found.`) liefert sie fuer ein echtes Los ohne Historie,",
+            "eine erfundene `lotId` und eine erfundene `publicationId` — gemessen am",
+            "8.9.2026. Der Server darf den 404 deshalb **nicht** als leere Historie",
+            "ausgeben: bei einer vertippten Id behauptete er sonst «keine",
+            "Vorgaenger», wo die Publikation gar nicht existiert. Er bleibt",
+            "degradiert und nennt beide Moeglichkeiten, ohne zwischen ihnen zu",
+            "entscheiden.",
+            "",
+            "`past_publications_lot_404.json` haelt diese dritte Antwort fest —",
+            "dieselbe Publikation wie die beiden anderen, ein anderes Los.",
+            "",
+        ]
+    )
 
 
 def _befund_datum() -> list[str]:
