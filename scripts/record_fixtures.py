@@ -62,6 +62,11 @@ CODE_QUERIES = (("cpv", "Metall"), ("bkp", "Fassade"))
 # Je Ausschnitt: wie viele Eintraege ueber die gezielte Auswahl hinaus.
 BEISPIELE_JE_TYP = 1
 
+# Wie viele Folgeseiten die Sondierung nach einem stummen Los durchgeht, bevor
+# sie die 404-Aufzeichnung zurueckzieht. Nur fuer diese eine, destruktive
+# Entscheidung — die Aufzeichnungen selbst bleiben bei der ersten Antwort.
+SONDIER_SEITEN = 5
+
 
 def _opener() -> urllib.request.OpenerDirector:
     jar = http.cookiejar.CookieJar()
@@ -304,11 +309,34 @@ def main() -> int:
     # Suchantwort durchgehen.
     stumm_aus = mit_losen
     if stummes_lot is None:
+        # Und nicht nur die erste Seite: die Suchantwort fuehrt `lastItem`, und
+        # am 8.9.2026 trug Seite 1 von «Bau» ueberhaupt keine Los-Publikation,
+        # waehrend die stummen Lose auf spaeteren Seiten lagen. Eine Loeschung
+        # aus einer Ein-Seiten-Stichprobe waere dieselbe Falle eine Ebene
+        # hoeher. Nur die Sondierung paginiert; aufgezeichnet wird weiter aus
+        # der einen Antwort, und stammt das stumme Los von einer spaeteren
+        # Seite, nennt die Auswahlregel dessen Publikation.
         weitere = [
             pr
             for pr in alle
             if pr.get("lotsType") == "with" and pr["publicationId"] != mit_losen["publicationId"]
         ]
+        cursor = suche.get("pagination", {}).get("lastItem")
+        for _ in range(SONDIER_SEITEN):
+            if not cursor:
+                break
+            st, folge = get(
+                "/publications/v2/project/project-search",
+                lang=LANG,
+                search=SEARCH_TERM,
+                lastItem=cursor,
+            )
+            if st != 200:
+                unklar.append(st)
+                break
+            weitere += [pr for pr in folge.get("projects", []) if pr.get("lotsType") == "with"]
+            cursor = folge.get("pagination", {}).get("lastItem")
+
         for projekt in weitere:
             anderer = f"/publications/v1/publication/{projekt['publicationId']}/past-publications"
             kandidaten = [lot for lot in (projekt.get("lots") or []) if lot.get("lotId")]
@@ -327,7 +355,7 @@ def main() -> int:
                     unklar.append(status)
             if stummes_lot is not None:
                 break
-        geprueft = 1 + len(weitere)
+        geprueft = 1 + len(weitere)  # inkl. der Los-Publikationen der Folgeseiten
     else:
         geprueft = 1
 

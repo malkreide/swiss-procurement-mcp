@@ -233,7 +233,6 @@ async def _lot_publication_that_answers(*, seiten: int = 5, **suche):
     exists to catch.
     """
     cursor = None
-    ohne_referenz = 0
     sondiert = 0
     for _ in range(seiten):
         page = await search_procurements(SearchInput(cursor=cursor, **suche))
@@ -241,14 +240,23 @@ async def _lot_publication_that_answers(*, seiten: int = 5, **suche):
             if row.lots_type != "with":
                 continue
             brauchbar = [lot for lot in row.lots if lot.lot_id]
-            if not brauchbar:
-                # `lots_type == "with"` ohne eine einzige benutzbare `lot_id`:
-                # das ist keine Aussage der Quelle ueber Historien, sondern eine
-                # kaputte Zuordnung — und genau die gab es hier schon, der
-                # Mapper liess `lots` fallen, womit `lot_id` fuer keinen
-                # Aufrufer mehr beschaffbar war.
-                ohne_referenz += 1
-                continue
+            # Sofort, nicht erst am Ende: stuende eine kaputte Zeile vor einer
+            # heilen, verdeckte der Treffer der zweiten die Regression der
+            # ersten — der Test bestuende, waehrend `lot_id` fuer diese
+            # Publikation unerreichbar ist. Genau die Regression gab es hier
+            # schon einmal, der Mapper liess `lots` fallen.
+            #
+            # Ein Fehlalarm ist das nicht: am 8.9.2026 ueber vier Suchbegriffe
+            # gemessen, 400 Publikationen, davon 31 mit Losen — kein einziges
+            # Mal eine leere `lots`-Liste und kein einziges Los ohne `lotId`.
+            # Die Quelle liefert diese Form nicht; wer sie sieht, sieht einen
+            # Defekt und kein Rauschen.
+            assert brauchbar, (
+                f"Publikation {row.publication_id} meldet `lots_type: 'with'`, fuehrt "
+                "aber keine einzige `lot_id` — damit ist ihre Historie fuer keinen "
+                "Aufrufer erreichbar, unabhaengig davon, was die Quelle auf `lotId` "
+                "antworten wuerde"
+            )
             for lot in brauchbar:
                 sondiert += 1
                 treffer = await get_publication_history(
@@ -259,13 +267,6 @@ async def _lot_publication_that_answers(*, seiten: int = 5, **suche):
         if not page.has_more:
             break
         cursor = page.next_cursor
-
-    # Die kaputte Zuordnung ist sicher erkennbar und faellt.
-    assert ohne_referenz == 0, (
-        f"{ohne_referenz} Publikation(en) mit `lots_type == 'with'` fuehren keine "
-        "einzige `lot_id` — damit ist die Historie fuer keinen Aufrufer erreichbar, "
-        "unabhaengig davon, was die Quelle auf `lotId` antworten wuerde"
-    )
 
     # Der andere Fall ist NICHT sicher erkennbar: dass in dieser Stichprobe kein
     # Los antwortete, kann auch heissen, dass alle gesampelten Lose legitim keine
