@@ -237,20 +237,58 @@ def main() -> int:
         "fehlenden Parameter; siehe Befund oben",
     )
 
-    lose = mit_losen.get("lots") or []
-    assert lose and lose[0].get("lotId"), "der Suchtreffer mit Losen fuehrt keine `lotId`"
-    lot_id = lose[0]["lotId"]
-    status, mit_lot = get(pfad, lang=LANG, lotId=lot_id)
-    assert status == 200, f"past-publications MIT lotId antwortete {status}, erwartet 200"
+    # `lose[0]` ist NICHT verlaesslich das Los, das antwortet: die Historie wird
+    # je Los gefuehrt, und ein Los ohne eigene Vorgaengerpublikation antwortet
+    # 404 statt 200 mit leerer Liste. Gemessen am 8.9.2026 an Publikation
+    # 32705-42: 1 von 39 Losen antwortete, 38 gaben 404. Genau darauf lief der
+    # rote Lauf vom 5.9.2026 — hier wie im Live-Test wurde das erste Los
+    # genommen und sein 404 als «der Parameter hilft nicht mehr» gelesen.
+    lose = [lot for lot in (mit_losen.get("lots") or []) if lot.get("lotId")]
+    assert lose, "der Suchtreffer mit Losen fuehrt keine `lotId`"
+
+    lot_id = None
+    mit_lot: Any = None
+    stummes_lot = None
+    stumme_antwort: Any = None
+    for lot in lose:
+        status, koerper = get(pfad, lang=LANG, lotId=lot["lotId"])
+        if status == 200 and lot_id is None:
+            lot_id, mit_lot = lot["lotId"], koerper
+        elif status == 404 and stummes_lot is None:
+            stummes_lot, stumme_antwort = lot["lotId"], koerper
+        if lot_id is not None and stummes_lot is not None:
+            break
+
+    assert lot_id is not None, (
+        f"kein einziges der {len(lose)} Lose von {mit_losen['publicationNumber']} "
+        "antwortete mit 200 — dann traegt die Aufzeichnung den Befund nicht mehr"
+    )
     write(
         "past_publications_lot.json",
         mit_lot,
         url_of(pfad, lang=LANG, lotId=lot_id),
         f"vollstaendig; dieselbe Publikation {mit_losen['publicationNumber']} wie "
-        f"`past_publications_lot_400.json`, nur mit `lotId` des ersten Loses — "
-        f"HTTP {status}, {len(mit_lot.get('pastPublications') or [])} Vorgaenger. "
-        "Die Gegenprobe zum 400er: derselbe Aufruf, ein Parameter mehr",
+        f"`past_publications_lot_400.json`, nur mit der `lotId` des ersten Loses, "
+        f"das antwortet — HTTP 200, {len(mit_lot.get('pastPublications') or [])} "
+        "Vorgaenger. Die Gegenprobe zum 400er: derselbe Aufruf, ein Parameter mehr",
     )
+
+    # Der dritte Fall, und der Grund, warum es ihn gibt: eine Aufzeichnung nur
+    # des 200ers kann nicht zeigen, dass ein 404 hier keine Stoerung ist.
+    if stummes_lot is not None:
+        write(
+            "past_publications_lot_404.json",
+            {k: v for k, v in stumme_antwort.items() if k != "requestCorrelator"},
+            url_of(pfad, lang=LANG, lotId=stummes_lot),
+            f"vollstaendig bis auf `requestCorrelator` (aendert sich bei jedem "
+            f"Aufruf); dieselbe Publikation {mit_losen['publicationNumber']}, ein "
+            "anderes Los — HTTP 404. Kein erfundener Fehlerpfad: die Antwort der "
+            "Quelle auf ein Los ohne eigene Vorgaengerpublikation. Denselben "
+            "Koerper liefert sie fuer eine erfundene `publicationId` und eine "
+            "erfundene `lotId`, sie trennt die Faelle also nicht",
+        )
+    else:
+        print("  --  past_publications_lot_404.json  jedes Los antwortete, nichts aufgezeichnet")
 
     # --- Code-Suche: flach und verschachtelt -----------------------------
     for system, frage in CODE_QUERIES:
@@ -371,6 +409,44 @@ def _befund(
         "`past_publications_lot.json` (mit). Der Unterschied zwischen ihnen ist",
         "der Befund; eine Aufzeichnung allein von einer der beiden Seiten kann",
         "ihn nicht tragen.",
+        "",
+        "### Nachtrag 8.9.2026: der Parameter allein genuegt nicht",
+        "",
+        "Die Tabelle oben liest sich, als antworte jede Los-Publikation mit",
+        "`lotId` mit 200. Das gilt fuer die Publikation, nicht fuer jedes Los.",
+        "Die Historie wird **je Los** gefuehrt, und ein Los ohne eigene",
+        "Vorgaengerpublikation antwortet 404 — nicht 200 mit leerer Liste.",
+        "",
+        "| Publikation | Lose | davon HTTP 200 | davon HTTP 404 |",
+        "|---|---|---|---|",
+        "| 32705-42 | 39 | 1 | 38 |",
+        "| 39386-02 | 4 | 1 | 3 |",
+        "| 36106-03 | 9 | 9 | 0 |",
+        "| 43734-01 | 7 | 7 (je 0 Vorgaenger) | 0 |",
+        "",
+        "43734-01 ist die Zeile, die eine einfache Regel verbietet: dort ist die",
+        "leere Historie ein 200 mit `pastPublications: []`, kein 404. Was den",
+        "einen Fall vom anderen trennt, ist damit **nicht gemessen** — nur, dass",
+        "beide vorkommen.",
+        "",
+        "Wirkung: der geplante Live-Lauf vom 5.9.2026 lief rot, weil Test und",
+        "Recorder `lots[0]` nahmen und dessen 404 als «der Parameter hilft nicht",
+        "mehr» lasen. Das ist dieselbe Falle wie `results[0]` — eine Zusicherung",
+        "ueber den Tag statt ueber den Server. Produktiv wog schwerer, dass der",
+        "404 in den generischen Hinweis fiel: «unreachable ... please retry",
+        "shortly», fuer eine Absage, die sich bei jeder Wiederholung wiederholt.",
+        "",
+        "Die Quelle trennt die Ursachen nicht. Denselben Koerper",
+        "(`Document not found.`) liefert sie fuer ein echtes Los ohne Historie,",
+        "eine erfundene `lotId` und eine erfundene `publicationId` — gemessen am",
+        "8.9.2026. Der Server darf den 404 deshalb **nicht** als leere Historie",
+        "ausgeben: bei einer vertippten Id behauptete er sonst «keine",
+        "Vorgaenger», wo die Publikation gar nicht existiert. Er bleibt",
+        "degradiert und nennt beide Moeglichkeiten, ohne zwischen ihnen zu",
+        "entscheiden.",
+        "",
+        "`past_publications_lot_404.json` haelt diese dritte Antwort fest —",
+        "dieselbe Publikation wie die beiden anderen, ein anderes Los.",
         "",
     ]
 

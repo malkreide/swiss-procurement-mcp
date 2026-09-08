@@ -74,6 +74,28 @@ Drei Handgriffe daraus:
   dass nur der 400er aufgezeichnet war, ist der Grund, warum der falsche
   Befund nicht auffiel.
 
+**Die Korrektur griff dann selbst zu weit.** Aus «`lotId` fehlt» wurde
+stillschweigend «mit `lotId` antwortet die Publikation». Für die *Publikation*
+stimmt das; für jedes einzelne *Los* nicht. `past-publications` führt die
+Historie je Los, und ein Los ohne eigene Vorgängerpublikation antwortet 404 —
+nicht 200 mit leerer Liste. Publikation 32705-42 trägt 39 Lose, von denen
+genau eines antwortet. Daran lief die Live-Suite am 5.9.2026 rot.
+
+Zwei Dinge daraus, und das zweite wiegt schwerer:
+
+- **Die Gegenprobe zur Gegenprobe.** Vier Publikationen belegten den
+  `lotId`-Befund, und alle vier antworteten — mit `lots[0]`. Gemessen war
+  damit «mindestens ein Los antwortet», aufgeschrieben «Lose antworten».
+  Wer einen Fehlschluss korrigiert, prüft, ob die Korrektur mehr behauptet
+  als die Messung.
+- **Ein 404 ist auch dann kein Nein, wenn er stimmt.** Der Server verpackte
+  ihn in «unreachable … please retry shortly» — denselben Wiederholungsrat,
+  gegen den der Absatz oben geschrieben ist, nur eine Statusklasse weiter.
+  Die Quelle liefert denselben Körper für ein echtes Los ohne Historie und
+  für eine erfundene Id; sie trennt die Fälle nicht, also darf die Antwort
+  es auch nicht. «Nicht entscheidbar» ist eine Auskunft, «keine Vorgänger»
+  wäre erfunden.
+
 **Und ein 403 ist gar keine Auskunft.** Am 29.8.2026 sollten für 42 Repos die
 Dependabot-Labels nachgemessen werden. Alle 13 Abfragen des ersten Stapels
 kamen zurück als:
@@ -202,6 +224,11 @@ in Ordnung. Hängt die Zusicherung dagegen davon ab, *welche* Variante die
 Quelle heute zuoberst hat, prüft der Test den Tag: am 25.8.2026 rot, weil die
 neueste Zürcher Publikation zufällig Lose hatte, am 26.8. grün, ohne dass sich
 etwas geändert hätte. Den Fall gezielt wählen und beide Zweige fahren.
+
+**Und die Ebene darunter zählt mit.** Derselbe Test war gegen `results[0]`
+gehärtet und fiel am 5.9.2026 trotzdem — die Annahme war nach `lots[0]`
+gewandert und dort unbemerkt geblieben. Eine Härtung gilt für den Index, den
+sie anfasst, nicht für die Datei.
 
 PR ohne jeden Check ist selten ein Repo ohne CI, meistens ein
 Merge-Konflikt: GitHub berechnet dafür keinen Merge-Commit und startet nichts.

@@ -696,26 +696,60 @@ async def get_procurement_details(args: ProcurementDetailInput) -> ProcurementDe
 
 
 def _history_refusal_note(exc: Exception, lot_id: str | None) -> str | None:
-    """Name the one refusal this endpoint has that a caller can actually fix.
+    """Name the refusals of this endpoint that a caller can act on.
 
-    Measured 2026-08-29 over 80 publications: every one of the 4 with lots
-    answered `past-publications` with HTTP 400 (`errorCode: E0003`) when no
-    `lotId` came with it, and 200 when one did; all 76 without lots answered
-    200. So a 400 on a call made without a lot id is, in every measured case,
-    the missing parameter — not an outage.
+    Two are measured, and neither is an outage. Both matter because the generic
+    note tells the model to retry, and retrying a deterministic refusal forever
+    reads to it as a broken source.
 
-    Returning None keeps the generic note, which is the honest answer whenever
-    a lot id was already supplied or the failure was not a 400: those we have
-    not measured and must not explain away.
+    **HTTP 400 without a lot id.** Measured 2026-08-29 over 80 publications:
+    every one of the 4 with lots answered `past-publications` with 400
+    (`errorCode: E0003`) when no `lotId` came with it, and 200 when one did;
+    all 76 without lots answered 200. So a 400 on a call made without a lot id
+    is, in every measured case, the missing parameter.
+
+    **HTTP 404.** Measured 2026-09-08: the history is kept per *lot*, and a lot
+    with no earlier publication of its own answers 404 rather than 200 with an
+    empty list. Publication 32705-42 carries 39 lots of which exactly one
+    answered; the other 38 gave this 404. The same 404 comes back for an
+    invented publication id and for an invented lot id, with an identical body
+    ("Document not found.") — the source does not separate the causes, so
+    neither may this note.
+
+    Returning None keeps the generic note, which is the honest answer for
+    anything not measured: a 400 that already carried a lot id, a 5xx, a
+    timeout. Those we must not explain away.
     """
-    if lot_id or getattr(exc, "status", None) != 400:
-        return None
-    return (
-        "simap.ch refused this history request. A publication that has lots is "
-        "only traceable per lot: re-run search_procurements, and if the entry "
-        "shows lots_type 'with', call this tool again with a lot_id from its "
-        "lots list."
-    )
+    status = getattr(exc, "status", None)
+
+    if status == 400 and not lot_id:
+        return (
+            "simap.ch refused this history request. A publication that has lots is "
+            "only traceable per lot: re-run search_procurements, and if the entry "
+            "shows lots_type 'with', call this tool again with a lot_id from its "
+            "lots list."
+        )
+
+    if status == 404 and lot_id:
+        return (
+            "simap.ch holds no history document for this publication and lot. It "
+            "returns the same answer to a lot that exists but carries no earlier "
+            "publication of its own and to an id that does not exist at all, so "
+            "which of the two applies here is not decidable from the response. "
+            "Repeating the call returns the same answer. The history is kept per "
+            "lot, so a different lot_id from the same publication's lots list can "
+            "still answer — one measured publication had 1 of 39 lots answer."
+        )
+
+    if status == 404:
+        return (
+            "simap.ch holds no history document for this publication. Repeating "
+            "the call returns the same answer; check the publication_id against a "
+            "fresh search_procurements result. If that entry shows lots_type "
+            "'with', pass a lot_id from its lots list."
+        )
+
+    return None
 
 
 @mcp.tool(annotations=READ_TOOL)
