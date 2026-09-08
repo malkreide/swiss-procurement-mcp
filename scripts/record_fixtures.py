@@ -273,17 +273,56 @@ def main() -> int:
         "Vorgaenger. Die Gegenprobe zum 400er: derselbe Aufruf, ein Parameter mehr",
     )
 
+    # Findet sich in DIESER Publikation kein stummes Los, ist der Befund damit
+    # nicht widerlegt: die Tabelle im Nachweis fuehrt selbst Publikationen, bei
+    # denen jedes Los antwortet (36106-03 9 von 9, 43734-01 7 von 7). Aus einer
+    # dynamisch gewaehlten Publikation auf die Quelle zu schliessen, waere
+    # genau die `lots[0]`-Falle ein drittes Mal — nur mit einem geloeschten
+    # richtigen Befund als Folge. Also erst die uebrigen Los-Publikationen der
+    # Suchantwort durchgehen.
+    stumm_aus = mit_losen
+    if stummes_lot is None:
+        weitere = [
+            pr
+            for pr in alle
+            if pr.get("lotsType") == "with"
+            and pr.get("lots")
+            and pr["publicationId"] != mit_losen["publicationId"]
+        ]
+        for projekt in weitere:
+            anderer = f"/publications/v1/publication/{projekt['publicationId']}/past-publications"
+            for lot in projekt["lots"]:
+                if not lot.get("lotId"):
+                    continue
+                status, koerper = get(anderer, lang=LANG, lotId=lot["lotId"])
+                if status == 404:
+                    stummes_lot, stumme_antwort, stumm_aus = lot["lotId"], koerper, projekt
+                    break
+            if stummes_lot is not None:
+                break
+        geprueft = 1 + len(weitere)
+    else:
+        geprueft = 1
+
     # Der dritte Fall, und der Grund, warum es ihn gibt: eine Aufzeichnung nur
     # des 200ers kann nicht zeigen, dass ein 404 hier keine Stoerung ist.
     if stummes_lot is not None:
+        stumm_pfad = f"/publications/v1/publication/{stumm_aus['publicationId']}/past-publications"
+        woher = (
+            f"dieselbe Publikation {mit_losen['publicationNumber']}, ein anderes Los"
+            if stumm_aus is mit_losen
+            else (
+                f"Publikation {stumm_aus['publicationNumber']} aus derselben Suche — "
+                f"in {mit_losen['publicationNumber']} antwortete jedes Los"
+            )
+        )
         write(
             "past_publications_lot_404.json",
             {k: v for k, v in stumme_antwort.items() if k != "requestCorrelator"},
-            url_of(pfad, lang=LANG, lotId=stummes_lot),
+            url_of(stumm_pfad, lang=LANG, lotId=stummes_lot),
             f"vollstaendig bis auf `requestCorrelator` (aendert sich bei jedem "
-            f"Aufruf); dieselbe Publikation {mit_losen['publicationNumber']}, ein "
-            "anderes Los — HTTP 404. Kein erfundener Fehlerpfad: die Antwort der "
-            "Quelle auf ein Los ohne eigene Vorgaengerpublikation. Denselben "
+            f"Aufruf); {woher} — HTTP 404. Kein erfundener Fehlerpfad: die Antwort "
+            "der Quelle auf ein Los ohne eigene Vorgaengerpublikation. Denselben "
             "Koerper liefert sie fuer eine erfundene `publicationId` und eine "
             "erfundene `lotId`, sie trennt die Faelle also nicht",
         )
@@ -294,12 +333,16 @@ def main() -> int:
         # Nachweis das verschwundene Verhalten unveraendert behauptet. Genau die
         # Konstellation, aus der der falsche 400er-Befund entstand: eine
         # Aufzeichnung, der niemand mehr widersprechen kann.
+        #
+        # Geloescht wird deshalb erst, wenn KEINE der Los-Publikationen dieser
+        # Suche ein stummes Los mehr hat — eine reicht dafuer nicht.
         veraltet = FIXTURES / "past_publications_lot_404.json"
+        hinweis = f"kein Los aus {geprueft} Los-Publikation(en) antwortete 404"
         if veraltet.exists():
             veraltet.unlink()
-            print("  weg past_publications_lot_404.json    kein Los antwortete 404")
+            print(f"  weg past_publications_lot_404.json    {hinweis}")
         else:
-            print("  --  past_publications_lot_404.json  kein Los antwortete 404")
+            print(f"  --  past_publications_lot_404.json  {hinweis}")
 
     # --- Code-Suche: flach und verschachtelt -----------------------------
     for system, frage in CODE_QUERIES:
