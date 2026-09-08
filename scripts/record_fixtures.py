@@ -353,7 +353,8 @@ def main() -> int:
             if stumm_aus is mit_losen
             else (
                 f"Publikation {stumm_aus['publicationNumber']} aus derselben Suche — "
-                f"in {mit_losen['publicationNumber']} antwortete jedes Los"
+                f"in {mit_losen['publicationNumber']} lieferte kein sondiertes Los "
+                "einen 404"
             )
         )
         write(

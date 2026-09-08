@@ -233,22 +233,24 @@ async def _lot_publication_that_answers(*, seiten: int = 5, **suche):
     exists to catch.
     """
     cursor = None
-    gesehen = 0
+    ohne_referenz = 0
+    sondiert = 0
     for _ in range(seiten):
         page = await search_procurements(SearchInput(cursor=cursor, **suche))
         for row in page.results:
             if row.lots_type != "with":
                 continue
-            # Vor der `lots`-Pruefung gezaehlt, nicht danach: eine Zeile mit
-            # `lots_type == "with"` und leerer `lots`-Liste ist selbst schon die
-            # Regression. Genau die gab es hier — der Mapper liess `lots` fallen,
-            # und damit war `lot_id` fuer keinen Aufrufer mehr beschaffbar. Wer
-            # erst zaehlt, wenn Lose da sind, laesst diesen Fall als Skip
-            # durchgehen.
-            gesehen += 1
-            for lot in row.lots:
-                if not lot.lot_id:
-                    continue
+            brauchbar = [lot for lot in row.lots if lot.lot_id]
+            if not brauchbar:
+                # `lots_type == "with"` ohne eine einzige benutzbare `lot_id`:
+                # das ist keine Aussage der Quelle ueber Historien, sondern eine
+                # kaputte Zuordnung — und genau die gab es hier schon, der
+                # Mapper liess `lots` fallen, womit `lot_id` fuer keinen
+                # Aufrufer mehr beschaffbar war.
+                ohne_referenz += 1
+                continue
+            for lot in brauchbar:
+                sondiert += 1
                 treffer = await get_publication_history(
                     HistoryInput(publication_id=row.publication_id, lot_id=lot.lot_id)
                 )
@@ -258,12 +260,26 @@ async def _lot_publication_that_answers(*, seiten: int = 5, **suche):
             break
         cursor = page.next_cursor
 
-    assert gesehen == 0, (
-        f"{gesehen} Publikation(en) mit `lots_type == 'with'` gefunden, aber kein "
-        "einziges Los lieferte Historie — entweder traegt `lotId` den Befund nicht "
-        "mehr, oder die `lots`-Listen kommen leer an. Beides gehoert gemessen "
-        "statt uebersprungen"
+    # Die kaputte Zuordnung ist sicher erkennbar und faellt.
+    assert ohne_referenz == 0, (
+        f"{ohne_referenz} Publikation(en) mit `lots_type == 'with'` fuehren keine "
+        "einzige `lot_id` — damit ist die Historie fuer keinen Aufrufer erreichbar, "
+        "unabhaengig davon, was die Quelle auf `lotId` antworten wuerde"
     )
+
+    # Der andere Fall ist NICHT sicher erkennbar: dass in dieser Stichprobe kein
+    # Los antwortete, kann auch heissen, dass alle gesampelten Lose legitim keine
+    # eigene Vorgaengerpublikation haben — der dokumentierte Normalfall. Eine
+    # endliche, tagesabhaengige Stichprobe kann «`lotId` wirkt nicht mehr» nicht
+    # belegen, und ein Fehlschlag daraus waere derselbe Fehlschluss wie der, den
+    # dieser PR behebt, nur in die andere Richtung. Also uebersprungen, mit den
+    # Zahlen im Text.
+    if sondiert:
+        pytest.skip(
+            f"{sondiert} Los(e) sondiert, keines lieferte Historie — mit einer "
+            "Stichprobe dieser Groesse nicht von lauter Losen ohne eigene "
+            "Vorgaengerpublikation zu unterscheiden"
+        )
     return None
 
 
