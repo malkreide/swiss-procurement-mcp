@@ -650,8 +650,16 @@ oben nennt: Der Bericht belegt «geprüft», nicht «sauber». Damit wäre eine 
 durch die nächstbeste Näherung ersetzt.
 
 Das Ende der Pause ist das **Ergebnisobjekt** zum aktuellen Head: ein
-Review-Objekt oder eine Befundlos-Meldung — oder eine der beiden
-Ausfallmeldungen, Kontingent und Environment, die den Lauf ebenso abschliessen.
+Review-Objekt oder eine Befundlos-Meldung.
+
+**Die beiden Ausfallmeldungen zählen nicht dazu**, und das stand hier eine
+Fassung lang falsch. Für die Environment-Meldung ist der Gegenfall im selben
+Dokument gemessen: Auf `#76` erschien sie in **derselben Sekunde**, in der ein
+Review anlief. Wer bei ihr aufhört zu warten, stellt mitten in einen laufenden
+Lauf hinein ready. Für die Kontingent-Meldung ist kein solcher Fall gemessen —
+was nach der Regel dieses Dokuments nichts belegt, sondern nur heisst, dass
+niemand hingesehen hat. Beide Meldungen sind ein Grund, in den Bericht zu
+schauen, kein Grund aufzuhören.
 
 **Der Statuswechsel beendet die Pause nicht** — er sagt nur, dass das Ergebnis
 fällig ist. In allen sieben Läufen an offenen PRs, bei denen beides ablesbar
@@ -664,7 +672,7 @@ Steht er auf `✅ Completed` und ist kurz darauf immer noch nichts da, heisst da
 «geprüft, Ausgang offen» — und gerade nicht «sauber». Wie lange «kurz darauf»
 ist, sagt keine dieser Messungen.
 
-Eine Frist taugt dafür ohnehin nicht: Die zehn Läufe mit ablesbarem Anfang und
+Eine Frist taugt dafür ohnehin nicht: Die elf Läufe mit ablesbarem Anfang und
 Ende brauchten zwischen 103 und 316 Sekunden.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
@@ -672,8 +680,8 @@ die Pause, es gibt dort also keine Variation, aus der sich eine Ursache
 ableiten liesse. Die Variation liefert erst der Absatz darunter — und auch der
 nur einmal je Zweig.
 
-**Die Gegenprobe ist inzwischen gefahren — und derselbe PR lieferte gleich
-beide Zweige.** Auf `#86`, dem PR, der diesen Absatz einführte:
+**Die Gegenprobe ist versucht worden — und sie hat nicht gemessen, was sie
+messen sollte.** Auf `#86`, dem PR, der diesen Absatz einführte:
 
 | Zeit (UTC) | Ereignis | Ausgang |
 |---|---|---|
@@ -683,12 +691,29 @@ beide Zweige.** Auf `#86`, dem PR, der diesen Absatz einführte:
 | 04:04:31 | Lauf 3, «Draft marked ready», `26e3c55` | 04:07:08 `✅ Completed`, **kein Ergebnis** |
 | 04:05:16 | Merge, 45 s nach Beginn von Lauf 3 | — |
 
-Das ist die Variation, die den vier Fällen der Tabelle oben fehlte: **gleicher
-PR, gleiches Repo, sieben Minuten auseinander, einmal mit und einmal ohne
-Pause** — und der Unterschied im Ausgang ist genau der erwartete. Damit trägt
-die Aussage über die Pause mehr als vorher. Kausalität im strengen Sinn ist es
-weiterhin nicht: Je Zweig steht ein einziger Fall, und beide Zweige
-unterscheiden sich auch im Commit.
+Hier stand, das sei die Variation, die den vier Fällen der Tabelle oben fehle:
+gleicher PR, gleiches Repo, einmal mit und einmal ohne Pause, und der
+Unterschied im Ausgang genau der erwartete. **Das trägt nicht, und der Grund
+steht zwei Abschnitte weiter oben in diesem Dokument.**
+
+Die beiden Zweige unterscheiden sich nicht nur in der Pause: Lauf 1 endete bei
+**offenem** PR, Lauf 3 endete 112 Sekunden **nach dem Merge**. Und ein
+geschlossener PR unterdrückt das Ergebnis — das ist oben gemessen und in
+diesem PR neu aufgeschrieben worden. Der Unterschied «Review-Objekt» gegen
+«kein Ergebnis» ist damit **schon vollständig erklärt**, ohne dass die Pause
+etwas dazu beitragen müsste.
+
+Eine Gegenprobe, die zwei Grössen zugleich verändert, misst keine von beiden.
+Für die Pause bräuchte es zwei Läufe, die **beide bei offenem PR enden** — den
+gibt es hier nicht. Was von `#86` bleibt, ist der Mechanismus und nicht die
+Messung: ready stellen startet einen zweiten Lauf, der den Bericht überschreibt,
+und mergen unterdrückt das Ergebnis. Beides ist einzeln belegt, beides spricht
+für die Pause — belegt ist die Pause damit trotzdem nicht.
+
+Aufgefallen ist das einem Codex-Review, in der sechsten Runde auf demselben PR,
+in dem der konfundierte Absatz entstand. Fünf Runden lang stand hier eine
+Gegenprobe, die keine war, und sie las sich überzeugender als die
+Vorsichtsklausel darunter.
 
 Zwei Dinge, die dieser Ablauf zusätzlich trennt:
 
@@ -902,10 +927,10 @@ einzelnen Lauf. Auf `swiss-procurement-mcp#75` am 30.8.: **103 s**
 **141 s** (03:57:31 → 03:59:52) und **157 s** (04:04:31 → 04:07:08); auf `#87`
 am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
 (04:17:33 → 04:21:09), **235 s** (04:23:26 → 04:27:21), **316 s**
-(04:30:14 → 04:35:30), **177 s** (04:39:16 → 04:42:13) und **259 s**
-(04:43:46 → 04:48:05).
+(04:30:14 → 04:35:30), **177 s** (04:39:16 → 04:42:13), **259 s**
+(04:43:46 → 04:48:05) und **209 s** (04:50:45 → 04:54:14).
 
-Zehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Elf Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
 Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
