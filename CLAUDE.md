@@ -506,10 +506,11 @@ Auf `#81` liefen zwei Reviews auf demselben Commit `a1f3d9d`:
 Drei Beobachtungen, und die mittlere wiegt am schwersten:
 
 - **Ein geschlossener PR hält den Lauf nicht auf.** Lauf 2 startete drei
-  Sekunden *nach* dem Merge und lief bis `✅ Completed` durch. Die Frage von
-  oben bleibt trotzdem offen: gemessen ist wieder nur ein Lauf, der nach dem
-  Merge *begann*. Was mit Lauf 1 geschah, der zum Merge-Zeitpunkt lief, sagt
-  diese Beobachtung gerade nicht — siehe die nächste Zeile.
+  Sekunden *nach* dem Merge und lief bis `✅ Completed` durch. Für die Frage
+  von oben gab diese Beobachtung noch nichts her: gemessen ist wieder nur ein
+  Lauf, der nach dem Merge *begann*. Was mit Lauf 1 geschah, der zum
+  Merge-Zeitpunkt lief, sagt sie gerade nicht — siehe die nächste Zeile.
+  Beantwortet wurde die Frage erst auf `#86`, oben im vorigen Abschnitt.
 - **Der Statusbericht hält nur den jüngsten Lauf.** Lauf 1 verschwand beim
   ersten Edit spurlos; ob er endete und wie, ist nirgends feststellbar. Der
   Bericht belegt damit «dieser Commit wurde geprüft» — nicht «jeder Lauf auf
@@ -640,10 +641,23 @@ es also bloss.
 
 Praktisch folgt daraus nur eines, und es steht schon oben: Den Draft von Hand
 prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt.
-Abwarten heisst: bis der Statusbericht nicht mehr «Running» sagt — nicht eine
-gesetzte Frist absitzen. Die sechs Läufe mit ablesbarem Anfang und Ende
-brauchten zwischen 103 und 216 Sekunden — und der längste war jedes Mal der
-jüngste.
+
+**Was «abwarten» heisst, ist dabei genauer zu nehmen, als hier eine Fassung
+lang stand.** Dort war das Kriterium «bis der Statusbericht nicht mehr
+‹Running› sagt» — und das ist falsch, aus dem Grund, den derselbe Text weiter
+oben nennt: Der Bericht belegt «geprüft», nicht «sauber». Wer bei `✅ Completed`
+ready stellt, kann das Review-Objekt um Sekunden verpassen; auf `#87` erschien
+es drei Sekunden **vor** dem Wechsel, ein anderes Mal kann es danach kommen.
+Damit wäre eine Uhr durch die nächstbeste Näherung ersetzt.
+
+Das Ende der Pause ist das **Ergebnisobjekt** zum aktuellen Head: ein
+Review-Objekt oder eine Befundlos-Meldung. Der Bericht sagt nur, wann das
+Warten darauf endet — steht er auf `✅ Completed` und ist keines von beiden da,
+heisst das «geprüft, Ausgang offen» und gerade nicht «sauber».
+
+Eine Frist taugt dafür ohnehin nicht: Die sieben Läufe mit ablesbarem Anfang
+und Ende brauchten zwischen 103 und 235 Sekunden — und der längste war jedes
+Mal der jüngste.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
 die Pause, es gibt dort also keine Variation, aus der sich eine Ursache
@@ -801,10 +815,15 @@ niemand den PR angefasst hat.
 Das ändert nichts an der Beweisregel, sondern nur an ihrer Begründung: Belegt
 ist eine Prüfung durch einen Statusbericht auf `✅ Completed`, ein
 Review-Objekt oder eine Befundlos-Meldung, die jeweils den aktuellen Head
-nennen. Die Reaktion taugt dafür nicht — und der Grund ist genau der Commit:
-Sie nennt keinen und wird beim nächsten Lauf
-überschrieben. Sie sagt «gerade läuft etwas» oder «der letzte Lauf war sauber»,
-nie «dieser Head ist geprüft».
+nennen. Die Reaktion taugt dafür nicht, und der Grund ist genau der Commit: Sie
+nennt keinen.
+
+Auch «der letzte Lauf war sauber» stand hier noch — dieselbe Zuordnung zu einem
+Lauf, die der Abschnitt weiter oben zurücknimmt, und die Behauptung, sie werde
+beim nächsten Lauf überschrieben, gehört dazu: Auf `#82` überlebte eine
+Reaktion einen späteren Lauf an anderer Stelle. Bleibt: **Eine Reaktion sagt,
+dass irgendwann irgendetwas lief oder ohne Befund durchlief — welcher Lauf,
+welcher Commit, wessen Reaktion, sagt sie nicht.**
 
 Das gilt auch im Fall des geschlossenen PR oben, wo sie als einzige Quelle
 für den Ausgang übrig zu bleiben scheint: Die Summe im Feld `reactions` trennt
@@ -842,12 +861,12 @@ ablesen, und die 42 Reviews vom 23.8. über neun Minuten sind kein Wert für ein
 einzelnen Lauf. Auf `swiss-procurement-mcp#75` am 30.8.: **103 s**
 (09:09:18 → 09:11:01) und **111 s** (09:14:48 → 09:16:39). Auf `#86` am 9.9.:
 **141 s** (03:57:31 → 03:59:52) und **157 s** (04:04:31 → 04:07:08); auf `#87`
-am selben Tag **169 s** (04:12:00 → 04:14:49) und **216 s**
-(04:17:33 → 04:21:09).
+am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
+(04:17:33 → 04:21:09) und **235 s** (04:23:26 → 04:27:21).
 
-Sechs Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Sieben Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
-Minuten» deckt 216 s nicht mehr. Wer zwei Minuten absässe und dann ready
+Minuten» deckt 235 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
 
 **Auf `#86` ist das nicht passiert, und der Unterschied gehört dazu.** Dort war
@@ -857,12 +876,13 @@ zwei Minuten wäre bei jenem 157-Sekunden-Lauf **auch** zu kurz gewesen. Das
 genügt, um sie fallenzulassen, und mehr trägt die Beobachtung nicht.
 
 Bemerkenswert ist ausserdem, dass **jede neue Messung den Höchstwert angehoben
-hat** — 103, 111, 141, 157, 169, 216. Das ist eine Aussage über diese sechs
-Messungen und keine über die Verteilung dahinter: Wer daraus eine Obergrenze
-bildet, hat sie erfunden, und genau deshalb taugt keine Frist.
+hat** — 103, 111, 141, 157, 169, 216, 235. Das ist eine Aussage über diese
+sieben Messungen und keine über die Verteilung dahinter: Wer daraus eine
+Obergrenze bildet, hat sie erfunden, und genau deshalb taugt keine Frist.
 
 Nicht auf die Uhr sehen, sondern auf den Bericht: Solange dort «Running» steht,
-ist nichts entschieden. Als Handgriff taugt weiter nur die schwache Richtung: Ein
+ist nichts entschieden — und wenn er fertig ist, entscheidet das Ergebnisobjekt
+und nicht der Bericht. Als Handgriff taugt weiter nur die schwache Richtung: Ein
 Kommentar, der binnen Sekunden dasteht, ist eher eine Absage als ein Urteil.
 Entschieden wird am Text, nicht an der Uhr.
 
