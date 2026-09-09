@@ -521,31 +521,43 @@ Codex niemand den PR angefasst hatte; hier hat der Autor ihn selbst auf ready
 gestellt und gemergt, und `reactions` bleibt eine Summe ohne Urheber. Selbst
 wenn sie von Codex stammt: welchem der beiden Läufe sie gälte, sagt sie nicht.
 
-**Der Übergang selbst ist inzwischen beobachtet, und er ist an den Bericht
-gekoppelt.** Auf `#82` — derselbe Ablauf, Merge zwei Sekunden nach «ready» —
-stand am PR zum Merge-Zeitpunkt `eyes: 1`. Um **03:30:14** wechselte er auf
-`+1: 1`, und der Statusbericht ging in **derselben Sekunde** auf
-`✅ Completed`. Dazwischen, 82 Sekunden lang, hatte niemand ausser Codex den
-geschlossenen PR angefasst.
+**Der Übergang selbst ist inzwischen beobachtet — er trägt aber keine
+Zuordnung.** Auf `#82` stand am PR zum Merge-Zeitpunkt `eyes: 1`; um
+**03:30:14** wechselte er auf `+1: 1`, und der Statusbericht ging in
+**derselben Sekunde** auf `✅ Completed`.
 
-Das liefert das Kriterium, das der Summe fehlt: nicht wer sie gesetzt hat —
-das steht nirgends —, sondern **wann sie sich änderte**. Fällt der Wechsel mit
-dem Bericht-Edit zusammen und lag dazwischen kein menschlicher Eingriff, ist
-die Reaktion diesem Lauf zuzuordnen. Fehlt eines von beidem, bleibt sie eine
-Summe ohne Urheber, und die Regel oben gilt unverändert.
+Daraus wurde hier eine Fassung lang ein Kriterium gemacht: Wechsel
+sekundengleich mit dem Bericht-Edit *und* kein menschlicher Eingriff dazwischen
+— dann gehöre die Reaktion diesem Lauf. **Das ist ein Zirkelschluss**, und ein
+Codex-Review hat ihn benannt, vier Sekunden bevor der PR mit ihm gemergt wurde.
+Die zweite Bedingung ist aus diesen Daten nicht feststellbar: Eine 👍 von Hand
+*ist* der Eingriff, den sie ausschliessen soll, und sie erzeugt in der Summe
+denselben Übergang — auch auf die Sekunde genau. Wer so zuordnet, kann einem
+Lauf ein sauberes Ergebnis zuschreiben, das ein Mensch gesetzt hat.
 
-Was der Übergang **nicht** ändert: Die Reaktion nennt weiterhin keinen Commit
-und wird beim nächsten Lauf überschrieben. Als Beweisanker taugt sie deshalb
-so wenig wie vorher — sie sagt «der jüngste Lauf war sauber», nie «dieser Head
-ist geprüft». Bei zwei Läufen auf demselben Commit sagt sie über den ersten
-gar nichts.
+Zuordnen liesse sich die Reaktion nur über Urheberdaten, und die liefert hier
+kein Werkzeug: `/issues/{n}/reactions` ist aus den Agent-Sessions gesperrt,
+`reactions` bleibt eine Summe. Die Koinzidenz der Zeitstempel steht deshalb nur
+noch als Indiz da — mit dem Vermerk, warum sie nicht trägt.
 
-**Und die beiden 👀 verhalten sich verschieden.** Auf `#82` lief die am PR
-(ready-Auslöser) auf 👍 um; die am auslösenden `@codex review`-Kommentar
-(Manual-Request-Auslöser) steht seit 03:26:00 unverändert, obwohl beide Läufe
-vorbei sind. Wo die Reaktion landet, hängt am Auslöser — und offenbar auch, ob
-sie je zurückgenommen wird. Aus einer stehengebliebenen 👀 folgt deshalb
-nichts, in keine Richtung.
+**Auch «der jüngste Lauf war sauber» stimmt nicht.** Reaktionen an
+verschiedenen Auslöser-Objekten überschreiben einander nicht: Auf `#82`
+überlebte die Kommentar-Reaktion den später gestarteten PR-getriggerten Lauf.
+In umgekehrter Reihenfolge steht eine alte PR-👍 neben einem neueren
+Manual-Request-Lauf mit Befund. Die Reaktion gilt, wenn überhaupt, dem jüngsten
+Lauf **ihres eigenen Auslöser-Objekts** — nicht dem jüngsten Lauf.
+
+**Und sie sitzt nicht nur an einer Stelle.** Am 9.9.2026 um 03:37 trug `#83`
+während eines einzigen, per Kommentar ausgelösten Laufs `eyes: 1` **sowohl** am
+auslösenden Kommentar **als auch** am PR. Die frühere Fassung — «beim
+ready-Auslöser am PR, beim Kommentar-Auslöser am Kommentar» — stammt aus einer
+Beobachtung, die nur eine der beiden Stellen abfragte. Dieselbe Falle wie
+damals bei den Kommentaren, nur andersherum, und sie hat hier zwei Fassungen
+überlebt.
+
+Also beide Stellen lesen — und keiner von beiden mehr abgewinnen als: hier lief
+etwas, oder hier lief etwas ohne Befund durch. Welcher Commit, welcher Lauf,
+wessen Reaktion: nichts davon steht darin.
 
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
 also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit im
