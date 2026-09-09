@@ -708,15 +708,24 @@ Praktisch folgt daraus nicht «länger warten», sondern:
   eigenen Ausgang unfeststellbar. Auf `#87` wäre das zweimal passiert: Beide
   Male stand die Environment-Meldung da, beide Male kam der Lauf gut zwanzig
   Sekunden später doch.
-- **Bleibt es dabei, hilft nur ein sauberer Neuanfang:** abwarten, bis im
-  Bericht nichts mehr läuft, dann **einen** Lauf auf dem aktuellen Head
-  anstossen und ihn unter der Ein-Lauf-Voraussetzung zu Ende führen. Das kostet
-  Kontingent und ist der einzige Weg, der wieder zu einem feststellbaren
-  Ausgang führt.
+- **Bleibt es dabei, hilft nur ein neuer Lauf** — und **er ist nicht sicher.**
+  Hier stand «abwarten, bis im Bericht nichts mehr läuft, dann einen Lauf
+  anstossen». Das ist im gefährlichsten Fall sofort erfüllt: Wenn der eigene
+  Lauf verzögert startet, steht im Bericht ja gerade noch nichts. Wer dann
+  anstösst, erzeugt genau die Überlappung, die er vermeiden wollte.
 
-Der letzte Punkt ist der Grund, warum die Voraussetzung oben steht und nicht
-die Auswertung: Ist sie eingehalten, kommt man in diese Zustände selten; ist
-sie verletzt, führt aus ihnen kein Lesen heraus, sondern nur ein neuer Lauf.
+**Ein garantiert sauberer Neustart ist nicht feststellbar.** Das ist keine
+Lücke dieser Notiz, sondern eine Eigenschaft des Mechanismus: Der Bericht zeigt
+nur den jüngsten Lauf, und ein noch nicht erschienener Lauf sieht aus wie
+keiner. Wer aus diesem Zustand herauswill, wählt zwischen zwei Risiken —
+weiterwarten auf ein Ergebnis, das vielleicht nie kommt, oder anstossen und
+den eigenen Ausgang vielleicht verdrängen. Beides bewusst wählen, keines für
+den sicheren Weg halten.
+
+Genau deshalb steht die **Voraussetzung** oben und nicht die Auswertung: Sie
+ist das Einzige, was diesen Zustand vermeidet. Ist sie eingehalten, kommt man
+kaum hinein; ist sie verletzt, führt kein Lesen und keine Regel zuverlässig
+heraus.
 
 **Und die Ausfallmeldung ist nicht zuverlässig ein Issue-Kommentar.** Weiter
 unten steht, die beiden Ausfallmeldungen seien gewöhnliche Issue-Kommentare;
@@ -724,7 +733,7 @@ am 9.9.2026 kam die Environment-Meldung auf `#87` als **Review-Kommentar in
 einem Thread**. Wer sie nur mit `get_comments` sucht, findet sie dort nicht —
 und der Kommentarzähler bewegt sich nicht.
 
-Eine Frist taugt dafür ohnehin nicht: Die vierzehn Läufe mit ablesbarem Anfang
+Eine Frist taugt dafür ohnehin nicht: Die fünfzehn Läufe mit ablesbarem Anfang
 und Ende brauchten zwischen 103 und 316 Sekunden.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
@@ -987,9 +996,9 @@ am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
 (04:30:14 → 04:35:30), **177 s** (04:39:16 → 04:42:13), **259 s**
 (04:43:46 → 04:48:05), **209 s** (04:50:45 → 04:54:14) und **228 s**
 (04:56:27 → 05:00:15), noch einmal **228 s** (05:02:15 → 05:06:03) und
-**218 s** (05:08:30 → 05:12:08).
+**218 s** (05:08:30 → 05:12:08) und **186 s** (05:14:46 → 05:17:52).
 
-Vierzehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Fünfzehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
 Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
