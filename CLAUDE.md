@@ -530,16 +530,25 @@ stand dort `total_count: 0` — zurückgenommen, und **ohne** dass ein 👍 an s
 Stelle trat. Der Kommentar, der Lauf 2 ausgelöst hatte, trug seine 👀 zur
 selben Zeit unverändert weiter.
 
-Beide Stellen sagen damit gleichzeitig Verschiedenes über denselben PR, und
-beide sind für sich genommen richtig: Am PR hing die Reaktion an Lauf 3, der
-endete; am Kommentar an Lauf 2, der aus dem Bericht verschwand und dessen Ende
-nirgends steht. Das ist kein Widerspruch, sondern der Beleg dafür, dass die
-Reaktion an ihrem Auslöser-Objekt klebt und nicht am PR-Zustand.
+**Welche Reaktion zu welchem Lauf gehört, ist daraus aber nicht ablesbar** —
+und der Versuch stand hier eine Fassung lang. «Am PR hing sie an Lauf 3, am
+Kommentar an Lauf 2» ordnet nach dem *Ort* zu, und genau das widerlegt die
+Beobachtung auf `#83` zwei Absätze weiter oben: Dort setzte ein einziger, per
+Kommentar ausgelöster Lauf die 👀 an **beide** Stellen. Auf `#86` überlappten
+Lauf 2 und Lauf 3; Lauf 2 allein kann also beide Reaktionen erklären. Ein
+Codex-Review hat den Fehlschluss gefunden, und er ist derselbe, den derselbe
+Abschnitt zwei Absätze vorher benennt.
 
-Dass ausgerechnet dort eine 👀 hängenblieb, wo ein Lauf aus dem Bericht
-verschwand, gilt jetzt für `#81` und `#86`. Zwei Fälle sind ein Muster und
-keine Regel — als Handgriff taugt allein die schwache Richtung: Eine 👀, zu der
-im Bericht kein Lauf mehr steht, ist eher ein Überbleibsel als eine Auskunft.
+Übrig bleibt die Beobachtung ohne die Zuordnung, und die genügt für den
+Handgriff: **Nach `✅ Completed` war die eine Stelle geräumt und die andere
+nicht.** Wer nur eine von beiden abfragt, bekommt je nach Wahl «läuft noch»
+oder «nichts läuft» — über denselben PR, in derselben Sekunde. Beide lesen,
+keiner von beiden mehr abgewinnen als das.
+
+Dass eine 👀 gerade dort stehenblieb, wo ein Lauf aus dem Bericht verschwand,
+sieht auf `#81` und `#86` gleich aus, ist aber dieselbe Zuordnung noch einmal:
+Sie unterstellt, dass die stehengebliebene Reaktion dem verschwundenen Lauf
+gehört. Als Vermutung notiert, nicht als Handgriff.
 
 **Und ein ausbleibendes 👍 ist kein Befund-Indiz.** Auf `#64` fiel die
 Rücknahme ohne 👍 mit einem Befund zusammen; auf `#86` mit einem Lauf, dessen
@@ -571,11 +580,17 @@ kein Werkzeug: `/issues/{n}/reactions` ist aus den Agent-Sessions gesperrt,
 noch als Indiz da — mit dem Vermerk, warum sie nicht trägt.
 
 **Auch «der jüngste Lauf war sauber» stimmt nicht.** Reaktionen an
-verschiedenen Auslöser-Objekten überschreiben einander nicht: Auf `#82`
-überlebte die Kommentar-Reaktion den später gestarteten PR-getriggerten Lauf.
-In umgekehrter Reihenfolge steht eine alte PR-👍 neben einem neueren
-Manual-Request-Lauf mit Befund. Die Reaktion gilt, wenn überhaupt, dem jüngsten
-Lauf **ihres eigenen Auslöser-Objekts** — nicht dem jüngsten Lauf.
+verschiedenen Stellen überschreiben einander nicht: Auf `#82` überlebte die
+Kommentar-Reaktion den später gestarteten PR-getriggerten Lauf. Zwei Stellen
+können also gleichzeitig Gegensätzliches anzeigen, und die jüngere räumt die
+ältere nicht weg.
+
+Hier stand daraus die Folgerung, die Reaktion gelte dem jüngsten Lauf «ihres
+eigenen Auslöser-Objekts». **Das ist dieselbe Zuordnung nach dem Ort, die der
+Absatz gleich darunter widerlegt** — ein Lauf kann beide Stellen anfassen, also
+sagt die Stelle nicht, welcher Lauf sie gesetzt hat. Was bleibt, ist die
+Verneinung ohne den Ersatz: «der jüngste Lauf» stimmt nicht, und ein anderer
+Lauf lässt sich der Reaktion auch nicht zuweisen.
 
 **Und sie sitzt nicht nur an einer Stelle.** Am 9.9.2026 um 03:37 trug `#83`
 während eines einzigen, per Kommentar ausgelösten Laufs `eyes: 1` **sowohl** am
@@ -626,8 +641,8 @@ es also bloss.
 Praktisch folgt daraus nur eines, und es steht schon oben: Den Draft von Hand
 prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt.
 Abwarten heisst: bis der Statusbericht nicht mehr «Running» sagt — nicht eine
-gesetzte Frist absitzen. Die vier Läufe mit ablesbarem Anfang und Ende
-brauchten zwischen 103 und 157 Sekunden.
+gesetzte Frist absitzen. Die fünf Läufe mit ablesbarem Anfang und Ende
+brauchten zwischen 103 und 169 Sekunden — und der längste war der jüngste.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
 die Pause, es gibt dort also keine Variation, aus der sich eine Ursache
@@ -766,14 +781,19 @@ review is running … reacts with 👍 once all reviews finish with no findings�
 Die alte Zeile war damit nicht vorsichtig, sondern **falsch**: Sie hat aus einer
 Messung am falschen Ort auf eine Lüge geschlossen. Der Kasten stimmt hier.
 
-**«Am PR» gilt aber nicht für jeden Auslöser.** Am 30.8.2026 auf
+**«Am PR» ist nicht die einzige Stelle.** Am 30.8.2026 auf
 `swiss-procurement-mcp#76` trug der auslösende `@codex review`-Kommentar selbst
-`eyes: 1`, während der Lauf ging. Wo die Reaktion landet, hängt also davon ab,
-was den Lauf angestossen hat — beim ready-Auslöser am PR, beim Kommentar-Auslöser
-am Kommentar. Wer nur eine der beiden Stellen abfragt, misst wieder am falschen
-Objekt, bloss andersherum als beim ersten Mal. Auch hier bleibt der Vorbehalt aus
-demselben Abschnitt: `reactions` ist eine Summe ohne Urheber, und eindeutig ist
-der Fall nur, weil ausser Codex niemand den PR angefasst hatte.
+`eyes: 1`, während der Lauf ging. Daraus stand hier eine Weile die Regel «beim
+ready-Auslöser am PR, beim Kommentar-Auslöser am Kommentar» — **sie ist
+widerlegt**: Auf `#83` setzte ein einziger, per Kommentar ausgelöster Lauf die
+👀 an beide Stellen (oben, im Abschnitt zu `#81`). Der Ort trennt die Auslöser
+also nicht.
+
+Was bleibt, ist der Messfehler, gegen den die Zeile ursprünglich geschrieben
+war: Wer nur eine der beiden Stellen abfragt, misst am falschen Objekt.
+Beide lesen. Der Vorbehalt aus demselben Abschnitt gilt weiter: `reactions` ist
+eine Summe ohne Urheber, und eindeutig ist ein Fall nur, wenn ausser Codex
+niemand den PR angefasst hat.
 
 Das ändert nichts an der Beweisregel, sondern nur an ihrer Begründung: Belegt
 ist eine Prüfung durch einen Statusbericht auf `✅ Completed`, ein
@@ -818,11 +838,12 @@ nennt Start und Ende; vorher liess sich nur die Dauer eines ganzen Stapels
 ablesen, und die 42 Reviews vom 23.8. über neun Minuten sind kein Wert für einen
 einzelnen Lauf. Auf `swiss-procurement-mcp#75` am 30.8.: **103 s**
 (09:09:18 → 09:11:01) und **111 s** (09:14:48 → 09:16:39). Auf `#86` am 9.9.:
-**141 s** (03:57:31 → 03:59:52) und **157 s** (04:04:31 → 04:07:08).
+**141 s** (03:57:31 → 03:59:52) und **157 s** (04:04:31 → 04:07:08); auf `#87`
+am selben Tag **169 s** (04:12:00 → 04:14:49).
 
-Vier Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Fünf Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
-Minuten» deckt 157 s nicht mehr. Wer zwei Minuten wartet und dann ready stellt,
+Minuten» deckt 169 s nicht mehr. Wer zwei Minuten wartet und dann ready stellt,
 trifft den Lauf mitten hinein — genau der Fehler, der auf `#86` gemacht wurde.
 Nicht auf die Uhr sehen, sondern auf den Bericht: Solange dort «Running» steht,
 ist nichts entschieden. Als Handgriff taugt weiter nur die schwache Richtung: Ein
