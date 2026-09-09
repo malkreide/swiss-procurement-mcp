@@ -641,8 +641,9 @@ es also bloss.
 Praktisch folgt daraus nur eines, und es steht schon oben: Den Draft von Hand
 prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt.
 Abwarten heisst: bis der Statusbericht nicht mehr «Running» sagt — nicht eine
-gesetzte Frist absitzen. Die fünf Läufe mit ablesbarem Anfang und Ende
-brauchten zwischen 103 und 169 Sekunden — und der längste war der jüngste.
+gesetzte Frist absitzen. Die sechs Läufe mit ablesbarem Anfang und Ende
+brauchten zwischen 103 und 216 Sekunden — und der längste war jedes Mal der
+jüngste.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
 die Pause, es gibt dort also keine Variation, aus der sich eine Ursache
@@ -671,8 +672,10 @@ Zwei Dinge, die dieser Ablauf zusätzlich trennt:
 
 - **Warten bis zum Ergebnis genügt nicht, wenn danach während des nächsten
   Laufs ready gestellt wird.** Lauf 1 war sauber abgewartet; der Fix danach
-  brauchte einen eigenen Lauf, und der wurde 54 Sekunden nach seinem Start
-  überholt. Die Pause gilt jedem Lauf, nicht dem PR.
+  brauchte einen eigenen Lauf, und für den war nach 54 Sekunden ready gestellt.
+  Überholt wurde er dadurch aber erst später: Lauf 3 startete nach 62 Sekunden,
+  und aus dem Bericht verdrängt war Lauf 2 nach 65. Die Pause gilt jedem Lauf,
+  nicht dem PR.
 - **Das Überschreiben des Berichts hängt nicht am Merge.** Lauf 3 überschrieb
   Lauf 2 um 04:04:34 — 42 Sekunden **vor** dem Merge, bei offenem PR. In den
   vier Fällen der Tabelle fielen beide immer zusammen; hier sind sie getrennt,
@@ -839,12 +842,25 @@ ablesen, und die 42 Reviews vom 23.8. über neun Minuten sind kein Wert für ein
 einzelnen Lauf. Auf `swiss-procurement-mcp#75` am 30.8.: **103 s**
 (09:09:18 → 09:11:01) und **111 s** (09:14:48 → 09:16:39). Auf `#86` am 9.9.:
 **141 s** (03:57:31 → 03:59:52) und **157 s** (04:04:31 → 04:07:08); auf `#87`
-am selben Tag **169 s** (04:12:00 → 04:14:49).
+am selben Tag **169 s** (04:12:00 → 04:14:49) und **216 s**
+(04:17:33 → 04:21:09).
 
-Fünf Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Sechs Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
-Minuten» deckt 169 s nicht mehr. Wer zwei Minuten wartet und dann ready stellt,
-trifft den Lauf mitten hinein — genau der Fehler, der auf `#86` gemacht wurde.
+Minuten» deckt 216 s nicht mehr. Wer zwei Minuten absässe und dann ready
+stellte, träfe einen solchen Lauf mitten hinein.
+
+**Auf `#86` ist das nicht passiert, und der Unterschied gehört dazu.** Dort war
+schon nach 54 Sekunden ready gestellt — von zwei Minuten Warten kann keine Rede
+sein. Belegt ist über die Faustregel deshalb nur das Schwächere: Eine Frist von
+zwei Minuten wäre bei jenem 157-Sekunden-Lauf **auch** zu kurz gewesen. Das
+genügt, um sie fallenzulassen, und mehr trägt die Beobachtung nicht.
+
+Bemerkenswert ist ausserdem, dass **jede neue Messung den Höchstwert angehoben
+hat** — 103, 111, 141, 157, 169, 216. Das ist eine Aussage über diese sechs
+Messungen und keine über die Verteilung dahinter: Wer daraus eine Obergrenze
+bildet, hat sie erfunden, und genau deshalb taugt keine Frist.
+
 Nicht auf die Uhr sehen, sondern auf den Bericht: Solange dort «Running» steht,
 ist nichts entschieden. Als Handgriff taugt weiter nur die schwache Richtung: Ein
 Kommentar, der binnen Sekunden dasteht, ist eher eine Absage als ein Urteil.
