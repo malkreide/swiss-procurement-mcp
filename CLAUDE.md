@@ -371,8 +371,10 @@ aber eine vorhandene. Für dieses Repo sind es an jenem Tag zwei.
 
   «Meldet», nicht «fehlt»: Der Text ist keine verlässliche Auskunft über die
   Konfiguration — am 29.8.2026 stand er in einem Repo, das eine hatte, und war
-  eine Minute später weg. Erst wiederholen, dann konfigurieren; die Messung
-  steht unten im Abschnitt über die Environment.
+  eine Minute später weg. Eher wiederholen als konfigurieren — aber **nicht
+  sofort**: Die Meldung kann einem verzögert startenden Lauf vorausgehen, und
+  ein zweiter Auslöser verdrängt dann den ersten. Die Messungen dazu stehen
+  unten im Abschnitt über die Environment.
 - **Es lief gar kein Auslöser** — und ein Push ist keiner. Codex zählt sie
   selbst im Infokasten auf: einen PR zum Review öffnen, einen Draft auf ready
   stellen, «@codex review» kommentieren. Wer einen Befund behebt und pusht,
@@ -676,10 +678,14 @@ steht:
   Ausfallmeldung ändert daran nichts: Auf `#76` stand die Environment-Meldung
   in **derselben Sekunde**, in der ein Review anlief, auf `#87` zwanzig
   Sekunden davor.
-- **`✅ Completed` für den eigenen Lauf, und das Ergebnis ist da** — fertig.
-  In allen acht Läufen an offenen PRs, bei denen beides ablesbar war, stand es
-  sogar schon vorher da: es erschien **zwei bis drei Sekunden vor** dem
-  Wechsel.
+- **`✅ Completed` für den eigenen Lauf, und ein Ergebnis ist da, das nach dem
+  eigenen Auslöser entstanden ist** — fertig. Der Zusatz ist nötig, auch wenn
+  die Voraussetzung eingehalten ist: Auf demselben Head kann das Ergebnis eines
+  **früheren, abgeschlossenen** Laufs stehen, und das erfüllt «ein Ergebnis ist
+  da», ohne über den neuen Lauf etwas zu sagen — der gegenteilig urteilen kann.
+  Die Voraussetzung schliesst Überlappung aus, nicht Vorgeschichte.
+  In allen acht Läufen an offenen PRs, bei denen beides ablesbar war, stand das
+  Ergebnis sogar schon vor dem Wechsel da: **zwei bis drei Sekunden** davor.
 - **Der eigene Lauf stand im Bericht und ist daraus verschwunden** — dann war
   die Voraussetzung verletzt, ein zweiter Lauf hat ihn verdrängt. Sein Ausgang
   ist nicht mehr feststellbar und wird es auch nicht mehr.
@@ -733,7 +739,7 @@ am 9.9.2026 kam die Environment-Meldung auf `#87` als **Review-Kommentar in
 einem Thread**. Wer sie nur mit `get_comments` sucht, findet sie dort nicht —
 und der Kommentarzähler bewegt sich nicht.
 
-Eine Frist taugt dafür ohnehin nicht: Die fünfzehn Läufe mit ablesbarem Anfang
+Eine Frist taugt dafür ohnehin nicht: Die sechzehn Läufe mit ablesbarem Anfang
 und Ende brauchten zwischen 103 und 316 Sekunden.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
@@ -996,9 +1002,10 @@ am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
 (04:30:14 → 04:35:30), **177 s** (04:39:16 → 04:42:13), **259 s**
 (04:43:46 → 04:48:05), **209 s** (04:50:45 → 04:54:14) und **228 s**
 (04:56:27 → 05:00:15), noch einmal **228 s** (05:02:15 → 05:06:03) und
-**218 s** (05:08:30 → 05:12:08) und **186 s** (05:14:46 → 05:17:52).
+**218 s** (05:08:30 → 05:12:08), **186 s** (05:14:46 → 05:17:52) und **279 s**
+(05:19:28 → 05:24:07).
 
-Fünfzehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Sechzehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
 Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
@@ -1064,13 +1071,24 @@ verpackt —, aber mit der **umgekehrten** Handlungsanweisung als beim 400er:
 - Beim 400er war die Absage deterministisch und wiederholbar; ein
   Wiederholungsrat wäre dort falsch gewesen, gesucht werden musste der fehlende
   Parameter.
-- Hier trennt ein Wiederholungslauf einen einmaligen Aussetzer ab, und er
+- Hier kann ein Wiederholungslauf einen einmaligen Aussetzer abtrennen, und er
   verlangt keine Konfigurationsänderung. Umsonst ist er deshalb nicht: Er wird
   per Kommentar ausgelöst und zählt damit ins Kontingent wie jeder
   GitHub-getriggerte Lauf — billiger als eine überflüssige Environment, aber
-  nicht gratis. **Erst wiederholen, dann konfigurieren.** Wer der Meldung sofort
+  nicht gratis. **Eher wiederholen als konfigurieren.** Wer der Meldung sofort
   folgt, legt eine Environment an, die es schon gibt, und hält das Problem
   danach für gelöst.
+
+  **Wiederholen heisst aber nicht sofort wiederholen**, und das stand hier eine
+  Fassung lang zu einfach. Am 9.9.2026 ging die Meldung auf `#87` zweimal einem
+  Lauf voraus, der 20 beziehungsweise 21 Sekunden später doch startete; auf
+  `#76` lief er in derselben Sekunde. Wer in diesem Zustand erneut auslöst,
+  erzeugt einen zweiten Lauf, der den ersten aus dem Bericht verdrängt — und
+  macht dessen Ausgang unfeststellbar. Zuerst also in den Statusbericht sehen,
+  ob ein Lauf erschienen ist. Steht dort keiner, ist die Wiederholung eine
+  **bewusst riskante Wahl** und kein sicherer Handgriff: Ein Kriterium, das den
+  gescheiterten Auslöser vom verzögerten unterscheidet, gibt es nicht (oben, im
+  Abschnitt über das Warten).
 
 Wiederholt sich die Meldung, ist sie **stabil** — mehr nicht. Auch das belegt
 keine fehlende Environment: Ein Aussetzer, der zwei Anläufe überdauert, sieht
