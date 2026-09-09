@@ -570,6 +570,7 @@ den ersten.
 | `#81` | 03:17:53 | 03:19:19 | 03:19:22 | 03:19:25 | 03:19:27 |
 | `#82` | 03:26:13 | 03:28:50 | 03:28:52 | 03:28:54 | 03:28:56 |
 | `#84` | 03:41:41 | 03:43:04 | 03:43:08 | 03:43:11 | 03:43:14 |
+| `#85` | 03:48:15 | 03:49:35 | 03:49:40 | 03:49:42 | 03:49:43 |
 
 Was das kostet, ist an `#83` abzulesen: Dort meldete Codex zwei P2-Befunde —
 darunter einen Zirkelschluss im Text selbst — **vier Sekunden bevor** der PR mit
@@ -585,9 +586,21 @@ Reaktion trennt Codex nicht von einem Menschen. Beide Läufe auf `3842efe` sind
 damit *geprüft, Ausgang offen* — und das ist die richtige Auskunft, nicht die
 bequeme.
 
+**Ein eigener PR dafür genügt nicht.** `#85` wurde genau zu dem Zweck geöffnet,
+einen feststellbaren Ausgang zu bekommen, und trug die Bitte zu warten im
+eigenen Text. Er wurde fünf Sekunden nach «ready» gemergt; Lauf 2 begann zwei
+Sekunden danach und endete um 03:50:54 wieder mit `✅ Completed` und ohne
+Ergebnis. Der Versuch, das Problem durch einen weiteren PR zu lösen, reproduziert
+es also bloss.
+
 Praktisch folgt daraus nur eines, und es steht schon oben: Den Draft von Hand
 prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt. Die
-gemessenen Läufe brauchen dafür rund zwei Minuten.
+gemessenen Läufe brauchen dafür rund zwei Minuten. Der Hebel ist diese Pause,
+nicht der PR — vier Läufe in Folge unterscheiden sich in nichts anderem.
+
+Die Gegenprobe dazu fehlt noch: ein PR, bei dem gewartet wurde. Solange sie
+aussteht, ist «die Pause hilft» eine begründete Erwartung und keine Messung —
+gemessen sind nur die vier Fälle, in denen nicht gewartet wurde.
 
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
 also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit im
