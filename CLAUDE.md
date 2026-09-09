@@ -409,9 +409,13 @@ den dieser Abschnitt verhindern soll, nur in die andere Richtung.
 
 «Kein Kommentar» heisst also nicht «geprüft und sauber». Unterscheiden lässt es
 sich an der Form: Ein Review **mit** Befund ist ein Review-Objekt
-(«💡 Codex Review», mit Commit-Angabe); ein Review **ohne** Befund und die
-beiden Ausfallmeldungen — Kontingent wie Environment — sind gewöhnliche
-Issue-Kommentare und trennen sich nur im Text. Beim Draft greift ohne
+(«💡 Codex Review», mit Commit-Angabe); ein Review **ohne** Befund ist ein
+gewöhnlicher Issue-Kommentar.
+
+**Die Ausfallmeldungen sind in der Form nicht festgelegt.** Hier stand, auch
+sie seien Issue-Kommentare; am 9.9.2026 kam die Environment-Meldung auf `#87`
+zweimal als **Review-Kommentar in einem Thread**. Beide Formen also, und wer
+nur eine abfragt, übersieht sie. Beim Draft greift ohne
 manuellen Anstoss kein Auslöser, dort steht dann überhaupt nichts; ein
 kommentarloser Draft ist deshalb kein Beleg, sondern ein nicht durchgeführter
 Test. Ein von Hand angestossener Lauf hinterlässt dagegen auch auf einem Draft
@@ -672,28 +676,47 @@ steht:
   Ausfallmeldung ändert daran nichts: Auf `#76` stand die Environment-Meldung
   in **derselben Sekunde**, in der ein Review anlief, auf `#87` zwanzig
   Sekunden davor.
-- **`✅ Completed` für den eigenen Lauf** — das Ergebnis ist fällig. In allen
-  sieben Läufen an offenen PRs, bei denen beides ablesbar war, stand es sogar
-  schon da: es erschien **zwei bis drei Sekunden vor** dem Wechsel. Einen
-  späteren Fall hat hier niemand gemessen; ausgeschlossen ist er nicht. Kommt
-  auch kurz darauf nichts, heisst das «geprüft, Ausgang offen» — und gerade
-  nicht «sauber». Wie lange «kurz darauf» ist, sagt keine dieser Messungen.
+- **`✅ Completed` für den eigenen Lauf, und das Ergebnis ist da** — fertig.
+  In allen acht Läufen an offenen PRs, bei denen beides ablesbar war, stand es
+  sogar schon vorher da: es erschien **zwei bis drei Sekunden vor** dem
+  Wechsel.
 - **Der eigene Lauf stand im Bericht und ist daraus verschwunden** — dann war
   die Voraussetzung verletzt, ein zweiter Lauf hat ihn verdrängt. Sein Ausgang
-  ist nicht mehr feststellbar und wird es auch nicht mehr. Was hilft, ist kein
-  Warten, sondern ein frischer Lauf auf dem aktuellen Head, nachdem alles
-  andere ausgelaufen ist.
-- **Der eigene Auslöser hat nie einen Lauf erzeugt, und es steht eine
-  Ausfallmeldung da** — dann ist der *Versuch* gescheitert, nicht der Review
-  offen. Hier endet das Warten, denn ein Ergebnis kommt nie: bei der
-  Environment-Meldung wiederholen (oben, «erst wiederholen, dann
-  konfigurieren»), beim Kontingent später erneut anstossen.
+  ist nicht mehr feststellbar und wird es auch nicht mehr.
 
-Die letzten beiden Zeilen sehen im PR gleich aus — im Bericht steht kein Lauf
-zum eigenen Auslöser — und bedeuten das Gegenteil. Unterscheiden lassen sie
-sich nur, wenn man den Bericht **vorher** gesehen hat. Wer erst hinschaut,
-nachdem alles vorbei ist, kann nicht entscheiden, ob der eigene Lauf nie kam
-oder bloss überschrieben wurde.
+**Zwei Zustände bleiben offen, und beide haben dieselbe Form: Es ist nichts
+da.** `✅ Completed`, aber kein Ergebnis. Oder eine Ausfallmeldung, aber im
+Bericht noch kein Lauf zum eigenen Auslöser. In beiden Fällen ist die Frage
+dieselbe — kommt noch etwas? —, und **beantworten lässt sie sich nicht.**
+
+Der Versuch, sie über eine Wartezeit zu beantworten, ist genau der Fehler, den
+dieser Abschnitt sechs Fassungen lang gemacht hat. Was die Messungen dazu
+hergeben, sind Anhaltspunkte und keine Schranken: Ein Ergebnis, das nach
+`✅ Completed` kam, wurde nie beobachtet — der Zustand «Completed ohne Ergebnis»
+selbst aber auch nicht. Und zwischen Environment-Meldung und Start des Laufs
+lagen 0 Sekunden (`#76`) sowie 20 und 21 Sekunden (`#87`, 9.9.2026, zweimal
+nacheinander). Wer daraus eine Frist macht, hat sie erfunden.
+
+Praktisch folgt daraus nicht «länger warten», sondern:
+
+- **Aus dem Nichts nichts schliessen.** «Es steht nichts da» ist nie «sauber»
+  und nie «gescheitert». Auf ready stellen oder mergen ist in beiden Zuständen
+  falsch — dieselbe Regel wie beim 403 weiter oben: Entscheidend ist nicht,
+  was fehlt, sondern ob die Quelle geantwortet hat.
+- **Nicht sofort wiederholen.** Ein zweiter Auslöser im Zwischenzustand erzeugt
+  genau die Überlappung, die die Voraussetzung verhindern soll — und macht den
+  eigenen Ausgang unfeststellbar. Auf `#87` wäre das zweimal passiert: Beide
+  Male stand die Environment-Meldung da, beide Male kam der Lauf gut zwanzig
+  Sekunden später doch.
+- **Bleibt es dabei, hilft nur ein sauberer Neuanfang:** abwarten, bis im
+  Bericht nichts mehr läuft, dann **einen** Lauf auf dem aktuellen Head
+  anstossen und ihn unter der Ein-Lauf-Voraussetzung zu Ende führen. Das kostet
+  Kontingent und ist der einzige Weg, der wieder zu einem feststellbaren
+  Ausgang führt.
+
+Der letzte Punkt ist der Grund, warum die Voraussetzung oben steht und nicht
+die Auswertung: Ist sie eingehalten, kommt man in diese Zustände selten; ist
+sie verletzt, führt aus ihnen kein Lesen heraus, sondern nur ein neuer Lauf.
 
 **Und die Ausfallmeldung ist nicht zuverlässig ein Issue-Kommentar.** Weiter
 unten steht, die beiden Ausfallmeldungen seien gewöhnliche Issue-Kommentare;
@@ -701,7 +724,7 @@ am 9.9.2026 kam die Environment-Meldung auf `#87` als **Review-Kommentar in
 einem Thread**. Wer sie nur mit `get_comments` sucht, findet sie dort nicht —
 und der Kommentarzähler bewegt sich nicht.
 
-Eine Frist taugt dafür ohnehin nicht: Die dreizehn Läufe mit ablesbarem Anfang
+Eine Frist taugt dafür ohnehin nicht: Die vierzehn Läufe mit ablesbarem Anfang
 und Ende brauchten zwischen 103 und 316 Sekunden.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
@@ -819,15 +842,20 @@ und wer den Widerspruch stattdessen ohne Abfrage glattzieht, rät bloss zwischen
 drei Auflösungen.
 
 Das sind verschiedene Abfragen — `get_reviews` fürs Objekt, `get_comments` für
-die Kommentare; wer nur eine nimmt, übersieht den Rest. Genau so ist die
-Limit-Meldung zuerst durchgerutscht. «Alles andere» deckt `get_comments` aber
-nicht ab: Die Reaktion am PR liegt in keiner der beiden — sie steht im Feld
+die Issue-Kommentare, `get_review_comments` für die Kommentare in den Threads;
+wer nur eine nimmt, übersieht den Rest. Genau so ist die Limit-Meldung zuerst
+durchgerutscht, und genau so wäre die Environment-Meldung vom 9.9.2026
+durchgerutscht: Sie stand als Review-Kommentar in einem Thread, wo
+`get_comments` sie nicht findet und wo der Kommentarzähler sich nicht bewegt.
+«Alles andere» deckt keine der drei ab: Die Reaktion am PR liegt in keiner — sie steht im Feld
 `reactions` von `issue_read`, und weil das eine Summe ohne Urheber ist, taugt
 sie ohnehin nicht als Beleg (oben, und weiter unten ausführlicher).
 
 Der Kommentarzähler allein reicht ohnehin nicht: `comments: 1` kann die
 Befundlos-, die Kontingent- **oder** die Environment-Meldung sein — und seit dem
-29.8.2026 auch einen blossen Statusbericht, der überhaupt kein Ergebnis meldet:
+29.8.2026 auch einen blossen Statusbericht, der überhaupt kein Ergebnis meldet.
+Umgekehrt bewegt er sich nicht, wenn eine Ausfallmeldung als Review-Kommentar
+kommt. Er zählt also mal zu viel und mal zu wenig:
 
 ```
 ## Codex Review Summary
@@ -958,9 +986,10 @@ am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
 (04:17:33 → 04:21:09), **235 s** (04:23:26 → 04:27:21), **316 s**
 (04:30:14 → 04:35:30), **177 s** (04:39:16 → 04:42:13), **259 s**
 (04:43:46 → 04:48:05), **209 s** (04:50:45 → 04:54:14) und **228 s**
-(04:56:27 → 05:00:15) und noch einmal **228 s** (05:02:15 → 05:06:03).
+(04:56:27 → 05:00:15), noch einmal **228 s** (05:02:15 → 05:06:03) und
+**218 s** (05:08:30 → 05:12:08).
 
-Dreizehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Vierzehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
 Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
