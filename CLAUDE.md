@@ -559,6 +559,36 @@ Also beide Stellen lesen — und keiner von beiden mehr abgewinnen als: hier lie
 etwas, oder hier lief etwas ohne Befund durch. Welcher Commit, welcher Lauf,
 wessen Reaktion: nichts davon steht darin.
 
+**Das Muster ist dreimal in Folge aufgetreten, an jedem PR dieser Serie.**
+Jedes Mal derselbe Ablauf: ein Lauf per `@codex review` angestossen, dann
+«ready», dann binnen zwei bis vier Sekunden der Merge, dann ein zweiter Lauf
+aus dem ready-Auslöser — und der Bericht, der nur den jüngsten hält, überschrieb
+den ersten.
+
+| PR | Lauf 1 | ready | Merge | Lauf 2 | Bericht überschrieben |
+|---|---|---|---|---|---|
+| `#81` | 03:17:53 | 03:19:19 | 03:19:22 | 03:19:25 | 03:19:27 |
+| `#82` | 03:26:13 | 03:28:50 | 03:28:52 | 03:28:54 | 03:28:56 |
+| `#84` | 03:41:41 | 03:43:04 | 03:43:08 | 03:43:11 | 03:43:14 |
+
+Was das kostet, ist an `#83` abzulesen: Dort meldete Codex zwei P2-Befunde —
+darunter einen Zirkelschluss im Text selbst — **vier Sekunden bevor** der PR mit
+ihnen gemergt wurde. Beide waren richtig, beide mussten in einem Folge-PR
+nachgezogen werden. Der Review hatte gearbeitet; nur hingesehen hatte niemand
+mehr.
+
+**Und auf `#84` griff die Regel von oben zum ersten Mal.** Der Bericht stand auf
+`✅ Completed` für `3842efe`, die 👍 kam eine Sekunde später — nach der alten
+Fassung hätte das «Lauf sauber» geheissen. Feststellbar ist es nicht: kein
+Review-Objekt, keine Befundlos-Meldung (der PR war seit 92 Sekunden zu), und die
+Reaktion trennt Codex nicht von einem Menschen. Beide Läufe auf `3842efe` sind
+damit *geprüft, Ausgang offen* — und das ist die richtige Auskunft, nicht die
+bequeme.
+
+Praktisch folgt daraus nur eines, und es steht schon oben: Den Draft von Hand
+prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt. Die
+gemessenen Läufe brauchen dafür rund zwei Minuten.
+
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
 also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit im
 Regelfall von aussen nicht feststellbar** — auf `#68` ausnahmsweise doch, und
