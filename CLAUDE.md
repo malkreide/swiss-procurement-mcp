@@ -559,17 +559,18 @@ Also beide Stellen lesen — und keiner von beiden mehr abgewinnen als: hier lie
 etwas, oder hier lief etwas ohne Befund durch. Welcher Commit, welcher Lauf,
 wessen Reaktion: nichts davon steht darin.
 
-**Das Muster ist dreimal in Folge aufgetreten, an jedem PR dieser Serie.**
-Jedes Mal derselbe Ablauf: ein Lauf per `@codex review` angestossen, dann
-«ready», dann binnen zwei bis vier Sekunden der Merge, dann ein zweiter Lauf
-aus dem ready-Auslöser — und der Bericht, der nur den jüngsten hält, überschrieb
-den ersten.
+**Das Muster ist viermal in Folge aufgetreten, an jedem PR dieser Serie, bei
+dem nicht gewartet wurde.** Jedes Mal derselbe Ablauf: ein Lauf per
+`@codex review` angestossen, dann «ready», dann binnen zwei bis fünf Sekunden
+der Merge, dann ein zweiter Lauf aus dem ready-Auslöser — und der Bericht, der
+nur den jüngsten hält, überschrieb den ersten.
 
 | PR | Lauf 1 | ready | Merge | Lauf 2 | Bericht überschrieben |
 |---|---|---|---|---|---|
 | `#81` | 03:17:53 | 03:19:19 | 03:19:22 | 03:19:25 | 03:19:27 |
 | `#82` | 03:26:13 | 03:28:50 | 03:28:52 | 03:28:54 | 03:28:56 |
 | `#84` | 03:41:41 | 03:43:04 | 03:43:08 | 03:43:11 | 03:43:14 |
+| `#85` | 03:48:15 | 03:49:35 | 03:49:40 | 03:49:42 | 03:49:43 |
 
 Was das kostet, ist an `#83` abzulesen: Dort meldete Codex zwei P2-Befunde —
 darunter einen Zirkelschluss im Text selbst — **vier Sekunden bevor** der PR mit
@@ -585,9 +586,33 @@ Reaktion trennt Codex nicht von einem Menschen. Beide Läufe auf `3842efe` sind
 damit *geprüft, Ausgang offen* — und das ist die richtige Auskunft, nicht die
 bequeme.
 
+**Ein eigener PR dafür genügt nicht.** `#85` wurde genau zu dem Zweck geöffnet,
+einen feststellbaren Ausgang zu bekommen, und trug die Bitte zu warten im
+eigenen Text. Er wurde fünf Sekunden nach «ready» gemergt; Lauf 2 begann zwei
+Sekunden danach und endete um 03:50:54 wieder mit `✅ Completed` und ohne
+Ergebnis. Der Versuch, das Problem durch einen weiteren PR zu lösen, reproduziert
+es also bloss.
+
 Praktisch folgt daraus nur eines, und es steht schon oben: Den Draft von Hand
 prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt. Die
 gemessenen Läufe brauchen dafür rund zwei Minuten.
+
+Dass die Pause die *Ursache* ist, folgt aus den vier Fällen allerdings nicht:
+In allen vieren fehlte sie, es gibt also keine Variation, aus der sich das
+ableiten liesse. Sie ist die naheliegende Abhilfe, nicht die gemessene.
+
+**Die Gegenprobe ist inzwischen gefahren, und sie ging auf.** Auf `#86` — dem
+PR, der diesen Absatz einführte — wurde gewartet: Lauf um 03:57:31 von Hand
+angestossen, der PR blieb offen, um 03:59:52 stand `✅ Completed` mit dem
+Auslöser «Manual request» und daneben ein Review-Objekt mit zwei Befunden auf
+`009f570`. Kein zweiter Lauf, kein überschriebener Bericht, ein bindender
+Ausgang.
+
+Das ist **ein** Fall gegen vier, und ein einzelner Fall trägt keine Kausalität —
+aber er ist der einzige mit Pause, und er ist der einzige mit feststellbarem
+Ausgang. Mehr sagt diese Zeile nicht, und weniger wäre zu wenig: Die beiden
+Befunde jenes Laufs betrafen genau diesen Abschnitt und wären ohne die Pause
+verloren gewesen.
 
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
 also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit im
