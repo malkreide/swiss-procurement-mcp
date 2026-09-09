@@ -556,10 +556,10 @@ Rücknahme ohne 👍 mit einem Befund zusammen; auf `#86` mit einem Lauf, dessen
 Ergebnis mangels offenem PR gar nicht gepostet werden konnte. Dieselbe
 Beobachtung, zwei unvereinbare Ursachen — sie trennt die Fälle nicht.
 
-Die 👍 am PR (`+1: 1`) trägt hier nichts. Auf `#68` war sie lesbar, weil ausser
-Codex niemand den PR angefasst hatte; hier hat der Autor ihn selbst auf ready
-gestellt und gemergt, und `reactions` bleibt eine Summe ohne Urheber. Selbst
-wenn sie von Codex stammt: welchem der beiden Läufe sie gälte, sagt sie nicht.
+Die 👍 am PR (`+1: 1`) trägt hier nichts — und, anders als hier zwei Fassungen
+lang stand, auch auf `#68` nicht: Jene Ausnahme ist weiter unten zurückgenommen.
+`reactions` bleibt eine Summe ohne Urheber, und selbst wenn die Reaktion von
+Codex stammte, sagt sie nicht, welchem der beiden Läufe sie gälte.
 
 **Der Übergang selbst ist inzwischen beobachtet — er trägt aber keine
 Zuordnung.** Auf `#82` stand am PR zum Merge-Zeitpunkt `eyes: 1`; um
@@ -601,9 +601,10 @@ Beobachtung, die nur eine der beiden Stellen abfragte. Dieselbe Falle wie
 damals bei den Kommentaren, nur andersherum, und sie hat hier zwei Fassungen
 überlebt.
 
-Also beide Stellen lesen — und keiner von beiden mehr abgewinnen als: hier lief
-etwas, oder hier lief etwas ohne Befund durch. Welcher Commit, welcher Lauf,
-wessen Reaktion: nichts davon steht darin.
+Also beide Stellen lesen — und keiner von beiden irgendetwas abgewinnen. Hier
+stand einmal «wenigstens: hier lief etwas»; auch das ist zu viel, denn eine
+Reaktion von Hand belegt keinen Lauf, und ob eine von Hand kam, sagt die Summe
+nicht. Die ausführliche Rücknahme steht weiter unten bei der Beweisregel.
 
 **Das Muster ist viermal in Folge aufgetreten, an jedem PR dieser Serie, bei
 dem nicht gewartet wurde.** Jedes Mal derselbe Ablauf: ein Lauf per
@@ -645,17 +646,25 @@ prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt.
 **Was «abwarten» heisst, ist dabei genauer zu nehmen, als hier eine Fassung
 lang stand.** Dort war das Kriterium «bis der Statusbericht nicht mehr
 ‹Running› sagt» — und das ist falsch, aus dem Grund, den derselbe Text weiter
-oben nennt: Der Bericht belegt «geprüft», nicht «sauber». Wer bei `✅ Completed`
-ready stellt, kann das Review-Objekt um Sekunden verpassen; auf `#87` erschien
-es drei Sekunden **vor** dem Wechsel, ein anderes Mal kann es danach kommen.
-Damit wäre eine Uhr durch die nächstbeste Näherung ersetzt.
+oben nennt: Der Bericht belegt «geprüft», nicht «sauber». Damit wäre eine Uhr
+durch die nächstbeste Näherung ersetzt.
 
 Das Ende der Pause ist das **Ergebnisobjekt** zum aktuellen Head: ein
-Review-Objekt oder eine Befundlos-Meldung. Der Bericht sagt nur, wann das
-Warten darauf endet — steht er auf `✅ Completed` und ist keines von beiden da,
-heisst das «geprüft, Ausgang offen» und gerade nicht «sauber».
+Review-Objekt oder eine Befundlos-Meldung — oder eine der beiden
+Ausfallmeldungen, Kontingent und Environment, die den Lauf ebenso abschliessen.
 
-Eine Frist taugt dafür ohnehin nicht: Die neun Läufe mit ablesbarem Anfang und
+**Der Statuswechsel beendet die Pause nicht** — er sagt nur, dass das Ergebnis
+fällig ist. In allen sieben Läufen an offenen PRs, bei denen beides ablesbar
+war, erschien das Ergebnisobjekt **zwei bis drei Sekunden vor** dem Wechsel;
+einen Lauf, bei dem es danach kam, hat hier niemand gemessen. Ausgeschlossen ist
+er damit nicht, und darauf kommt es gar nicht an: Der Bericht nennt den Ausgang
+nicht, also kann er das Warten auf ihn nicht beenden.
+
+Steht er auf `✅ Completed` und ist kurz darauf immer noch nichts da, heisst das
+«geprüft, Ausgang offen» — und gerade nicht «sauber». Wie lange «kurz darauf»
+ist, sagt keine dieser Messungen.
+
+Eine Frist taugt dafür ohnehin nicht: Die zehn Läufe mit ablesbarem Anfang und
 Ende brauchten zwischen 103 und 316 Sekunden.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
@@ -893,9 +902,10 @@ einzelnen Lauf. Auf `swiss-procurement-mcp#75` am 30.8.: **103 s**
 **141 s** (03:57:31 → 03:59:52) und **157 s** (04:04:31 → 04:07:08); auf `#87`
 am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
 (04:17:33 → 04:21:09), **235 s** (04:23:26 → 04:27:21), **316 s**
-(04:30:14 → 04:35:30) und **177 s** (04:39:16 → 04:42:13).
+(04:30:14 → 04:35:30), **177 s** (04:39:16 → 04:42:13) und **259 s**
+(04:43:46 → 04:48:05).
 
-Neun Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Zehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
 Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
