@@ -643,36 +643,44 @@ es also bloss.
 Praktisch folgt daraus nur eines, und es steht schon oben: Den Draft von Hand
 prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt.
 
-**Was «abwarten» heisst, ist dabei genauer zu nehmen, als hier eine Fassung
-lang stand.** Dort war das Kriterium «bis der Statusbericht nicht mehr
-‹Running› sagt» — und das ist falsch, aus dem Grund, den derselbe Text weiter
-oben nennt: Der Bericht belegt «geprüft», nicht «sauber». Damit wäre eine Uhr
-durch die nächstbeste Näherung ersetzt.
+**Was «abwarten» heisst, hat vier Fassungen und vier Codex-Befunde gebraucht.**
+Nacheinander stand hier: eine Frist von zwei Minuten; dann «bis der Bericht
+nicht mehr ‹Running› sagt»; dann «Ergebnisobjekt **oder** eine der beiden
+Ausfallmeldungen»; dann «Ergebnisobjekt zum aktuellen Head». Jede Fassung war
+enger als die vorige und jede noch falsch. Deshalb steht die Regel jetzt als
+Ablauf da und nicht als Halbsatz.
 
-Das Ende der Pause ist das **Ergebnisobjekt** zum aktuellen Head: ein
-Review-Objekt oder eine Befundlos-Meldung.
+**Gewartet wird auf ein Ergebnis, das zu genau diesem Lauf gehört** — ein
+Review-Objekt oder eine Befundlos-Meldung, entstanden **nach** dem eigenen
+Auslöser. «Zum aktuellen Head» genügt nicht: Auf demselben Commit können
+mehrere Läufe liegen, ihre Urteile können auseinandergehen, und ein älteres
+Ergebnisobjekt bleibt stehen. Wer nur auf den Commit prüft, ist beim nächsten
+`@codex review` sofort «fertig», während der neue Lauf noch läuft.
 
-**Die beiden Ausfallmeldungen zählen nicht dazu**, und das stand hier eine
-Fassung lang falsch. Für die Environment-Meldung ist der Gegenfall im selben
-Dokument gemessen: Auf `#76` erschien sie in **derselben Sekunde**, in der ein
-Review anlief. Wer bei ihr aufhört zu warten, stellt mitten in einen laufenden
-Lauf hinein ready. Für die Kontingent-Meldung ist kein solcher Fall gemessen —
-was nach der Regel dieses Dokuments nichts belegt, sondern nur heisst, dass
-niemand hingesehen hat. Beide Meldungen sind ein Grund, in den Bericht zu
-schauen, kein Grund aufzuhören.
+Der Bericht sagt dabei nicht, wann man aufhören darf, sondern **welcher Lauf
+gerade gilt und ob er noch läuft**:
 
-**Der Statuswechsel beendet die Pause nicht** — er sagt nur, dass das Ergebnis
-fällig ist. In allen sieben Läufen an offenen PRs, bei denen beides ablesbar
-war, erschien das Ergebnisobjekt **zwei bis drei Sekunden vor** dem Wechsel;
-einen Lauf, bei dem es danach kam, hat hier niemand gemessen. Ausgeschlossen ist
-er damit nicht, und darauf kommt es gar nicht an: Der Bericht nennt den Ausgang
-nicht, also kann er das Warten auf ihn nicht beenden.
+- **`🔄 Running`** — weiterwarten, egal was sonst im PR erscheint. Auch eine
+  Ausfallmeldung ändert daran nichts: Auf `#76` stand die Environment-Meldung
+  in **derselben Sekunde**, in der ein Review anlief.
+- **`✅ Completed` für den eigenen Lauf** — das Ergebnis ist fällig. In allen
+  sieben Läufen an offenen PRs, bei denen beides ablesbar war, stand es sogar
+  schon da: es erschien **zwei bis drei Sekunden vor** dem Wechsel. Einen
+  späteren Fall hat hier niemand gemessen; ausgeschlossen ist er nicht. Kommt
+  auch kurz darauf nichts, heisst das «geprüft, Ausgang offen» — und gerade
+  nicht «sauber». Wie lange «kurz darauf» ist, sagt keine dieser Messungen.
+- **Gar kein Lauf zum eigenen Auslöser, dafür eine Ausfallmeldung** — dann ist
+  der *Versuch* gescheitert und nicht der Review offen. Hier endet das Warten,
+  denn ein Ergebnis kommt nie: bei der Environment-Meldung wiederholen (oben,
+  «erst wiederholen, dann konfigurieren»), beim Kontingent später erneut
+  anstossen. Wer hier weiterwartet, wartet endlos.
 
-Steht er auf `✅ Completed` und ist kurz darauf immer noch nichts da, heisst das
-«geprüft, Ausgang offen» — und gerade nicht «sauber». Wie lange «kurz darauf»
-ist, sagt keine dieser Messungen.
+Die dritte Zeile ist der Grund, warum die Fassung davor falsch war: Sie
+verurteilte die Ausfallmeldungen pauschal und liess damit den einen Fall
+endlos laufen, in dem sie tatsächlich das Ende sind. Entscheidend ist nicht die
+Meldung, sondern ob im Bericht ein Lauf zum eigenen Auslöser steht.
 
-Eine Frist taugt dafür ohnehin nicht: Die elf Läufe mit ablesbarem Anfang und
+Eine Frist taugt dafür ohnehin nicht: Die zwölf Läufe mit ablesbarem Anfang und
 Ende brauchten zwischen 103 und 316 Sekunden.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
@@ -928,9 +936,10 @@ einzelnen Lauf. Auf `swiss-procurement-mcp#75` am 30.8.: **103 s**
 am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
 (04:17:33 → 04:21:09), **235 s** (04:23:26 → 04:27:21), **316 s**
 (04:30:14 → 04:35:30), **177 s** (04:39:16 → 04:42:13), **259 s**
-(04:43:46 → 04:48:05) und **209 s** (04:50:45 → 04:54:14).
+(04:43:46 → 04:48:05), **209 s** (04:50:45 → 04:54:14) und **228 s**
+(04:56:27 → 05:00:15).
 
-Elf Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Zwölf Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
 Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
