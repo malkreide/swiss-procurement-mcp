@@ -481,6 +481,46 @@ niemand gemessen; die Regel oben gilt für ihn deshalb nicht. Praktisch läuft
 beides auf dieselbe Vorsicht hinaus — wer mergt, während etwas läuft, kann das
 Ergebnis verlieren —, behauptet ist aber nur der gemessene Fall.
 
+**Am 9.9.2026 nachgemessen — und die Antwort ist zum Teil eine andere Frage.**
+Auf `#81` liefen zwei Reviews auf demselben Commit `a1f3d9d`:
+
+| Zeit (UTC) | Ereignis |
+|---|---|
+| 03:17:40 | «@codex review» kommentiert |
+| 03:17:53 | Lauf 1 startet, Auslöser «Manual request» |
+| 03:17:55 | Statusbericht angelegt, Lauf 1 «Running» |
+| 03:19:19 | «ready for review» |
+| 03:19:22 | Merge |
+| 03:19:25 | Lauf 2 startet, Auslöser «Draft marked ready» |
+| 03:19:27 | Bericht editiert: Lauf 2 «Running» — Lauf 1 kommt darin nicht mehr vor |
+| 03:20:41 | Bericht editiert: «✅ Completed», Lauf 2, Commit `a1f3d9d` |
+
+Drei Beobachtungen, und die mittlere wiegt am schwersten:
+
+- **Ein geschlossener PR hält den Lauf nicht auf.** Lauf 2 startete drei
+  Sekunden *nach* dem Merge und lief bis `✅ Completed` durch. Die Frage von
+  oben bleibt trotzdem offen: gemessen ist wieder nur ein Lauf, der nach dem
+  Merge *begann*. Was mit Lauf 1 geschah, der zum Merge-Zeitpunkt lief, sagt
+  diese Beobachtung gerade nicht — siehe die nächste Zeile.
+- **Der Statusbericht hält nur den jüngsten Lauf.** Lauf 1 verschwand beim
+  ersten Edit spurlos; ob er endete und wie, ist nirgends feststellbar. Der
+  Bericht belegt damit «dieser Commit wurde geprüft» — nicht «jeder Lauf auf
+  diesem Commit ist ausgewertet». Das ist keine Haarspalterei: derselbe Text
+  bekam am 23.8. in 42 Läufen 36-mal einen Befund und 6-mal keinen, zwei Läufe
+  auf demselben Commit können also gegenteilig ausgehen.
+- **Ein Ergebnis kam keines** — weder Review-Objekt noch Befundlos-Meldung.
+  Das bestätigt die Regel oben ein zweites Mal.
+
+**Und die 👀 blieb stehen.** Der auslösende `@codex review`-Kommentar trägt sie
+noch, obwohl beide Läufe vorbei sind — anders als auf `#64`, wo sie nach dem
+Lauf entfernt wurde. Eine stehengebliebene 👀 belegt also keinen laufenden
+Review; sie ist so wenig eine Auskunft wie ihre Abwesenheit.
+
+Die 👍 am PR (`+1: 1`) trägt hier nichts. Auf `#68` war sie lesbar, weil ausser
+Codex niemand den PR angefasst hatte; hier hat der Autor ihn selbst auf ready
+gestellt und gemergt, und `reactions` bleibt eine Summe ohne Urheber. Selbst
+wenn sie von Codex stammt: welchem der beiden Läufe sie gälte, sagt sie nicht.
+
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
 also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit im
 Regelfall von aussen nicht feststellbar** — auf `#68` ausnahmsweise doch, und
