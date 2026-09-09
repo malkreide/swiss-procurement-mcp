@@ -698,8 +698,11 @@ dieselbe — kommt noch etwas? —, und **beantworten lässt sie sich nicht.**
 Der Versuch, sie über eine Wartezeit zu beantworten, ist genau der Fehler, den
 dieser Abschnitt sechs Fassungen lang gemacht hat. Was die Messungen dazu
 hergeben, sind Anhaltspunkte und keine Schranken: Ein Ergebnis, das nach
-`✅ Completed` kam, wurde nie beobachtet — der Zustand «Completed ohne Ergebnis»
-selbst aber auch nicht. Und zwischen Environment-Meldung und Start des Laufs
+`✅ Completed` kam, wurde nie beobachtet — und «Completed ohne Ergebnis» an
+einem **offenen** PR mit nur einem Lauf auch nicht. Am geschlossenen PR ist
+dieser Zustand dagegen bekannt und terminal: `#68` und Lauf 3 auf `#86` sind
+oben beschrieben, dort kommt nichts mehr. Der Fall, um den es hier geht, ist
+also allein der offene PR. Und zwischen Environment-Meldung und Start des Laufs
 lagen 0 Sekunden (`#76`) sowie 20 und 21 Sekunden (`#87`, 9.9.2026, zweimal
 nacheinander). Wer daraus eine Frist macht, hat sie erfunden.
 
@@ -739,7 +742,7 @@ am 9.9.2026 kam die Environment-Meldung auf `#87` als **Review-Kommentar in
 einem Thread**. Wer sie nur mit `get_comments` sucht, findet sie dort nicht —
 und der Kommentarzähler bewegt sich nicht.
 
-Eine Frist taugt dafür ohnehin nicht: Die sechzehn Läufe mit ablesbarem Anfang
+Eine Frist taugt dafür ohnehin nicht: Die siebzehn Läufe mit ablesbarem Anfang
 und Ende brauchten zwischen 103 und 316 Sekunden.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
@@ -1003,9 +1006,9 @@ am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
 (04:43:46 → 04:48:05), **209 s** (04:50:45 → 04:54:14) und **228 s**
 (04:56:27 → 05:00:15), noch einmal **228 s** (05:02:15 → 05:06:03) und
 **218 s** (05:08:30 → 05:12:08), **186 s** (05:14:46 → 05:17:52) und **279 s**
-(05:19:28 → 05:24:07).
+(05:19:28 → 05:24:07) und **223 s** (05:26:05 → 05:29:48).
 
-Sechzehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Siebzehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
 Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
