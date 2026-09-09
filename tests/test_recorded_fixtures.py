@@ -19,6 +19,7 @@ Herkunft, Datum, Auswahlregel und SHA-256 je Datei stehen in
 
 from __future__ import annotations
 
+import copy
 import datetime as dt
 import re
 
@@ -383,6 +384,55 @@ async def test_die_generische_absage_bleibt_fuer_das_ungemessene(status):
     )
     assert verlauf.provenance == "degraded"
     assert "retry" in (verlauf.note or "").lower()
+
+
+def test_ein_los_ohne_id_wird_gezaehlt_statt_verschluckt():
+    """Der Teilverlust hinterliess bisher keine Spur.
+
+    `_to_lots` kann ein Los ohne `lotId` nicht mitfuehren — die Id ist der
+    einzige Griff, den der Historie-Endpunkt annimmt. Das Ueberspringen ist
+    also richtig; still zu sein war es nicht. Im gemappten Modell fehlt das Los
+    danach einfach, und von aussen ist ein Teilverlust nicht von einer
+    Publikation mit weniger Losen zu unterscheiden.
+
+    Der Test daneben vergleicht die gemappte Liste mit der Aufzeichnung und
+    faengt damit eine Regression *dieser Funktion*. Was er nicht faengt: dass
+    die Quelle anfaengt, solche Lose zu liefern — dann stimmen Aufzeichnung und
+    Mapper weiter ueberein, und beide sind unvollstaendig. Genau diese Luecke
+    schliesst `lots_dropped`.
+
+    Die Eingabe ist die aufgezeichnete Antwort mit **einer** gezielten
+    Aenderung: dem ersten Los wird die `lotId` genommen. Das ist keine
+    erfundene Fixture, sondern die aufgezeichnete, an genau der Stelle
+    veraendert, um die es geht — die Drift, die es (noch) nicht gibt, hier
+    nachgestellt. Am 8.9.2026 ueber 400 Publikationen aus vier Suchbegriffen
+    gemessen, 31 davon mit Losen: kein einziges Los ohne `lotId`.
+    """
+    projekt = copy.deepcopy(_projekt("award", "with"))
+    assert len(projekt["lots"]) >= 2, "die Aufzeichnung traegt zu wenige Lose — neu aufzeichnen"
+    vorher = len(projekt["lots"])
+    del projekt["lots"][0]["lotId"]
+
+    zusammenfassung = _to_summary(projekt, "de")
+
+    assert zusammenfassung.lots_dropped == 1
+    assert len(zusammenfassung.lots) == vorher - 1
+    # Die uebrigen kommen unveraendert durch: gezaehlt wird der Verlust, nicht
+    # die ganze Liste verworfen.
+    assert [lot.lot_id for lot in zusammenfassung.lots] == [
+        lot["lotId"] for lot in projekt["lots"][1:]
+    ]
+
+
+def test_die_unveraenderte_aufzeichnung_zaehlt_keinen_verlust():
+    """Die Gegenprobe: ohne Drift ist `lots_dropped` null.
+
+    Ohne sie koennte der Zaehler konstant 1 liefern und der Test darueber bliebe
+    gruen — und jeder Suchtreffer truege dann eine Verlustmeldung, die es nicht
+    gibt.
+    """
+    for pubtype, lots in (("award", "with"), ("award", "without")):
+        assert _to_summary(_projekt(pubtype, lots), "de").lots_dropped == 0
 
 
 def test_der_suchtreffer_fuehrt_die_los_ids_mit():

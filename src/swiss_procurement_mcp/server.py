@@ -187,18 +187,35 @@ def _code_list(values: Any) -> list[str]:
     return [c for c in (_code_str(v) for v in values) if c]
 
 
-def _to_lots(entry: dict[str, Any], lang: str) -> list[LotRef]:
-    """Carry the lot ids through instead of dropping them.
+def _to_lots(entry: dict[str, Any], lang: str) -> tuple[list[LotRef], int]:
+    """Carry the lot ids through instead of dropping them, and count what falls out.
 
     Without this list a caller has no way to reach a `lot_id`, and
     `get_publication_history` is uncallable for every lot-based procurement —
     the tool answered "simap.ch is currently unreachable" for a condition that
     was neither transient nor upstream's fault.
+
+    A lot without a `lotId` cannot be carried: the id is the only handle the
+    history endpoint takes. Skipping it is therefore right; skipping it
+    *silently* was not. The skipped lot leaves no trace in the mapped model —
+    it is simply absent — so from the outside a partial loss is indistinguishable
+    from a publication that has fewer lots. Nothing downstream could see it: the
+    fixture test compares the mapped list against the recorded response and so
+    catches a regression in this function, but not the source starting to send
+    such lots; the live suite only ever saw the mapped side. The count returned
+    here is that missing trace, and the WARNING is its operator half.
+
+    Measured 2026-09-08 over 400 publications from four search terms, 31 of them
+    with lots: not one lot arrived without a `lotId`. So a non-zero count is a
+    change in the source, not the normal case — which is exactly why it must be
+    visible rather than absorbed.
     """
     lots = []
+    verworfen = 0
     for lot in entry.get("lots") or []:
         lot_id = lot.get("lotId")
         if not lot_id:
+            verworfen += 1
             continue
         lots.append(
             LotRef(
@@ -209,11 +226,24 @@ def _to_lots(entry: dict[str, Any], lang: str) -> list[LotRef]:
                 pub_type=lot.get("pubType"),
             )
         )
-    return lots
+
+    if verworfen:
+        # OBS-002: the publication id is the operator's handle on the case and
+        # comes from the public search response — the upstream body does not
+        # follow it into the log.
+        log_event(
+            logging.WARNING,
+            "lots_without_id",
+            publication_id=entry.get("publicationId"),
+            dropped=verworfen,
+            kept=len(lots),
+        )
+    return lots, verworfen
 
 
 def _to_summary(entry: dict[str, Any], lang: str) -> ProcurementSummary:
     addr = entry.get("orderAddress") or {}
+    lots, verworfen = _to_lots(entry, lang)
     return ProcurementSummary(
         project_id=entry.get("id", ""),
         publication_id=entry.get("publicationId", ""),
@@ -230,7 +260,8 @@ def _to_summary(entry: dict[str, Any], lang: str) -> ProcurementSummary:
         city=pick_lang(addr.get("city"), lang),
         postal_code=addr.get("postalCode"),
         lots_type=entry.get("lotsType"),
-        lots=_to_lots(entry, lang),
+        lots=lots,
+        lots_dropped=verworfen,
     )
 
 

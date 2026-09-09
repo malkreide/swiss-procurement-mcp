@@ -13,6 +13,7 @@ from an in-process assertion.
 
 from __future__ import annotations
 
+import copy
 import io
 import json
 import logging
@@ -24,13 +25,19 @@ import httpx
 import pytest
 import respx
 import structlog
+from fixture_data import fixture_json
 from pydantic import ValidationError
 
 from swiss_procurement_mcp._log import configure_logging, log_event, logged_tool
 from swiss_procurement_mcp.client import UpstreamError
 from swiss_procurement_mcp.constants import SIMAP_BASE
 from swiss_procurement_mcp.inputs import CpvSearchInput, SearchInput
-from swiss_procurement_mcp.server import mcp, search_cpv_codes, search_procurements
+from swiss_procurement_mcp.server import (
+    _to_summary,
+    mcp,
+    search_cpv_codes,
+    search_procurements,
+)
 
 
 @pytest.fixture
@@ -49,6 +56,37 @@ def events():
     finally:
         structlog.contextvars.clear_contextvars()
         configure_logging(force=True)
+
+
+async def test_ein_los_ohne_id_meldet_sich_beim_betreiber(events) -> None:
+    """OBS-003: eine Drift der Quelle gehoert dorthin, wo Betriebsfehler auflaufen.
+
+    `_to_lots` kann ein Los ohne `lotId` nicht mitfuehren und ueberspringt es.
+    Das Modell erfaehrt davon ueber `lots_dropped`; ein Feld in der Antwort
+    erreicht aber nur, wer die Antwort liest. Ohne dieses Ereignis faellt eine
+    Formaenderung der Quelle erst auf, wenn jemand einen einzelnen Suchtreffer
+    genau ansieht.
+
+    OBS-002: die `publication_id` stammt aus der oeffentlichen Suchantwort und
+    ist der Griff des Betreibers auf den Fall; der Antwortkoerper der Quelle
+    folgt ihr nicht ins Log.
+    """
+    projekt = copy.deepcopy(
+        next(
+            p
+            for p in fixture_json("project_search.json")["projects"]
+            if p["lotsType"] == "with" and p["pubType"] == "award"
+        )
+    )
+    del projekt["lots"][0]["lotId"]
+
+    _to_summary(projekt, "de")
+
+    treffer = [e for e in events() if e["event"] == "lots_without_id"]
+    assert treffer, "kein Ereignis fuer das verworfene Los"
+    assert treffer[0]["level"] == "warning"
+    assert treffer[0]["dropped"] == 1
+    assert treffer[0]["publication_id"] == projekt["publicationId"]
 
 
 # --- output stream --------------------------------------------------------
