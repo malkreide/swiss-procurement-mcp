@@ -655,8 +655,8 @@ Review-Objekt oder eine Befundlos-Meldung. Der Bericht sagt nur, wann das
 Warten darauf endet — steht er auf `✅ Completed` und ist keines von beiden da,
 heisst das «geprüft, Ausgang offen» und gerade nicht «sauber».
 
-Eine Frist taugt dafür ohnehin nicht: Die sieben Läufe mit ablesbarem Anfang
-und Ende brauchten zwischen 103 und 235 Sekunden — und der längste war jedes
+Eine Frist taugt dafür ohnehin nicht: Die acht Läufe mit ablesbarem Anfang
+und Ende brauchten zwischen 103 und 316 Sekunden — und der längste war jedes
 Mal der jüngste.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
@@ -705,8 +705,8 @@ sonst altert er zwischen Commit und Merge.
 
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
 also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit im
-Regelfall von aussen nicht feststellbar** — auf `#68` ausnahmsweise doch, und
-warum, steht gleich darunter.
+von aussen nicht feststellbar**. Eine Ausnahme für `#68` stand hier zwei
+Fassungen lang; warum sie gefallen ist, steht gleich darunter.
 
 Naheliegend wäre, ihn aus der 👍-Reaktion am PR zu lesen. Das trägt nicht:
 
@@ -718,30 +718,43 @@ Naheliegend wäre, ihn aus der 👍-Reaktion am PR zu lesen. Das trägt nicht:
   REST-Endpunkt `/issues/{n}/reactions` ist dort gesperrt, und kein
   MCP-Werkzeug liefert ihn.
 
-**Auf `#68` lässt sich der Ausgang trotzdem lesen**, weil dort drei Umstände
-zusammenkommen, die sonst fehlen: Der PR trägt `+1: 1` und sonst nichts, ausser
-Codex hat ihn niemand angefasst, und der Zeitstempel bindet die Reaktion an den
-Lauf — fertig um 08:14:41, PR zuletzt verändert um 08:14:44. Drei Sekunden. Nach
-der oben gemessenen Zuordnung heisst 👍 «befundlos»; jener Lauf hatte also
-keinen Befund.
+**Auf `#68` stand hier eine Ausnahme — sie ist zurückgenommen.** Sie lautete:
+Der PR trage `+1: 1` und sonst nichts, ausser Codex habe ihn niemand angefasst,
+und der Zeitstempel binde die Reaktion an den Lauf (fertig um 08:14:41, PR
+zuletzt verändert um 08:14:44, drei Sekunden). Daraus wurde «jener Lauf hatte
+keinen Befund».
 
-**Das ist ein Sonderfall, keine Regel.** Fehlt einer der drei Umstände, bleibt
-`reactions` das, was es ist — eine Summe ohne Urheber. Ohne sie ist der Ausgang
-eines solchen Laufs nicht feststellbar, und ein neuer Lauf holt ihn nicht
-zurück: Er fällt ein eigenes, unabhängiges Urteil — dasselbe Argument wie
-weiter unten, wo derselbe Text in 42 Läufen 36-mal einen Befund und 6-mal keinen
-bekam. Was bleibt, ist ein Ersatz, keine Rekonstruktion: eine frische Prüfung
-auf dem Merge-Commit oder in einem Folge-PR, deren Ergebnis für sich steht.
+Das ist **derselbe Zirkelschluss**, der zwei Abschnitte weiter oben für `#82`
+schon einmal aufgeschrieben und verworfen wurde: «Ausser Codex hat ihn niemand
+angefasst» ist aus einer Summe ohne Urheber nicht feststellbar — eine 👍 von
+Hand hinterlässt genau diese Summe und keine andere Spur. Und der
+Sekundenabstand schliesst sie nicht aus, sondern sieht bei ihr gleich aus. Die
+Ausnahme hat den Widerruf nur überlebt, weil sie älter war als er und niemand
+sie mitgezogen hat; gefunden hat sie ein Codex-Review, das vom Widerruf auf sie
+zurückschloss.
+
+**Damit ist der Ausgang eines solchen Laufs von aussen nicht feststellbar** —
+auf `#68` so wenig wie sonst. Ein neuer Lauf holt ihn auch nicht zurück: Er
+fällt ein eigenes, unabhängiges Urteil — dasselbe Argument wie weiter unten, wo
+derselbe Text in 42 Läufen 36-mal einen Befund und 6-mal keinen bekam. Was
+bleibt, ist ein Ersatz, keine Rekonstruktion: eine frische Prüfung auf dem
+Merge-Commit oder in einem Folge-PR, deren Ergebnis für sich steht.
 
 Ein Statusbericht ohne Ergebnis heisst also «geprüft, Ausgang offen» — offen,
 bis etwas anderes ihn bindet, und das ist eine ehrlichere Auskunft als eine
 Summe, die zwei Urheber nicht trennt.
 
-Zwei Fassungen lang stand hier «der Ausgang bleibt dauerhaft unbekannt», zwei
-Zeilen unter dem Satz, die Reaktion auf `#68` sei eindeutig. Beides zugleich
-geht nicht, und aufgefallen ist es einem Codex-Review. Aufgelöst hat es nicht
-das Nachdenken, sondern eine Abfrage: `issue_read` auf `#68`. Wer den
-Widerspruch ohne sie glattzieht, wählt zwischen drei Auflösungen und rät.
+**Dieselbe Stelle ist zweimal falsch gewesen, in entgegengesetzte Richtungen.**
+Zuerst stand hier «der Ausgang bleibt dauerhaft unbekannt», zwei Zeilen unter
+dem Satz, die Reaktion auf `#68` sei eindeutig — ein offener Widerspruch, den
+ein Codex-Review fand. Aufgelöst wurde er damals zugunsten der Ausnahme, und
+zwar mit einer Abfrage statt mit Nachdenken: `issue_read` auf `#68`.
+
+Die Abfrage war richtig, die Auflösung falsch. Sie hat die Daten geprüft und
+nicht den Schluss: Dass `+1: 1` und drei Sekunden Abstand einen Urheber
+benennen, folgte aus keiner der Zahlen. **Eine Messung ersetzt kein Argument** —
+und wer den Widerspruch stattdessen ohne Abfrage glattzieht, rät bloss zwischen
+drei Auflösungen.
 
 Das sind verschiedene Abfragen — `get_reviews` fürs Objekt, `get_comments` für
 die Kommentare; wer nur eine nimmt, übersieht den Rest. Genau so ist die
@@ -796,7 +809,14 @@ die Ausgänge — genau wie der Kasten es beschreibt («reacts with 👀 while a
 review is running … reacts with 👍 once all reviews finish with no findings»).
 
 Die alte Zeile war damit nicht vorsichtig, sondern **falsch**: Sie hat aus einer
-Messung am falschen Ort auf eine Lüge geschlossen. Der Kasten stimmt hier.
+Messung am falschen Ort auf eine Lüge geschlossen. Dass die Reaktion am PR
+sitzt, ist damit belegt, und der Kasten ist als Beschreibung nicht widerlegt.
+
+Ein Urheber steht aber auch hier nicht in den Daten: «Ausser Codex hat ihn
+niemand angefasst» ist dieselbe unbelegbare Bedingung wie bei `#68`. Das
+Auftauchen und Verschwinden im Takt eines Laufs passt zum Kasten, beweist ihn
+aber nicht — und als Auskunft über einen einzelnen Lauf bleibt die Reaktion
+unbrauchbar.
 
 **«Am PR» ist nicht die einzige Stelle.** Am 30.8.2026 auf
 `swiss-procurement-mcp#76` trug der auslösende `@codex review`-Kommentar selbst
@@ -808,9 +828,11 @@ also nicht.
 
 Was bleibt, ist der Messfehler, gegen den die Zeile ursprünglich geschrieben
 war: Wer nur eine der beiden Stellen abfragt, misst am falschen Objekt.
-Beide lesen. Der Vorbehalt aus demselben Abschnitt gilt weiter: `reactions` ist
-eine Summe ohne Urheber, und eindeutig ist ein Fall nur, wenn ausser Codex
-niemand den PR angefasst hat.
+Beide lesen. Der Vorbehalt aus demselben Abschnitt gilt weiter, und schärfer
+als er hier stand: `reactions` ist eine Summe ohne Urheber. «Eindeutig, wenn
+ausser Codex niemand den PR angefasst hat» rettet den Fall nicht — dass niemand
+ihn angefasst hat, ist aus einer Summe ohne Urheber gerade nicht feststellbar.
+Eindeutig wird ein solcher Fall nie.
 
 Das ändert nichts an der Beweisregel, sondern nur an ihrer Begründung: Belegt
 ist eine Prüfung durch einen Statusbericht auf `✅ Completed`, ein
@@ -821,9 +843,18 @@ nennt keinen.
 Auch «der letzte Lauf war sauber» stand hier noch — dieselbe Zuordnung zu einem
 Lauf, die der Abschnitt weiter oben zurücknimmt, und die Behauptung, sie werde
 beim nächsten Lauf überschrieben, gehört dazu: Auf `#82` überlebte eine
-Reaktion einen späteren Lauf an anderer Stelle. Bleibt: **Eine Reaktion sagt,
-dass irgendwann irgendetwas lief oder ohne Befund durchlief — welcher Lauf,
-welcher Commit, wessen Reaktion, sagt sie nicht.**
+Reaktion einen späteren Lauf an anderer Stelle.
+
+Der Rest, der davon übrigblieb — «irgendwann lief irgendetwas oder lief ohne
+Befund durch» —, war **auch schon zu viel**, und ein Codex-Review hat es in der
+nächsten Runde benannt. Stammt die Reaktion von einem Menschen, belegt sie
+keinen Lauf, sondern gar nichts; und ob sie von einem Menschen stammt, sagt die
+Summe nicht. Zwischen «wenigstens lief etwas» und «beweislos» liegt genau der
+Schritt, den `reactions` ohne Urheberdaten nicht hergibt.
+
+**Also: Die Reaktion ist kein Beleg — für nichts.** Der Kasten beschreibt, was
+Codex mit ihr *tut*, und das mag zutreffen; als Auskunft über einen Lauf, einen
+Commit oder einen Ausgang ist sie unbrauchbar, solange der Urheber fehlt.
 
 Das gilt auch im Fall des geschlossenen PR oben, wo sie als einzige Quelle
 für den Ausgang übrig zu bleiben scheint: Die Summe im Feld `reactions` trennt
@@ -862,11 +893,12 @@ einzelnen Lauf. Auf `swiss-procurement-mcp#75` am 30.8.: **103 s**
 (09:09:18 → 09:11:01) und **111 s** (09:14:48 → 09:16:39). Auf `#86` am 9.9.:
 **141 s** (03:57:31 → 03:59:52) und **157 s** (04:04:31 → 04:07:08); auf `#87`
 am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
-(04:17:33 → 04:21:09) und **235 s** (04:23:26 → 04:27:21).
+(04:17:33 → 04:21:09), **235 s** (04:23:26 → 04:27:21) und **316 s**
+(04:30:14 → 04:35:30).
 
-Sieben Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Acht Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
-Minuten» deckt 235 s nicht mehr. Wer zwei Minuten absässe und dann ready
+Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
 
 **Auf `#86` ist das nicht passiert, und der Unterschied gehört dazu.** Dort war
@@ -876,8 +908,8 @@ zwei Minuten wäre bei jenem 157-Sekunden-Lauf **auch** zu kurz gewesen. Das
 genügt, um sie fallenzulassen, und mehr trägt die Beobachtung nicht.
 
 Bemerkenswert ist ausserdem, dass **jede neue Messung den Höchstwert angehoben
-hat** — 103, 111, 141, 157, 169, 216, 235. Das ist eine Aussage über diese
-sieben Messungen und keine über die Verteilung dahinter: Wer daraus eine
+hat** — 103, 111, 141, 157, 169, 216, 235, 316. Das ist eine Aussage über
+diese acht Messungen und keine über die Verteilung dahinter: Wer daraus eine
 Obergrenze bildet, hat sie erfunden, und genau deshalb taugt keine Frist.
 
 Nicht auf die Uhr sehen, sondern auf den Bericht: Solange dort «Running» steht,
