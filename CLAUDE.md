@@ -701,11 +701,16 @@ steht:
 
   **Ob sein Ausgang damit verloren ist, hängt am Commit.** Prüfte der
   verdrängende Lauf einen **anderen** Commit — der übliche Fall, wenn während
-  eines Reviews ein Fix gepusht und dort neu ausgelöst wird —, bleibt ein
-  später erscheinendes Ergebnis über sein «Reviewed commit» eindeutig
-  zuordenbar; es zählt dann für den Commit, den es nennt. Hier stand pauschal,
-  der Ausgang sei nicht mehr feststellbar, und das hätte gültige Reviews
-  verworfen.
+  eines Reviews ein Fix gepusht und dort neu ausgelöst wird —, kann ein später
+  erscheinendes Ergebnis über sein «Reviewed commit» zugeordnet werden. Hier
+  stand pauschal, der Ausgang sei nicht mehr feststellbar, und das hätte
+  gültige Reviews verworfen.
+
+  **Der andere Commit trennt aber nur A von B.** Gab es auf dem verdrängten
+  Commit selbst **mehr als einen** Lauf mit ausstehendem Ergebnis, sagt das
+  «Reviewed commit» wieder nicht, welcher von beiden geantwortet hat.
+  Eindeutig ist die Zuordnung also nur, wenn auf jenem Commit genau ein
+  Ergebnis aussteht.
 
   Verloren ist er dagegen bei **mehreren Läufen auf demselben Commit**: Dort
   nennen alle Ergebnisse denselben, und welcher Lauf welches erzeugt hat, sagt
@@ -763,7 +768,7 @@ Thread**. Wer sie nur mit `get_comments` sucht, findet sie dort nicht — und de
 Kommentarzähler bewegt sich nicht. Die Klassifikation und die Abfragewege
 weiter unten sind entsprechend korrigiert.
 
-Eine Frist taugt dafür ohnehin nicht: Die einundzwanzig Läufe mit ablesbarem
+Eine Frist taugt dafür ohnehin nicht: Die zweiundzwanzig Läufe mit ablesbarem
 Anfang und Ende brauchten zwischen 103 und 316 Sekunden.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
@@ -1029,9 +1034,9 @@ am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
 (04:43:46 → 04:48:05), **209 s** (04:50:45 → 04:54:14) und **228 s**
 (04:56:27 → 05:00:15), noch einmal **228 s** (05:02:15 → 05:06:03) und
 **218 s** (05:08:30 → 05:12:08), **186 s** (05:14:46 → 05:17:52) und **279 s**
-(05:19:28 → 05:24:07) und **223 s** (05:26:05 → 05:29:48) und **210 s** (05:31:10 → 05:34:40) und **248 s** (05:36:08 → 05:40:16) und **201 s** (05:41:42 → 05:45:03) und **261 s** (05:46:50 → 05:51:11).
+(05:19:28 → 05:24:07) und **223 s** (05:26:05 → 05:29:48) und **210 s** (05:31:10 → 05:34:40) und **248 s** (05:36:08 → 05:40:16) und **201 s** (05:41:42 → 05:45:03) und **261 s** (05:46:50 → 05:51:11) und **245 s** (05:52:44 → 05:56:49).
 
-Einundzwanzig Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Zweiundzwanzig Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
 Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
