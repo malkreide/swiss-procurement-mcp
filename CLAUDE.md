@@ -474,12 +474,20 @@ Am
 Review-Objekt gibt es nicht, eine Befundlos-Meldung auch nicht: Auf einem
 geschlossenen PR postet Codex sie nicht mehr.
 
-**Die Überschrift sagt bewusst «beginnt», nicht «endet».** Beobachtet ist ein
-Lauf, der eine Sekunde *nach* dem Merge begann — der PR war die ganze Zeit zu.
-Ob ein Merge, der einen bereits laufenden Review unterbricht, dasselbe tut, hat
-niemand gemessen; die Regel oben gilt für ihn deshalb nicht. Praktisch läuft
-beides auf dieselbe Vorsicht hinaus — wer mergt, während etwas läuft, kann das
-Ergebnis verlieren —, behauptet ist aber nur der gemessene Fall.
+**Die Überschrift sagte bewusst «beginnt», nicht «endet» — inzwischen ist auch
+das andere gemessen.** Zwei Fassungen lang stand hier, ob ein Merge einen
+bereits *laufenden* Review unterbricht, habe niemand gemessen. Am 9.9.2026 auf
+`#86` ist es passiert: Lauf gestartet um 04:04:31 auf `26e3c55`, Merge um
+04:05:16 — der Lauf war 45 Sekunden alt —, und um **04:07:08** stand
+`✅ Completed` auf demselben Commit. Der Merge bricht den Lauf also **nicht**
+ab; er lief 112 Sekunden über den Merge hinaus zu Ende.
+
+Am Ergebnis ändert das nichts: Weder Review-Objekt noch Befundlos-Meldung
+erschienen, `get_reviews` nannte weiter nur den Commit davor. Beide Wege enden
+gleich — der Lauf, der nach dem Merge beginnt, und der, den der Merge
+überrascht —, aber aus verschiedenen Gründen, und nur der zweite war offen.
+Die Vorsicht bleibt dieselbe wie vorher, jetzt für beide Fälle belegt: Wer
+mergt, während etwas läuft, verliert das Ergebnis.
 
 **Am 9.9.2026 nachgemessen — und die Antwort ist zum Teil eine andere Frage.**
 Auf `#81` liefen zwei Reviews auf demselben Commit `a1f3d9d`:
@@ -515,6 +523,28 @@ Drei Beobachtungen, und die mittlere wiegt am schwersten:
 noch, obwohl beide Läufe vorbei sind — anders als auf `#64`, wo sie nach dem
 Lauf entfernt wurde. Eine stehengebliebene 👀 belegt also keinen laufenden
 Review; sie ist so wenig eine Auskunft wie ihre Abwesenheit.
+
+**Auf `#86` zerfiel sie sogar innerhalb desselben PR in zwei Antworten.**
+Während Lauf 3 lief, trug der PR `eyes: 1`; nach `✅ Completed` um 04:07:08
+stand dort `total_count: 0` — zurückgenommen, und **ohne** dass ein 👍 an seine
+Stelle trat. Der Kommentar, der Lauf 2 ausgelöst hatte, trug seine 👀 zur
+selben Zeit unverändert weiter.
+
+Beide Stellen sagen damit gleichzeitig Verschiedenes über denselben PR, und
+beide sind für sich genommen richtig: Am PR hing die Reaktion an Lauf 3, der
+endete; am Kommentar an Lauf 2, der aus dem Bericht verschwand und dessen Ende
+nirgends steht. Das ist kein Widerspruch, sondern der Beleg dafür, dass die
+Reaktion an ihrem Auslöser-Objekt klebt und nicht am PR-Zustand.
+
+Dass ausgerechnet dort eine 👀 hängenblieb, wo ein Lauf aus dem Bericht
+verschwand, gilt jetzt für `#81` und `#86`. Zwei Fälle sind ein Muster und
+keine Regel — als Handgriff taugt allein die schwache Richtung: Eine 👀, zu der
+im Bericht kein Lauf mehr steht, ist eher ein Überbleibsel als eine Auskunft.
+
+**Und ein ausbleibendes 👍 ist kein Befund-Indiz.** Auf `#64` fiel die
+Rücknahme ohne 👍 mit einem Befund zusammen; auf `#86` mit einem Lauf, dessen
+Ergebnis mangels offenem PR gar nicht gepostet werden konnte. Dieselbe
+Beobachtung, zwei unvereinbare Ursachen — sie trennt die Fälle nicht.
 
 Die 👍 am PR (`+1: 1`) trägt hier nichts. Auf `#68` war sie lesbar, weil ausser
 Codex niemand den PR angefasst hatte; hier hat der Autor ihn selbst auf ready
@@ -594,25 +624,52 @@ Ergebnis. Der Versuch, das Problem durch einen weiteren PR zu lösen, reproduzie
 es also bloss.
 
 Praktisch folgt daraus nur eines, und es steht schon oben: Den Draft von Hand
-prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt. Die
-gemessenen Läufe brauchen dafür rund zwei Minuten.
+prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt.
+Abwarten heisst: bis der Statusbericht nicht mehr «Running» sagt — nicht eine
+gesetzte Frist absitzen. Die vier Läufe mit ablesbarem Anfang und Ende
+brauchten zwischen 103 und 157 Sekunden.
 
-Dass die Pause die *Ursache* ist, folgt aus den vier Fällen allerdings nicht:
-In allen vieren fehlte sie, es gibt also keine Variation, aus der sich das
-ableiten liesse. Sie ist die naheliegende Abhilfe, nicht die gemessene.
+Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
+die Pause, es gibt dort also keine Variation, aus der sich eine Ursache
+ableiten liesse. Die Variation liefert erst der Absatz darunter — und auch der
+nur einmal je Zweig.
 
-**Die Gegenprobe ist inzwischen gefahren, und sie ging auf.** Auf `#86` — dem
-PR, der diesen Absatz einführte — wurde gewartet: Lauf um 03:57:31 von Hand
-angestossen, der PR blieb offen, um 03:59:52 stand `✅ Completed` mit dem
-Auslöser «Manual request» und daneben ein Review-Objekt mit zwei Befunden auf
-`009f570`. Kein zweiter Lauf, kein überschriebener Bericht, ein bindender
-Ausgang.
+**Die Gegenprobe ist inzwischen gefahren — und derselbe PR lieferte gleich
+beide Zweige.** Auf `#86`, dem PR, der diesen Absatz einführte:
 
-Das ist **ein** Fall gegen vier, und ein einzelner Fall trägt keine Kausalität —
-aber er ist der einzige mit Pause, und er ist der einzige mit feststellbarem
-Ausgang. Mehr sagt diese Zeile nicht, und weniger wäre zu wenig: Die beiden
-Befunde jenes Laufs betrafen genau diesen Abschnitt und wären ohne die Pause
-verloren gewesen.
+| Zeit (UTC) | Ereignis | Ausgang |
+|---|---|---|
+| 03:57:31 | Lauf 1, «Manual request», `009f570` — **gewartet** | 03:59:52 `✅ Completed` **und** Review-Objekt mit zwei Befunden |
+| 04:03:29 | Lauf 2, «Manual request», `26e3c55` | verschwand um 04:04:34 aus dem Bericht |
+| 04:04:23 | ready gestellt, während Lauf 2 lief | — |
+| 04:04:31 | Lauf 3, «Draft marked ready», `26e3c55` | 04:07:08 `✅ Completed`, **kein Ergebnis** |
+| 04:05:16 | Merge, 45 s nach Beginn von Lauf 3 | — |
+
+Das ist die Variation, die den vier Fällen der Tabelle oben fehlte: **gleicher
+PR, gleiches Repo, sieben Minuten auseinander, einmal mit und einmal ohne
+Pause** — und der Unterschied im Ausgang ist genau der erwartete. Damit trägt
+die Aussage über die Pause mehr als vorher. Kausalität im strengen Sinn ist es
+weiterhin nicht: Je Zweig steht ein einziger Fall, und beide Zweige
+unterscheiden sich auch im Commit.
+
+Zwei Dinge, die dieser Ablauf zusätzlich trennt:
+
+- **Warten bis zum Ergebnis genügt nicht, wenn danach während des nächsten
+  Laufs ready gestellt wird.** Lauf 1 war sauber abgewartet; der Fix danach
+  brauchte einen eigenen Lauf, und der wurde 54 Sekunden nach seinem Start
+  überholt. Die Pause gilt jedem Lauf, nicht dem PR.
+- **Das Überschreiben des Berichts hängt nicht am Merge.** Lauf 3 überschrieb
+  Lauf 2 um 04:04:34 — 42 Sekunden **vor** dem Merge, bei offenem PR. In den
+  vier Fällen der Tabelle fielen beide immer zusammen; hier sind sie getrennt,
+  und die Ursache ist der zweite Lauf.
+
+**Die vorige Fassung dieses Absatzes ist so in `main` gelandet.** Unmittelbar
+nach Lauf 1 notierte sie «Kein zweiter Lauf, kein überschriebener Bericht, ein
+bindender Ausgang» und wurde drei Minuten später mitgemergt — da lief Lauf 3
+bereits. Für Lauf 1 stimmte der Satz; für den PR, der danach zwei weitere Läufe
+und einen überschriebenen Bericht bekam, nicht mehr. Ein Vorgang, der noch
+läuft, ergibt einen Zwischenstand, und der gehört als solcher aufgeschrieben —
+sonst altert er zwischen Commit und Merge.
 
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
 also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit im
@@ -760,10 +817,15 @@ Merge — die Ausfallmeldung kommt binnen Sekunden, ein Review nicht.
 nennt Start und Ende; vorher liess sich nur die Dauer eines ganzen Stapels
 ablesen, und die 42 Reviews vom 23.8. über neun Minuten sind kein Wert für einen
 einzelnen Lauf. Auf `swiss-procurement-mcp#75` am 30.8.: **103 s**
-(09:09:18 → 09:11:01) und **111 s** (09:14:48 → 09:16:39).
+(09:09:18 → 09:11:01) und **111 s** (09:14:48 → 09:16:39). Auf `#86` am 9.9.:
+**141 s** (03:57:31 → 03:59:52) und **157 s** (04:04:31 → 04:07:08).
 
-Zwei Läufe in einem Repo sind keine Verteilung, und eine Wartezeit lässt sich
-daraus nicht ableiten. Als Handgriff taugt weiter nur die schwache Richtung: Ein
+Vier Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
+Minuten» deckt 157 s nicht mehr. Wer zwei Minuten wartet und dann ready stellt,
+trifft den Lauf mitten hinein — genau der Fehler, der auf `#86` gemacht wurde.
+Nicht auf die Uhr sehen, sondern auf den Bericht: Solange dort «Running» steht,
+ist nichts entschieden. Als Handgriff taugt weiter nur die schwache Richtung: Ein
 Kommentar, der binnen Sekunden dasteht, ist eher eine Absage als ein Urteil.
 Entschieden wird am Text, nicht an der Uhr.
 
