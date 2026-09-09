@@ -318,6 +318,43 @@ async def test_live_history_of_a_lot_publication_needs_its_lot_id():
         assert entry.publication_id, "history entry without an id — shape changed"
 
 
+async def test_live_every_lot_upstream_lists_carries_an_id():
+    """The drift this server could not see before `lots_dropped` existed.
+
+    A lot without a `lotId` cannot be carried through — the id is the only
+    handle `past-publications` takes — so the mapper skips it. Skipped lots
+    leave no trace in the mapped model: from the outside a partial loss looks
+    like a publication with fewer lots. The recorded-fixture test compares the
+    mapped list against the recorded response and so catches a regression in
+    the mapper, but not the source starting to send such lots — then recording
+    and mapper agree, and both are incomplete.
+
+    So this is measured where the drift would appear: against the live source.
+    Measured 2026-09-08 over 400 publications from four search terms, 31 with
+    lots — not one lot arrived without an id. A non-zero count here is the
+    source changing shape, and then `lot_id` is unreachable for exactly those
+    lots, whatever the history endpoint would answer.
+    """
+    cursor = None
+    verloren = []
+    gesehen = 0
+    for _ in range(5):
+        page = await search_procurements(SearchInput(cursor=cursor, query="Bau"))
+        for row in page.results:
+            gesehen += 1
+            if row.lots_dropped:
+                verloren.append((row.publication_id, row.lots_dropped))
+        if not page.has_more:
+            break
+        cursor = page.next_cursor
+
+    assert gesehen, "die Suche lieferte keine Treffer — nichts gemessen"
+    assert not verloren, (
+        f"{len(verloren)} von {gesehen} Publikation(en) fuehren Lose ohne `lotId`: "
+        f"{verloren[:5]} — deren Historie ist ueber diesen Server nicht erreichbar"
+    )
+
+
 async def test_live_a_lot_without_own_history_answers_404_not_empty():
     """The drift watch behind the red run of 2026-09-05.
 

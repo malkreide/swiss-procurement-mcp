@@ -69,6 +69,15 @@ class ProcurementSummary(BaseModel):
             "get_publication_history, which cannot trace a lot publication without one."
         ),
     )
+    lots_dropped: int = Field(
+        default=0,
+        description=(
+            "How many lots upstream listed without a lotId, and this server could "
+            "therefore not carry through. Above 0 the `lots` list is incomplete: "
+            "those lots exist upstream, but their history is unreachable from here. "
+            "Treat a non-zero value as missing data, not as fewer lots."
+        ),
+    )
 
 
 class SearchResponse(Envelope):

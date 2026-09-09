@@ -230,6 +230,27 @@ gehärtet und fiel am 5.9.2026 trotzdem — die Annahme war nach `lots[0]`
 gewandert und dort unbemerkt geblieben. Eine Härtung gilt für den Index, den
 sie anfasst, nicht für die Datei.
 
+**Was ein Mapper verwirft, muss er zählen.** `_to_lots` überspringt ein Los
+ohne `lotId` — richtig, denn die Id ist der einzige Griff, den der
+Historie-Endpunkt annimmt. Still zu sein war es nicht: Im gemappten Modell
+fehlt das Los danach einfach, und von aussen ist ein Teilverlust nicht von
+einer Publikation mit weniger Losen zu unterscheiden. Keine Prüfung konnte das
+sehen — die Fixture-Tests vergleichen die gemappte Liste mit der Aufzeichnung
+und fangen damit eine Regression des Mappers, aber nicht die Quelle, die
+anfängt, solche Datensätze zu liefern; dann stimmen Aufzeichnung und Mapper
+weiter überein und sind beide unvollständig. Die Live-Suite sah ohnehin nur die
+gemappte Seite.
+
+Ein Zähler in der Antwort ist die fehlende Spur, und er ist zugleich das, was
+die Live-Suite messen kann. Die Regel ist nicht auf Lose beschränkt: Jedes
+`continue` in einem Mapper wirft etwas weg, und was weggeworfen wird, ohne
+gezählt zu werden, ist hinterher nicht von «gab es nicht» zu unterscheiden.
+
+Gefunden hat das ein Codex-Review, und zwar erst in der achten Runde auf
+demselben PR — nachdem sieben Runden lang Zusicherungen *über* die Lose
+geschärft worden waren, ohne dass jemand fragte, ob die Liste überhaupt
+vollständig ankommt.
+
 PR ohne jeden Check ist selten ein Repo ohne CI, meistens ein
 Merge-Konflikt: GitHub berechnet dafür keinen Merge-Commit und startet nichts.
 
