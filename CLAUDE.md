@@ -736,13 +736,13 @@ ist das Einzige, was diesen Zustand vermeidet. Ist sie eingehalten, kommt man
 kaum hinein; ist sie verletzt, führt kein Lesen und keine Regel zuverlässig
 heraus.
 
-**Und die Ausfallmeldung ist nicht zuverlässig ein Issue-Kommentar.** Weiter
-unten steht, die beiden Ausfallmeldungen seien gewöhnliche Issue-Kommentare;
-am 9.9.2026 kam die Environment-Meldung auf `#87` als **Review-Kommentar in
-einem Thread**. Wer sie nur mit `get_comments` sucht, findet sie dort nicht —
-und der Kommentarzähler bewegt sich nicht.
+**Und die Ausfallmeldung ist nicht zuverlässig ein Issue-Kommentar.** Am
+9.9.2026 kam die Environment-Meldung auf `#87` als **Review-Kommentar in einem
+Thread**. Wer sie nur mit `get_comments` sucht, findet sie dort nicht — und der
+Kommentarzähler bewegt sich nicht. Die Klassifikation und die Abfragewege
+weiter unten sind entsprechend korrigiert.
 
-Eine Frist taugt dafür ohnehin nicht: Die siebzehn Läufe mit ablesbarem Anfang
+Eine Frist taugt dafür ohnehin nicht: Die achtzehn Läufe mit ablesbarem Anfang
 und Ende brauchten zwischen 103 und 316 Sekunden.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
@@ -1006,9 +1006,9 @@ am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
 (04:43:46 → 04:48:05), **209 s** (04:50:45 → 04:54:14) und **228 s**
 (04:56:27 → 05:00:15), noch einmal **228 s** (05:02:15 → 05:06:03) und
 **218 s** (05:08:30 → 05:12:08), **186 s** (05:14:46 → 05:17:52) und **279 s**
-(05:19:28 → 05:24:07) und **223 s** (05:26:05 → 05:29:48).
+(05:19:28 → 05:24:07) und **223 s** (05:26:05 → 05:29:48) und **210 s** (05:31:10 → 05:34:40).
 
-Siebzehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Achtzehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
 Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
