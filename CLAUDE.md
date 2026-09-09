@@ -643,45 +643,66 @@ es also bloss.
 Praktisch folgt daraus nur eines, und es steht schon oben: Den Draft von Hand
 prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt.
 
-**Was «abwarten» heisst, hat vier Fassungen und vier Codex-Befunde gebraucht.**
-Nacheinander stand hier: eine Frist von zwei Minuten; dann «bis der Bericht
-nicht mehr ‹Running› sagt»; dann «Ergebnisobjekt **oder** eine der beiden
-Ausfallmeldungen»; dann «Ergebnisobjekt zum aktuellen Head». Jede Fassung war
-enger als die vorige und jede noch falsch. Deshalb steht die Regel jetzt als
-Ablauf da und nicht als Halbsatz.
+**Was «abwarten» heisst, hat sechs Fassungen und sechs Codex-Befunde
+gebraucht** — und die ersten fünf sind an derselben Sache gescheitert.
+Nacheinander stand hier: eine Frist von zwei Minuten; «bis der Bericht nicht
+mehr ‹Running› sagt»; «Ergebnisobjekt **oder** eine Ausfallmeldung»;
+«Ergebnisobjekt zum aktuellen Head»; «Ergebnis, entstanden nach dem eigenen
+Auslöser». Jede war enger als die vorige, und jede versuchte dasselbe: **einem
+Ergebnis anzusehen, zu welchem Lauf es gehört.**
 
-**Gewartet wird auf ein Ergebnis, das zu genau diesem Lauf gehört** — ein
-Review-Objekt oder eine Befundlos-Meldung, entstanden **nach** dem eigenen
-Auslöser. «Zum aktuellen Head» genügt nicht: Auf demselben Commit können
-mehrere Läufe liegen, ihre Urteile können auseinandergehen, und ein älteres
-Ergebnisobjekt bleibt stehen. Wer nur auf den Commit prüft, ist beim nächsten
-`@codex review` sofort «fertig», während der neue Lauf noch läuft.
+**Das gibt der Mechanismus nicht her.** Der Bericht hält nur den jüngsten Lauf;
+das Ergebnisobjekt nennt den Commit und nicht den Lauf; Läufe können sich
+überlappen und auf demselben Commit gegensätzlich urteilen. Bei zwei
+gleichzeitigen Läufen kann ein Ergebnis, das nach dem eigenen Auslöser
+erscheint, vom anderen stammen — und ist der eigene Lauf aus dem Bericht
+verdrängt, sieht das genauso aus, als hätte er nie begonnen.
 
-Der Bericht sagt dabei nicht, wann man aufhören darf, sondern **welcher Lauf
-gerade gilt und ob er noch läuft**:
+Die Regel muss deshalb dort ansetzen, wo man noch etwas in der Hand hat, und
+das ist nicht die Auswertung, sondern die **Voraussetzung**:
+
+> **Immer nur ein Lauf offen.** Keinen zweiten `@codex review` anstossen,
+> solange einer läuft; nicht auf ready stellen und nicht mergen, solange einer
+> läuft. Erst das Ergebnis, dann der nächste Schritt.
+
+Ist das eingehalten, ist die Zuordnung eindeutig, und der Bericht sagt, wo man
+steht:
 
 - **`🔄 Running`** — weiterwarten, egal was sonst im PR erscheint. Auch eine
   Ausfallmeldung ändert daran nichts: Auf `#76` stand die Environment-Meldung
-  in **derselben Sekunde**, in der ein Review anlief.
+  in **derselben Sekunde**, in der ein Review anlief, auf `#87` zwanzig
+  Sekunden davor.
 - **`✅ Completed` für den eigenen Lauf** — das Ergebnis ist fällig. In allen
   sieben Läufen an offenen PRs, bei denen beides ablesbar war, stand es sogar
   schon da: es erschien **zwei bis drei Sekunden vor** dem Wechsel. Einen
   späteren Fall hat hier niemand gemessen; ausgeschlossen ist er nicht. Kommt
   auch kurz darauf nichts, heisst das «geprüft, Ausgang offen» — und gerade
   nicht «sauber». Wie lange «kurz darauf» ist, sagt keine dieser Messungen.
-- **Gar kein Lauf zum eigenen Auslöser, dafür eine Ausfallmeldung** — dann ist
-  der *Versuch* gescheitert und nicht der Review offen. Hier endet das Warten,
-  denn ein Ergebnis kommt nie: bei der Environment-Meldung wiederholen (oben,
-  «erst wiederholen, dann konfigurieren»), beim Kontingent später erneut
-  anstossen. Wer hier weiterwartet, wartet endlos.
+- **Der eigene Lauf stand im Bericht und ist daraus verschwunden** — dann war
+  die Voraussetzung verletzt, ein zweiter Lauf hat ihn verdrängt. Sein Ausgang
+  ist nicht mehr feststellbar und wird es auch nicht mehr. Was hilft, ist kein
+  Warten, sondern ein frischer Lauf auf dem aktuellen Head, nachdem alles
+  andere ausgelaufen ist.
+- **Der eigene Auslöser hat nie einen Lauf erzeugt, und es steht eine
+  Ausfallmeldung da** — dann ist der *Versuch* gescheitert, nicht der Review
+  offen. Hier endet das Warten, denn ein Ergebnis kommt nie: bei der
+  Environment-Meldung wiederholen (oben, «erst wiederholen, dann
+  konfigurieren»), beim Kontingent später erneut anstossen.
 
-Die dritte Zeile ist der Grund, warum die Fassung davor falsch war: Sie
-verurteilte die Ausfallmeldungen pauschal und liess damit den einen Fall
-endlos laufen, in dem sie tatsächlich das Ende sind. Entscheidend ist nicht die
-Meldung, sondern ob im Bericht ein Lauf zum eigenen Auslöser steht.
+Die letzten beiden Zeilen sehen im PR gleich aus — im Bericht steht kein Lauf
+zum eigenen Auslöser — und bedeuten das Gegenteil. Unterscheiden lassen sie
+sich nur, wenn man den Bericht **vorher** gesehen hat. Wer erst hinschaut,
+nachdem alles vorbei ist, kann nicht entscheiden, ob der eigene Lauf nie kam
+oder bloss überschrieben wurde.
 
-Eine Frist taugt dafür ohnehin nicht: Die zwölf Läufe mit ablesbarem Anfang und
-Ende brauchten zwischen 103 und 316 Sekunden.
+**Und die Ausfallmeldung ist nicht zuverlässig ein Issue-Kommentar.** Weiter
+unten steht, die beiden Ausfallmeldungen seien gewöhnliche Issue-Kommentare;
+am 9.9.2026 kam die Environment-Meldung auf `#87` als **Review-Kommentar in
+einem Thread**. Wer sie nur mit `get_comments` sucht, findet sie dort nicht —
+und der Kommentarzähler bewegt sich nicht.
+
+Eine Frist taugt dafür ohnehin nicht: Die dreizehn Läufe mit ablesbarem Anfang
+und Ende brauchten zwischen 103 und 316 Sekunden.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
 die Pause, es gibt dort also keine Variation, aus der sich eine Ursache
@@ -937,9 +958,9 @@ am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
 (04:17:33 → 04:21:09), **235 s** (04:23:26 → 04:27:21), **316 s**
 (04:30:14 → 04:35:30), **177 s** (04:39:16 → 04:42:13), **259 s**
 (04:43:46 → 04:48:05), **209 s** (04:50:45 → 04:54:14) und **228 s**
-(04:56:27 → 05:00:15).
+(04:56:27 → 05:00:15) und noch einmal **228 s** (05:02:15 → 05:06:03).
 
-Zwölf Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Dreizehn Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
 Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
