@@ -655,9 +655,8 @@ Review-Objekt oder eine Befundlos-Meldung. Der Bericht sagt nur, wann das
 Warten darauf endet — steht er auf `✅ Completed` und ist keines von beiden da,
 heisst das «geprüft, Ausgang offen» und gerade nicht «sauber».
 
-Eine Frist taugt dafür ohnehin nicht: Die acht Läufe mit ablesbarem Anfang
-und Ende brauchten zwischen 103 und 316 Sekunden — und der längste war jedes
-Mal der jüngste.
+Eine Frist taugt dafür ohnehin nicht: Die neun Läufe mit ablesbarem Anfang und
+Ende brauchten zwischen 103 und 316 Sekunden.
 
 Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
 die Pause, es gibt dort also keine Variation, aus der sich eine Ursache
@@ -704,8 +703,8 @@ läuft, ergibt einen Zwischenstand, und der gehört als solcher aufgeschrieben �
 sonst altert er zwischen Commit und Merge.
 
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
-also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit im
-von aussen nicht feststellbar**. Eine Ausnahme für `#68` stand hier zwei
+also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit von aussen
+nicht feststellbar**. Eine Ausnahme für `#68` stand hier zwei
 Fassungen lang; warum sie gefallen ist, steht gleich darunter.
 
 Naheliegend wäre, ihn aus der 👍-Reaktion am PR zu lesen. Das trägt nicht:
@@ -893,10 +892,10 @@ einzelnen Lauf. Auf `swiss-procurement-mcp#75` am 30.8.: **103 s**
 (09:09:18 → 09:11:01) und **111 s** (09:14:48 → 09:16:39). Auf `#86` am 9.9.:
 **141 s** (03:57:31 → 03:59:52) und **157 s** (04:04:31 → 04:07:08); auf `#87`
 am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
-(04:17:33 → 04:21:09), **235 s** (04:23:26 → 04:27:21) und **316 s**
-(04:30:14 → 04:35:30).
+(04:17:33 → 04:21:09), **235 s** (04:23:26 → 04:27:21), **316 s**
+(04:30:14 → 04:35:30) und **177 s** (04:39:16 → 04:42:13).
 
-Acht Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+Neun Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
 ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
 Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
 stellte, träfe einen solchen Lauf mitten hinein.
@@ -907,10 +906,14 @@ sein. Belegt ist über die Faustregel deshalb nur das Schwächere: Eine Frist vo
 zwei Minuten wäre bei jenem 157-Sekunden-Lauf **auch** zu kurz gewesen. Das
 genügt, um sie fallenzulassen, und mehr trägt die Beobachtung nicht.
 
-Bemerkenswert ist ausserdem, dass **jede neue Messung den Höchstwert angehoben
-hat** — 103, 111, 141, 157, 169, 216, 235, 316. Das ist eine Aussage über
-diese acht Messungen und keine über die Verteilung dahinter: Wer daraus eine
-Obergrenze bildet, hat sie erfunden, und genau deshalb taugt keine Frist.
+Acht Messungen lang hat **jede neue den Höchstwert angehoben** — 103, 111, 141,
+157, 169, 216, 235, 316. Hier stand deshalb, das sei bemerkenswert. Die neunte
+lag bei **177 s** und beendete die Reihe.
+
+Das ist die Lehre in Kurzform: Eine Reihe von acht war lang genug, um wie ein
+Muster auszusehen, und die neunte Messung hat sie gebrochen. Über die
+Verteilung dahinter sagte sie ohnehin nichts — wer aus ihr eine Obergrenze
+gebildet hätte, hätte sie erfunden, und genau deshalb taugt keine Frist.
 
 Nicht auf die Uhr sehen, sondern auf den Bericht: Solange dort «Running» steht,
 ist nichts entschieden — und wenn er fertig ist, entscheidet das Ergebnisobjekt
