@@ -521,6 +521,32 @@ Codex niemand den PR angefasst hatte; hier hat der Autor ihn selbst auf ready
 gestellt und gemergt, und `reactions` bleibt eine Summe ohne Urheber. Selbst
 wenn sie von Codex stammt: welchem der beiden Läufe sie gälte, sagt sie nicht.
 
+**Der Übergang selbst ist inzwischen beobachtet, und er ist an den Bericht
+gekoppelt.** Auf `#82` — derselbe Ablauf, Merge zwei Sekunden nach «ready» —
+stand am PR zum Merge-Zeitpunkt `eyes: 1`. Um **03:30:14** wechselte er auf
+`+1: 1`, und der Statusbericht ging in **derselben Sekunde** auf
+`✅ Completed`. Dazwischen, 82 Sekunden lang, hatte niemand ausser Codex den
+geschlossenen PR angefasst.
+
+Das liefert das Kriterium, das der Summe fehlt: nicht wer sie gesetzt hat —
+das steht nirgends —, sondern **wann sie sich änderte**. Fällt der Wechsel mit
+dem Bericht-Edit zusammen und lag dazwischen kein menschlicher Eingriff, ist
+die Reaktion diesem Lauf zuzuordnen. Fehlt eines von beidem, bleibt sie eine
+Summe ohne Urheber, und die Regel oben gilt unverändert.
+
+Was der Übergang **nicht** ändert: Die Reaktion nennt weiterhin keinen Commit
+und wird beim nächsten Lauf überschrieben. Als Beweisanker taugt sie deshalb
+so wenig wie vorher — sie sagt «der jüngste Lauf war sauber», nie «dieser Head
+ist geprüft». Bei zwei Läufen auf demselben Commit sagt sie über den ersten
+gar nichts.
+
+**Und die beiden 👀 verhalten sich verschieden.** Auf `#82` lief die am PR
+(ready-Auslöser) auf 👍 um; die am auslösenden `@codex review`-Kommentar
+(Manual-Request-Auslöser) steht seit 03:26:00 unverändert, obwohl beide Läufe
+vorbei sind. Wo die Reaktion landet, hängt am Auslöser — und offenbar auch, ob
+sie je zurückgenommen wird. Aus einer stehengebliebenen 👀 folgt deshalb
+nichts, in keine Richtung.
+
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
 also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit im
 Regelfall von aussen nicht feststellbar** — auf `#68` ausnahmsweise doch, und
