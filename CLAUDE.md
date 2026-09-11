@@ -371,8 +371,10 @@ aber eine vorhandene. Für dieses Repo sind es an jenem Tag zwei.
 
   «Meldet», nicht «fehlt»: Der Text ist keine verlässliche Auskunft über die
   Konfiguration — am 29.8.2026 stand er in einem Repo, das eine hatte, und war
-  eine Minute später weg. Erst wiederholen, dann konfigurieren; die Messung
-  steht unten im Abschnitt über die Environment.
+  eine Minute später weg. Eher wiederholen als konfigurieren — aber **nicht
+  sofort**: Die Meldung kann einem verzögert startenden Lauf vorausgehen, und
+  ein zweiter Auslöser verdrängt dann den ersten. Die Messungen dazu stehen
+  unten im Abschnitt über die Environment.
 - **Es lief gar kein Auslöser** — und ein Push ist keiner. Codex zählt sie
   selbst im Infokasten auf: einen PR zum Review öffnen, einen Draft auf ready
   stellen, «@codex review» kommentieren. Wer einen Befund behebt und pusht,
@@ -409,9 +411,13 @@ den dieser Abschnitt verhindern soll, nur in die andere Richtung.
 
 «Kein Kommentar» heisst also nicht «geprüft und sauber». Unterscheiden lässt es
 sich an der Form: Ein Review **mit** Befund ist ein Review-Objekt
-(«💡 Codex Review», mit Commit-Angabe); ein Review **ohne** Befund und die
-beiden Ausfallmeldungen — Kontingent wie Environment — sind gewöhnliche
-Issue-Kommentare und trennen sich nur im Text. Beim Draft greift ohne
+(«💡 Codex Review», mit Commit-Angabe); ein Review **ohne** Befund ist ein
+gewöhnlicher Issue-Kommentar.
+
+**Die Ausfallmeldungen sind in der Form nicht festgelegt.** Hier stand, auch
+sie seien Issue-Kommentare; am 9.9.2026 kam die Environment-Meldung auf `#87`
+zweimal als **Review-Kommentar in einem Thread**. Beide Formen also, und wer
+nur eine abfragt, übersieht sie. Beim Draft greift ohne
 manuellen Anstoss kein Auslöser, dort steht dann überhaupt nichts; ein
 kommentarloser Draft ist deshalb kein Beleg, sondern ein nicht durchgeführter
 Test. Ein von Hand angestossener Lauf hinterlässt dagegen auch auf einem Draft
@@ -474,12 +480,20 @@ Am
 Review-Objekt gibt es nicht, eine Befundlos-Meldung auch nicht: Auf einem
 geschlossenen PR postet Codex sie nicht mehr.
 
-**Die Überschrift sagt bewusst «beginnt», nicht «endet».** Beobachtet ist ein
-Lauf, der eine Sekunde *nach* dem Merge begann — der PR war die ganze Zeit zu.
-Ob ein Merge, der einen bereits laufenden Review unterbricht, dasselbe tut, hat
-niemand gemessen; die Regel oben gilt für ihn deshalb nicht. Praktisch läuft
-beides auf dieselbe Vorsicht hinaus — wer mergt, während etwas läuft, kann das
-Ergebnis verlieren —, behauptet ist aber nur der gemessene Fall.
+**Die Überschrift sagte bewusst «beginnt», nicht «endet» — inzwischen ist auch
+das andere gemessen.** Zwei Fassungen lang stand hier, ob ein Merge einen
+bereits *laufenden* Review unterbricht, habe niemand gemessen. Am 9.9.2026 auf
+`#86` ist es passiert: Lauf gestartet um 04:04:31 auf `26e3c55`, Merge um
+04:05:16 — der Lauf war 45 Sekunden alt —, und um **04:07:08** stand
+`✅ Completed` auf demselben Commit. Der Merge bricht den Lauf also **nicht**
+ab; er lief 112 Sekunden über den Merge hinaus zu Ende.
+
+Am Ergebnis ändert das nichts: Weder Review-Objekt noch Befundlos-Meldung
+erschienen, `get_reviews` nannte weiter nur den Commit davor. Beide Wege enden
+gleich — der Lauf, der nach dem Merge beginnt, und der, den der Merge
+überrascht —, aber aus verschiedenen Gründen, und nur der zweite war offen.
+Die Vorsicht bleibt dieselbe wie vorher, jetzt für beide Fälle belegt: Wer
+mergt, während etwas läuft, verliert das Ergebnis.
 
 **Am 9.9.2026 nachgemessen — und die Antwort ist zum Teil eine andere Frage.**
 Auf `#81` liefen zwei Reviews auf demselben Commit `a1f3d9d`:
@@ -498,10 +512,11 @@ Auf `#81` liefen zwei Reviews auf demselben Commit `a1f3d9d`:
 Drei Beobachtungen, und die mittlere wiegt am schwersten:
 
 - **Ein geschlossener PR hält den Lauf nicht auf.** Lauf 2 startete drei
-  Sekunden *nach* dem Merge und lief bis `✅ Completed` durch. Die Frage von
-  oben bleibt trotzdem offen: gemessen ist wieder nur ein Lauf, der nach dem
-  Merge *begann*. Was mit Lauf 1 geschah, der zum Merge-Zeitpunkt lief, sagt
-  diese Beobachtung gerade nicht — siehe die nächste Zeile.
+  Sekunden *nach* dem Merge und lief bis `✅ Completed` durch. Für die Frage
+  von oben gab diese Beobachtung noch nichts her: gemessen ist wieder nur ein
+  Lauf, der nach dem Merge *begann*. Was mit Lauf 1 geschah, der zum
+  Merge-Zeitpunkt lief, sagt sie gerade nicht — siehe die nächste Zeile.
+  Beantwortet wurde die Frage erst auf `#86`, oben im vorigen Abschnitt.
 - **Der Statusbericht hält nur den jüngsten Lauf.** Lauf 1 verschwand beim
   ersten Edit spurlos; ob er endete und wie, ist nirgends feststellbar. Der
   Bericht belegt damit «dieser Commit wurde geprüft» — nicht «jeder Lauf auf
@@ -516,10 +531,41 @@ noch, obwohl beide Läufe vorbei sind — anders als auf `#64`, wo sie nach dem
 Lauf entfernt wurde. Eine stehengebliebene 👀 belegt also keinen laufenden
 Review; sie ist so wenig eine Auskunft wie ihre Abwesenheit.
 
-Die 👍 am PR (`+1: 1`) trägt hier nichts. Auf `#68` war sie lesbar, weil ausser
-Codex niemand den PR angefasst hatte; hier hat der Autor ihn selbst auf ready
-gestellt und gemergt, und `reactions` bleibt eine Summe ohne Urheber. Selbst
-wenn sie von Codex stammt: welchem der beiden Läufe sie gälte, sagt sie nicht.
+**Auf `#86` zerfiel sie sogar innerhalb desselben PR in zwei Antworten.**
+Während Lauf 3 lief, trug der PR `eyes: 1`; nach `✅ Completed` um 04:07:08
+stand dort `total_count: 0` — zurückgenommen, und **ohne** dass ein 👍 an seine
+Stelle trat. Der Kommentar, der Lauf 2 ausgelöst hatte, trug seine 👀 zur
+selben Zeit unverändert weiter.
+
+**Welche Reaktion zu welchem Lauf gehört, ist daraus aber nicht ablesbar** —
+und der Versuch stand hier eine Fassung lang. «Am PR hing sie an Lauf 3, am
+Kommentar an Lauf 2» ordnet nach dem *Ort* zu, und genau das widerlegt die
+Beobachtung auf `#83` zwei Absätze weiter oben: Dort setzte ein einziger, per
+Kommentar ausgelöster Lauf die 👀 an **beide** Stellen. Auf `#86` überlappten
+Lauf 2 und Lauf 3; Lauf 2 allein kann also beide Reaktionen erklären. Ein
+Codex-Review hat den Fehlschluss gefunden, und er ist derselbe, den derselbe
+Abschnitt zwei Absätze vorher benennt.
+
+Übrig bleibt die Beobachtung ohne die Zuordnung, und die genügt für den
+Handgriff: **Nach `✅ Completed` war die eine Stelle geräumt und die andere
+nicht.** Wer nur eine von beiden abfragt, bekommt je nach Wahl «läuft noch»
+oder «nichts läuft» — über denselben PR, in derselben Sekunde. Beide lesen,
+keiner von beiden mehr abgewinnen als das.
+
+Dass eine 👀 gerade dort stehenblieb, wo ein Lauf aus dem Bericht verschwand,
+sieht auf `#81` und `#86` gleich aus, ist aber dieselbe Zuordnung noch einmal:
+Sie unterstellt, dass die stehengebliebene Reaktion dem verschwundenen Lauf
+gehört. Als Vermutung notiert, nicht als Handgriff.
+
+**Und ein ausbleibendes 👍 ist kein Befund-Indiz.** Auf `#64` fiel die
+Rücknahme ohne 👍 mit einem Befund zusammen; auf `#86` mit einem Lauf, dessen
+Ergebnis mangels offenem PR gar nicht gepostet werden konnte. Dieselbe
+Beobachtung, zwei unvereinbare Ursachen — sie trennt die Fälle nicht.
+
+Die 👍 am PR (`+1: 1`) trägt hier nichts — und, anders als hier zwei Fassungen
+lang stand, auch auf `#68` nicht: Jene Ausnahme ist weiter unten zurückgenommen.
+`reactions` bleibt eine Summe ohne Urheber, und selbst wenn die Reaktion von
+Codex stammte, sagt sie nicht, welchem der beiden Läufe sie gälte.
 
 **Der Übergang selbst ist inzwischen beobachtet — er trägt aber keine
 Zuordnung.** Auf `#82` stand am PR zum Merge-Zeitpunkt `eyes: 1`; um
@@ -541,11 +587,17 @@ kein Werkzeug: `/issues/{n}/reactions` ist aus den Agent-Sessions gesperrt,
 noch als Indiz da — mit dem Vermerk, warum sie nicht trägt.
 
 **Auch «der jüngste Lauf war sauber» stimmt nicht.** Reaktionen an
-verschiedenen Auslöser-Objekten überschreiben einander nicht: Auf `#82`
-überlebte die Kommentar-Reaktion den später gestarteten PR-getriggerten Lauf.
-In umgekehrter Reihenfolge steht eine alte PR-👍 neben einem neueren
-Manual-Request-Lauf mit Befund. Die Reaktion gilt, wenn überhaupt, dem jüngsten
-Lauf **ihres eigenen Auslöser-Objekts** — nicht dem jüngsten Lauf.
+verschiedenen Stellen überschreiben einander nicht: Auf `#82` überlebte die
+Kommentar-Reaktion den später gestarteten PR-getriggerten Lauf. Zwei Stellen
+können also gleichzeitig Gegensätzliches anzeigen, und die jüngere räumt die
+ältere nicht weg.
+
+Hier stand daraus die Folgerung, die Reaktion gelte dem jüngsten Lauf «ihres
+eigenen Auslöser-Objekts». **Das ist dieselbe Zuordnung nach dem Ort, die der
+Absatz gleich darunter widerlegt** — ein Lauf kann beide Stellen anfassen, also
+sagt die Stelle nicht, welcher Lauf sie gesetzt hat. Was bleibt, ist die
+Verneinung ohne den Ersatz: «der jüngste Lauf» stimmt nicht, und ein anderer
+Lauf lässt sich der Reaktion auch nicht zuweisen.
 
 **Und sie sitzt nicht nur an einer Stelle.** Am 9.9.2026 um 03:37 trug `#83`
 während eines einzigen, per Kommentar ausgelösten Laufs `eyes: 1` **sowohl** am
@@ -555,9 +607,10 @@ Beobachtung, die nur eine der beiden Stellen abfragte. Dieselbe Falle wie
 damals bei den Kommentaren, nur andersherum, und sie hat hier zwei Fassungen
 überlebt.
 
-Also beide Stellen lesen — und keiner von beiden mehr abgewinnen als: hier lief
-etwas, oder hier lief etwas ohne Befund durch. Welcher Commit, welcher Lauf,
-wessen Reaktion: nichts davon steht darin.
+Also beide Stellen lesen — und keiner von beiden irgendetwas abgewinnen. Hier
+stand einmal «wenigstens: hier lief etwas»; auch das ist zu viel, denn eine
+Reaktion von Hand belegt keinen Lauf, und ob eine von Hand kam, sagt die Summe
+nicht. Die ausführliche Rücknahme steht weiter unten bei der Beweisregel.
 
 **Das Muster ist viermal in Folge aufgetreten, an jedem PR dieser Serie, bei
 dem nicht gewartet wurde.** Jedes Mal derselbe Ablauf: ein Lauf per
@@ -594,30 +647,195 @@ Ergebnis. Der Versuch, das Problem durch einen weiteren PR zu lösen, reproduzie
 es also bloss.
 
 Praktisch folgt daraus nur eines, und es steht schon oben: Den Draft von Hand
-prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt. Die
-gemessenen Läufe brauchen dafür rund zwei Minuten.
+prüfen lassen **und das Ergebnis abwarten**, bevor man auf ready stellt.
 
-Dass die Pause die *Ursache* ist, folgt aus den vier Fällen allerdings nicht:
-In allen vieren fehlte sie, es gibt also keine Variation, aus der sich das
-ableiten liesse. Sie ist die naheliegende Abhilfe, nicht die gemessene.
+**Was «abwarten» heisst, hat sechs Fassungen und sechs Codex-Befunde
+gebraucht** — und die ersten fünf sind an derselben Sache gescheitert.
+Nacheinander stand hier: eine Frist von zwei Minuten; «bis der Bericht nicht
+mehr ‹Running› sagt»; «Ergebnisobjekt **oder** eine Ausfallmeldung»;
+«Ergebnisobjekt zum aktuellen Head»; «Ergebnis, entstanden nach dem eigenen
+Auslöser». Jede war enger als die vorige, und jede versuchte dasselbe: **einem
+Ergebnis anzusehen, zu welchem Lauf es gehört.**
 
-**Die Gegenprobe ist inzwischen gefahren, und sie ging auf.** Auf `#86` — dem
-PR, der diesen Absatz einführte — wurde gewartet: Lauf um 03:57:31 von Hand
-angestossen, der PR blieb offen, um 03:59:52 stand `✅ Completed` mit dem
-Auslöser «Manual request» und daneben ein Review-Objekt mit zwei Befunden auf
-`009f570`. Kein zweiter Lauf, kein überschriebener Bericht, ein bindender
-Ausgang.
+**Das gibt der Mechanismus nicht her.** Der Bericht hält nur den jüngsten Lauf;
+das Ergebnisobjekt nennt den Commit und nicht den Lauf; Läufe können sich
+überlappen und auf demselben Commit gegensätzlich urteilen. Bei zwei
+gleichzeitigen Läufen kann ein Ergebnis, das nach dem eigenen Auslöser
+erscheint, vom anderen stammen — und ist der eigene Lauf aus dem Bericht
+verdrängt, sieht das genauso aus, als hätte er nie begonnen.
 
-Das ist **ein** Fall gegen vier, und ein einzelner Fall trägt keine Kausalität —
-aber er ist der einzige mit Pause, und er ist der einzige mit feststellbarem
-Ausgang. Mehr sagt diese Zeile nicht, und weniger wäre zu wenig: Die beiden
-Befunde jenes Laufs betrafen genau diesen Abschnitt und wären ohne die Pause
-verloren gewesen.
+Die Regel muss deshalb dort ansetzen, wo man noch etwas in der Hand hat, und
+das ist nicht die Auswertung, sondern die **Voraussetzung**:
+
+> **Immer nur ein Lauf offen.** Keinen zweiten `@codex review` anstossen,
+> solange einer läuft; nicht auf ready stellen und nicht mergen, solange einer
+> läuft. Erst das Ergebnis, dann der nächste Schritt.
+
+Ist das eingehalten, ist die Zuordnung eindeutig, und der Bericht sagt, wo man
+steht:
+
+- **`🔄 Running`** — weiterwarten, egal was sonst im PR erscheint. Auch eine
+  Ausfallmeldung ändert daran nichts: Auf `#76` stand die Environment-Meldung
+  in **derselben Sekunde**, in der ein Review anlief, auf `#87` zwanzig
+  Sekunden davor.
+- **`✅ Completed` für den eigenen Lauf, und ein Ergebnis ist da, das nach dem
+  eigenen Auslöser entstanden ist** — fertig. Der Zusatz ist nötig, auch wenn
+  die Voraussetzung eingehalten ist: Auf demselben Head kann das Ergebnis eines
+  **früheren, abgeschlossenen** Laufs stehen, und das erfüllt «ein Ergebnis ist
+  da», ohne über den neuen Lauf etwas zu sagen — der gegenteilig urteilen kann.
+  Die Voraussetzung schliesst Überlappung aus, nicht Vorgeschichte.
+  In allen acht Läufen an offenen PRs, bei denen beides ablesbar war, stand das
+  Ergebnis sogar schon vor dem Wechsel da: **zwei bis drei Sekunden** davor.
+
+  **«Nach dem eigenen Auslöser» ist dabei notwendig und nicht hinreichend.**
+  Hat ein Vorgängerlauf `✅ Completed` erreicht, ohne ein Ergebnis zu liefern,
+  kann dessen Ergebnis verspätet kommen — und dann liegt es ebenfalls nach dem
+  eigenen Auslöser. Ausschliessen lässt sich das nicht, weil ein verspätetes
+  Ergebnis nicht ausschliessbar ist (gleich darunter). Praktisch heisst das:
+  **Erst dann einen neuen Lauf anstossen, wenn jeder Vorgänger auf diesem Head
+  sein Ergebnis geliefert hat.** Steht dort noch ein `Completed` ohne Ergebnis,
+  gilt derselbe Satz wie für den Neustart überhaupt — sicher ist er nicht, und
+  wer trotzdem anstösst, wählt bewusst ein Risiko.
+- **Der eigene Lauf stand im Bericht und ist daraus verschwunden** — dann war
+  die Voraussetzung verletzt, ein zweiter Lauf hat ihn verdrängt.
+
+  **Ob sein Ausgang damit verloren ist, hängt am Commit.** Prüfte der
+  verdrängende Lauf einen **anderen** Commit — der übliche Fall, wenn während
+  eines Reviews ein Fix gepusht und dort neu ausgelöst wird —, kann ein später
+  erscheinendes Ergebnis über sein «Reviewed commit» zugeordnet werden. Hier
+  stand pauschal, der Ausgang sei nicht mehr feststellbar, und das hätte
+  gültige Reviews verworfen.
+
+  **Der andere Commit trennt aber nur A von B.** Gab es auf dem verdrängten
+  Commit selbst **mehr als einen** Lauf mit ausstehendem Ergebnis, sagt das
+  «Reviewed commit» wieder nicht, welcher von beiden geantwortet hat.
+  Eindeutig ist die Zuordnung also nur, wenn auf jenem Commit genau ein
+  Ergebnis aussteht.
+
+  Verloren ist er dagegen bei **mehreren Läufen auf demselben Commit**: Dort
+  nennen alle Ergebnisse denselben, und welcher Lauf welches erzeugt hat, sagt
+  keines. Genau so lag es auf `#81` und auf `#86`.
+
+**Zwei Zustände bleiben offen, und beide haben dieselbe Form: Es ist nichts
+da.** `✅ Completed`, aber kein Ergebnis. Oder eine Ausfallmeldung, aber im
+Bericht noch kein Lauf zum eigenen Auslöser. In beiden Fällen ist die Frage
+dieselbe — kommt noch etwas? —, und **beantworten lässt sie sich nicht.**
+
+Der Versuch, sie über eine Wartezeit zu beantworten, ist genau der Fehler, den
+dieser Abschnitt sechs Fassungen lang gemacht hat. Was die Messungen dazu
+hergeben, sind Anhaltspunkte und keine Schranken: Ein Ergebnis, das nach
+`✅ Completed` kam, wurde nie beobachtet — und «Completed ohne Ergebnis» an
+einem **offenen** PR mit nur einem Lauf auch nicht. Am geschlossenen PR ist
+dieser Zustand dagegen bekannt und terminal: `#68` und Lauf 3 auf `#86` sind
+oben beschrieben, dort kommt nichts mehr. Der Fall, um den es hier geht, ist
+also allein der offene PR. Und zwischen Environment-Meldung und Start des Laufs
+lagen 0 Sekunden (`#76`) sowie 20 und 21 Sekunden (`#87`, 9.9.2026, zweimal
+nacheinander). Wer daraus eine Frist macht, hat sie erfunden.
+
+Praktisch folgt daraus nicht «länger warten», sondern:
+
+- **Aus dem Nichts nichts schliessen.** «Es steht nichts da» ist nie «sauber»
+  und nie «gescheitert». Auf ready stellen oder mergen ist in beiden Zuständen
+  falsch — dieselbe Regel wie beim 403 weiter oben: Entscheidend ist nicht,
+  was fehlt, sondern ob die Quelle geantwortet hat.
+- **Nicht sofort wiederholen.** Ein zweiter Auslöser im Zwischenzustand erzeugt
+  genau die Überlappung, die die Voraussetzung verhindern soll — und macht den
+  eigenen Ausgang unfeststellbar. Auf `#87` wäre das zweimal passiert: Beide
+  Male stand die Environment-Meldung da, beide Male kam der Lauf gut zwanzig
+  Sekunden später doch.
+- **Bleibt es dabei, hilft nur ein neuer Lauf** — und **er ist nicht sicher.**
+  Hier stand «abwarten, bis im Bericht nichts mehr läuft, dann einen Lauf
+  anstossen». Das ist im gefährlichsten Fall sofort erfüllt: Wenn der eigene
+  Lauf verzögert startet, steht im Bericht ja gerade noch nichts. Wer dann
+  anstösst, erzeugt genau die Überlappung, die er vermeiden wollte.
+
+**Ein garantiert sauberer Neustart ist nicht feststellbar.** Das ist keine
+Lücke dieser Notiz, sondern eine Eigenschaft des Mechanismus: Der Bericht zeigt
+nur den jüngsten Lauf, und ein noch nicht erschienener Lauf sieht aus wie
+keiner. Wer aus diesem Zustand herauswill, wählt zwischen zwei Risiken —
+weiterwarten auf ein Ergebnis, das vielleicht nie kommt, oder anstossen und
+den eigenen Ausgang vielleicht verdrängen. Beides bewusst wählen, keines für
+den sicheren Weg halten.
+
+Genau deshalb steht die **Voraussetzung** oben und nicht die Auswertung: Sie
+ist das Einzige, was diesen Zustand vermeidet. Ist sie eingehalten, kommt man
+kaum hinein; ist sie verletzt, führt kein Lesen und keine Regel zuverlässig
+heraus.
+
+**Und die Ausfallmeldung ist nicht zuverlässig ein Issue-Kommentar.** Am
+9.9.2026 kam die Environment-Meldung auf `#87` als **Review-Kommentar in einem
+Thread**. Wer sie nur mit `get_comments` sucht, findet sie dort nicht — und der
+Kommentarzähler bewegt sich nicht. Die Klassifikation und die Abfragewege
+weiter unten sind entsprechend korrigiert.
+
+Eine Frist taugt dafür ohnehin nicht: Die zweiundzwanzig Läufe mit ablesbarem
+Anfang und Ende brauchten zwischen 103 und 316 Sekunden.
+
+Aus der Tabelle oben folgt das allerdings nicht: In allen vier Fällen fehlte
+die Pause, es gibt dort also keine Variation, aus der sich eine Ursache
+ableiten liesse. Die Variation liefert erst der Absatz darunter — und auch der
+nur einmal je Zweig.
+
+**Die Gegenprobe ist versucht worden — und sie hat nicht gemessen, was sie
+messen sollte.** Auf `#86`, dem PR, der diesen Absatz einführte:
+
+| Zeit (UTC) | Ereignis | Ausgang |
+|---|---|---|
+| 03:57:31 | Lauf 1, «Manual request», `009f570` — **gewartet** | 03:59:52 `✅ Completed` **und** Review-Objekt mit zwei Befunden |
+| 04:03:29 | Lauf 2, «Manual request», `26e3c55` | verschwand um 04:04:34 aus dem Bericht |
+| 04:04:23 | ready gestellt, während Lauf 2 lief | — |
+| 04:04:31 | Lauf 3, «Draft marked ready», `26e3c55` | 04:07:08 `✅ Completed`, **kein Ergebnis** |
+| 04:05:16 | Merge, 45 s nach Beginn von Lauf 3 | — |
+
+Hier stand, das sei die Variation, die den vier Fällen der Tabelle oben fehle:
+gleicher PR, gleiches Repo, einmal mit und einmal ohne Pause, und der
+Unterschied im Ausgang genau der erwartete. **Das trägt nicht, und der Grund
+steht zwei Abschnitte weiter oben in diesem Dokument.**
+
+Die beiden Zweige unterscheiden sich nicht nur in der Pause: Lauf 1 endete bei
+**offenem** PR, Lauf 3 endete 112 Sekunden **nach dem Merge**. Und ein
+geschlossener PR unterdrückt das Ergebnis — das ist oben gemessen und in
+diesem PR neu aufgeschrieben worden. Der Unterschied «Review-Objekt» gegen
+«kein Ergebnis» ist damit **schon vollständig erklärt**, ohne dass die Pause
+etwas dazu beitragen müsste.
+
+Eine Gegenprobe, die zwei Grössen zugleich verändert, misst keine von beiden.
+Für die Pause bräuchte es zwei Läufe, die **beide bei offenem PR enden** — den
+gibt es hier nicht. Was von `#86` bleibt, ist der Mechanismus und nicht die
+Messung: ready stellen startet einen zweiten Lauf, der den Bericht überschreibt,
+und mergen unterdrückt das Ergebnis. Beides ist einzeln belegt, beides spricht
+für die Pause — belegt ist die Pause damit trotzdem nicht.
+
+Aufgefallen ist das einem Codex-Review, in der sechsten Runde auf demselben PR,
+in dem der konfundierte Absatz entstand. Fünf Runden lang stand hier eine
+Gegenprobe, die keine war, und sie las sich überzeugender als die
+Vorsichtsklausel darunter.
+
+Zwei Dinge, die dieser Ablauf zusätzlich trennt:
+
+- **Warten bis zum Ergebnis genügt nicht, wenn danach während des nächsten
+  Laufs ready gestellt wird.** Lauf 1 war sauber abgewartet; der Fix danach
+  brauchte einen eigenen Lauf, und für den war nach 54 Sekunden ready gestellt.
+  Überholt wurde er dadurch aber erst später: Lauf 3 startete nach 62 Sekunden,
+  und aus dem Bericht verdrängt war Lauf 2 nach 65. Die Pause gilt jedem Lauf,
+  nicht dem PR.
+- **Das Überschreiben des Berichts hängt nicht am Merge.** Lauf 3 überschrieb
+  Lauf 2 um 04:04:34 — 42 Sekunden **vor** dem Merge, bei offenem PR. In den
+  vier Fällen der Tabelle fielen beide immer zusammen; hier sind sie getrennt,
+  und die Ursache ist der zweite Lauf.
+
+**Die vorige Fassung dieses Absatzes ist so in `main` gelandet.** Unmittelbar
+nach Lauf 1 notierte sie «Kein zweiter Lauf, kein überschriebener Bericht, ein
+bindender Ausgang» und wurde drei Minuten später mitgemergt — da lief Lauf 3
+bereits. Für Lauf 1 stimmte der Satz; für den PR, der danach zwei weitere Läufe
+und einen überschriebenen Bericht bekam, nicht mehr. Ein Vorgang, der noch
+läuft, ergibt einen Zwischenstand, und der gehört als solcher aufgeschrieben —
+sonst altert er zwischen Commit und Merge.
 
 Übrig bleibt der Statusbericht. Er nennt den geprüften Commit — der Head wurde
-also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit im
-Regelfall von aussen nicht feststellbar** — auf `#68` ausnahmsweise doch, und
-warum, steht gleich darunter.
+also geprüft —, sagt aber nichts über den Ausgang. **Der Ausgang ist damit von aussen
+nicht feststellbar**. Eine Ausnahme für `#68` stand hier zwei
+Fassungen lang; warum sie gefallen ist, steht gleich darunter.
 
 Naheliegend wäre, ihn aus der 👍-Reaktion am PR zu lesen. Das trägt nicht:
 
@@ -629,41 +847,59 @@ Naheliegend wäre, ihn aus der 👍-Reaktion am PR zu lesen. Das trägt nicht:
   REST-Endpunkt `/issues/{n}/reactions` ist dort gesperrt, und kein
   MCP-Werkzeug liefert ihn.
 
-**Auf `#68` lässt sich der Ausgang trotzdem lesen**, weil dort drei Umstände
-zusammenkommen, die sonst fehlen: Der PR trägt `+1: 1` und sonst nichts, ausser
-Codex hat ihn niemand angefasst, und der Zeitstempel bindet die Reaktion an den
-Lauf — fertig um 08:14:41, PR zuletzt verändert um 08:14:44. Drei Sekunden. Nach
-der oben gemessenen Zuordnung heisst 👍 «befundlos»; jener Lauf hatte also
-keinen Befund.
+**Auf `#68` stand hier eine Ausnahme — sie ist zurückgenommen.** Sie lautete:
+Der PR trage `+1: 1` und sonst nichts, ausser Codex habe ihn niemand angefasst,
+und der Zeitstempel binde die Reaktion an den Lauf (fertig um 08:14:41, PR
+zuletzt verändert um 08:14:44, drei Sekunden). Daraus wurde «jener Lauf hatte
+keinen Befund».
 
-**Das ist ein Sonderfall, keine Regel.** Fehlt einer der drei Umstände, bleibt
-`reactions` das, was es ist — eine Summe ohne Urheber. Ohne sie ist der Ausgang
-eines solchen Laufs nicht feststellbar, und ein neuer Lauf holt ihn nicht
-zurück: Er fällt ein eigenes, unabhängiges Urteil — dasselbe Argument wie
-weiter unten, wo derselbe Text in 42 Läufen 36-mal einen Befund und 6-mal keinen
-bekam. Was bleibt, ist ein Ersatz, keine Rekonstruktion: eine frische Prüfung
-auf dem Merge-Commit oder in einem Folge-PR, deren Ergebnis für sich steht.
+Das ist **derselbe Zirkelschluss**, der zwei Abschnitte weiter oben für `#82`
+schon einmal aufgeschrieben und verworfen wurde: «Ausser Codex hat ihn niemand
+angefasst» ist aus einer Summe ohne Urheber nicht feststellbar — eine 👍 von
+Hand hinterlässt genau diese Summe und keine andere Spur. Und der
+Sekundenabstand schliesst sie nicht aus, sondern sieht bei ihr gleich aus. Die
+Ausnahme hat den Widerruf nur überlebt, weil sie älter war als er und niemand
+sie mitgezogen hat; gefunden hat sie ein Codex-Review, das vom Widerruf auf sie
+zurückschloss.
+
+**Damit ist der Ausgang eines solchen Laufs von aussen nicht feststellbar** —
+auf `#68` so wenig wie sonst. Ein neuer Lauf holt ihn auch nicht zurück: Er
+fällt ein eigenes, unabhängiges Urteil — dasselbe Argument wie weiter unten, wo
+derselbe Text in 42 Läufen 36-mal einen Befund und 6-mal keinen bekam. Was
+bleibt, ist ein Ersatz, keine Rekonstruktion: eine frische Prüfung auf dem
+Merge-Commit oder in einem Folge-PR, deren Ergebnis für sich steht.
 
 Ein Statusbericht ohne Ergebnis heisst also «geprüft, Ausgang offen» — offen,
 bis etwas anderes ihn bindet, und das ist eine ehrlichere Auskunft als eine
 Summe, die zwei Urheber nicht trennt.
 
-Zwei Fassungen lang stand hier «der Ausgang bleibt dauerhaft unbekannt», zwei
-Zeilen unter dem Satz, die Reaktion auf `#68` sei eindeutig. Beides zugleich
-geht nicht, und aufgefallen ist es einem Codex-Review. Aufgelöst hat es nicht
-das Nachdenken, sondern eine Abfrage: `issue_read` auf `#68`. Wer den
-Widerspruch ohne sie glattzieht, wählt zwischen drei Auflösungen und rät.
+**Dieselbe Stelle ist zweimal falsch gewesen, in entgegengesetzte Richtungen.**
+Zuerst stand hier «der Ausgang bleibt dauerhaft unbekannt», zwei Zeilen unter
+dem Satz, die Reaktion auf `#68` sei eindeutig — ein offener Widerspruch, den
+ein Codex-Review fand. Aufgelöst wurde er damals zugunsten der Ausnahme, und
+zwar mit einer Abfrage statt mit Nachdenken: `issue_read` auf `#68`.
+
+Die Abfrage war richtig, die Auflösung falsch. Sie hat die Daten geprüft und
+nicht den Schluss: Dass `+1: 1` und drei Sekunden Abstand einen Urheber
+benennen, folgte aus keiner der Zahlen. **Eine Messung ersetzt kein Argument** —
+und wer den Widerspruch stattdessen ohne Abfrage glattzieht, rät bloss zwischen
+drei Auflösungen.
 
 Das sind verschiedene Abfragen — `get_reviews` fürs Objekt, `get_comments` für
-die Kommentare; wer nur eine nimmt, übersieht den Rest. Genau so ist die
-Limit-Meldung zuerst durchgerutscht. «Alles andere» deckt `get_comments` aber
-nicht ab: Die Reaktion am PR liegt in keiner der beiden — sie steht im Feld
+die Issue-Kommentare, `get_review_comments` für die Kommentare in den Threads;
+wer nur eine nimmt, übersieht den Rest. Genau so ist die Limit-Meldung zuerst
+durchgerutscht, und genau so wäre die Environment-Meldung vom 9.9.2026
+durchgerutscht: Sie stand als Review-Kommentar in einem Thread, wo
+`get_comments` sie nicht findet und wo der Kommentarzähler sich nicht bewegt.
+«Alles andere» deckt keine der drei ab: Die Reaktion am PR liegt in keiner — sie steht im Feld
 `reactions` von `issue_read`, und weil das eine Summe ohne Urheber ist, taugt
 sie ohnehin nicht als Beleg (oben, und weiter unten ausführlicher).
 
 Der Kommentarzähler allein reicht ohnehin nicht: `comments: 1` kann die
 Befundlos-, die Kontingent- **oder** die Environment-Meldung sein — und seit dem
-29.8.2026 auch einen blossen Statusbericht, der überhaupt kein Ergebnis meldet:
+29.8.2026 auch einen blossen Statusbericht, der überhaupt kein Ergebnis meldet.
+Umgekehrt bewegt er sich nicht, wenn eine Ausfallmeldung als Review-Kommentar
+kommt. Er zählt also mal zu viel und mal zu wenig:
 
 ```
 ## Codex Review Summary
@@ -702,29 +938,59 @@ an einem PR, den ausser Codex niemand angefasst hatte:
 | 16:56:27 | fertig, **mit** Befund | `total_count: 0` — 👀 wieder entfernt |
 
 Und auf `#62` nach einem befundlosen Lauf: `+1: 1` am PR, `0` an jedem der drei
-Kommentare. Codex setzt die Reaktion also, nimmt sie zurück und unterscheidet
-die Ausgänge — genau wie der Kasten es beschreibt («reacts with 👀 while any
-review is running … reacts with 👍 once all reviews finish with no findings»).
+Kommentare. Beides **passt zur Beschreibung im Kasten** («reacts with 👀 while
+any review is running … reacts with 👍 once all reviews finish with no
+findings») — mehr als eine Übereinstimmung ist es nicht: Dass Codex die
+Reaktion gesetzt und zurückgenommen hat, steht in diesen Daten nicht (siehe
+den Absatz nach dem nächsten).
 
 Die alte Zeile war damit nicht vorsichtig, sondern **falsch**: Sie hat aus einer
-Messung am falschen Ort auf eine Lüge geschlossen. Der Kasten stimmt hier.
+Messung am falschen Ort auf eine Lüge geschlossen. Dass die Reaktion am PR
+sitzt, ist damit belegt, und der Kasten ist als Beschreibung nicht widerlegt.
 
-**«Am PR» gilt aber nicht für jeden Auslöser.** Am 30.8.2026 auf
+Ein Urheber steht aber auch hier nicht in den Daten: «Ausser Codex hat ihn
+niemand angefasst» ist dieselbe unbelegbare Bedingung wie bei `#68`. Das
+Auftauchen und Verschwinden im Takt eines Laufs passt zum Kasten, beweist ihn
+aber nicht — und als Auskunft über einen einzelnen Lauf bleibt die Reaktion
+unbrauchbar.
+
+**«Am PR» ist nicht die einzige Stelle.** Am 30.8.2026 auf
 `swiss-procurement-mcp#76` trug der auslösende `@codex review`-Kommentar selbst
-`eyes: 1`, während der Lauf ging. Wo die Reaktion landet, hängt also davon ab,
-was den Lauf angestossen hat — beim ready-Auslöser am PR, beim Kommentar-Auslöser
-am Kommentar. Wer nur eine der beiden Stellen abfragt, misst wieder am falschen
-Objekt, bloss andersherum als beim ersten Mal. Auch hier bleibt der Vorbehalt aus
-demselben Abschnitt: `reactions` ist eine Summe ohne Urheber, und eindeutig ist
-der Fall nur, weil ausser Codex niemand den PR angefasst hatte.
+`eyes: 1`, während der Lauf ging. Daraus stand hier eine Weile die Regel «beim
+ready-Auslöser am PR, beim Kommentar-Auslöser am Kommentar» — **sie ist
+widerlegt**: Auf `#83` setzte ein einziger, per Kommentar ausgelöster Lauf die
+👀 an beide Stellen (oben, im Abschnitt zu `#81`). Der Ort trennt die Auslöser
+also nicht.
+
+Was bleibt, ist der Messfehler, gegen den die Zeile ursprünglich geschrieben
+war: Wer nur eine der beiden Stellen abfragt, misst am falschen Objekt.
+Beide lesen. Der Vorbehalt aus demselben Abschnitt gilt weiter, und schärfer
+als er hier stand: `reactions` ist eine Summe ohne Urheber. «Eindeutig, wenn
+ausser Codex niemand den PR angefasst hat» rettet den Fall nicht — dass niemand
+ihn angefasst hat, ist aus einer Summe ohne Urheber gerade nicht feststellbar.
+Eindeutig wird ein solcher Fall nie.
 
 Das ändert nichts an der Beweisregel, sondern nur an ihrer Begründung: Belegt
 ist eine Prüfung durch einen Statusbericht auf `✅ Completed`, ein
 Review-Objekt oder eine Befundlos-Meldung, die jeweils den aktuellen Head
-nennen. Die Reaktion taugt dafür nicht — und der Grund ist genau der Commit:
-Sie nennt keinen und wird beim nächsten Lauf
-überschrieben. Sie sagt «gerade läuft etwas» oder «der letzte Lauf war sauber»,
-nie «dieser Head ist geprüft».
+nennen. Die Reaktion taugt dafür nicht, und der Grund ist genau der Commit: Sie
+nennt keinen.
+
+Auch «der letzte Lauf war sauber» stand hier noch — dieselbe Zuordnung zu einem
+Lauf, die der Abschnitt weiter oben zurücknimmt, und die Behauptung, sie werde
+beim nächsten Lauf überschrieben, gehört dazu: Auf `#82` überlebte eine
+Reaktion einen späteren Lauf an anderer Stelle.
+
+Der Rest, der davon übrigblieb — «irgendwann lief irgendetwas oder lief ohne
+Befund durch» —, war **auch schon zu viel**, und ein Codex-Review hat es in der
+nächsten Runde benannt. Stammt die Reaktion von einem Menschen, belegt sie
+keinen Lauf, sondern gar nichts; und ob sie von einem Menschen stammt, sagt die
+Summe nicht. Zwischen «wenigstens lief etwas» und «beweislos» liegt genau der
+Schritt, den `reactions` ohne Urheberdaten nicht hergibt.
+
+**Also: Die Reaktion ist kein Beleg — für nichts.** Der Kasten beschreibt, was
+Codex mit ihr *tut*, und das mag zutreffen; als Auskunft über einen Lauf, einen
+Commit oder einen Ausgang ist sie unbrauchbar, solange der Urheber fehlt.
 
 Das gilt auch im Fall des geschlossenen PR oben, wo sie als einzige Quelle
 für den Ausgang übrig zu bleiben scheint: Die Summe im Feld `reactions` trennt
@@ -760,10 +1026,39 @@ Merge — die Ausfallmeldung kommt binnen Sekunden, ein Review nicht.
 nennt Start und Ende; vorher liess sich nur die Dauer eines ganzen Stapels
 ablesen, und die 42 Reviews vom 23.8. über neun Minuten sind kein Wert für einen
 einzelnen Lauf. Auf `swiss-procurement-mcp#75` am 30.8.: **103 s**
-(09:09:18 → 09:11:01) und **111 s** (09:14:48 → 09:16:39).
+(09:09:18 → 09:11:01) und **111 s** (09:14:48 → 09:16:39). Auf `#86` am 9.9.:
+**141 s** (03:57:31 → 03:59:52) und **157 s** (04:04:31 → 04:07:08); auf `#87`
+am selben Tag **169 s** (04:12:00 → 04:14:49), **216 s**
+(04:17:33 → 04:21:09), **235 s** (04:23:26 → 04:27:21), **316 s**
+(04:30:14 → 04:35:30), **177 s** (04:39:16 → 04:42:13), **259 s**
+(04:43:46 → 04:48:05), **209 s** (04:50:45 → 04:54:14) und **228 s**
+(04:56:27 → 05:00:15), noch einmal **228 s** (05:02:15 → 05:06:03) und
+**218 s** (05:08:30 → 05:12:08), **186 s** (05:14:46 → 05:17:52) und **279 s**
+(05:19:28 → 05:24:07) und **223 s** (05:26:05 → 05:29:48) und **210 s** (05:31:10 → 05:34:40) und **248 s** (05:36:08 → 05:40:16) und **201 s** (05:41:42 → 05:45:03) und **261 s** (05:46:50 → 05:51:11) und **245 s** (05:52:44 → 05:56:49).
 
-Zwei Läufe in einem Repo sind keine Verteilung, und eine Wartezeit lässt sich
-daraus nicht ableiten. Als Handgriff taugt weiter nur die schwache Richtung: Ein
+Zweiundzwanzig Läufe sind keine Verteilung, und eine Wartezeit lässt sich daraus nicht
+ableiten. Sie reichen aber, um eine Faustregel zu widerlegen: «rund zwei
+Minuten» deckt 316 s nicht mehr. Wer zwei Minuten absässe und dann ready
+stellte, träfe einen solchen Lauf mitten hinein.
+
+**Auf `#86` ist das nicht passiert, und der Unterschied gehört dazu.** Dort war
+schon nach 54 Sekunden ready gestellt — von zwei Minuten Warten kann keine Rede
+sein. Belegt ist über die Faustregel deshalb nur das Schwächere: Eine Frist von
+zwei Minuten wäre bei jenem 157-Sekunden-Lauf **auch** zu kurz gewesen. Das
+genügt, um sie fallenzulassen, und mehr trägt die Beobachtung nicht.
+
+Acht Messungen lang hat **jede neue den Höchstwert angehoben** — 103, 111, 141,
+157, 169, 216, 235, 316. Hier stand deshalb, das sei bemerkenswert. Die neunte
+lag bei **177 s** und beendete die Reihe.
+
+Das ist die Lehre in Kurzform: Eine Reihe von acht war lang genug, um wie ein
+Muster auszusehen, und die neunte Messung hat sie gebrochen. Über die
+Verteilung dahinter sagte sie ohnehin nichts — wer aus ihr eine Obergrenze
+gebildet hätte, hätte sie erfunden, und genau deshalb taugt keine Frist.
+
+Nicht auf die Uhr sehen, sondern auf den Bericht: Solange dort «Running» steht,
+ist nichts entschieden — und wenn er fertig ist, entscheidet das Ergebnisobjekt
+und nicht der Bericht. Als Handgriff taugt weiter nur die schwache Richtung: Ein
 Kommentar, der binnen Sekunden dasteht, ist eher eine Absage als ein Urteil.
 Entschieden wird am Text, nicht an der Uhr.
 
@@ -807,13 +1102,24 @@ verpackt —, aber mit der **umgekehrten** Handlungsanweisung als beim 400er:
 - Beim 400er war die Absage deterministisch und wiederholbar; ein
   Wiederholungsrat wäre dort falsch gewesen, gesucht werden musste der fehlende
   Parameter.
-- Hier trennt ein Wiederholungslauf einen einmaligen Aussetzer ab, und er
+- Hier kann ein Wiederholungslauf einen einmaligen Aussetzer abtrennen, und er
   verlangt keine Konfigurationsänderung. Umsonst ist er deshalb nicht: Er wird
   per Kommentar ausgelöst und zählt damit ins Kontingent wie jeder
   GitHub-getriggerte Lauf — billiger als eine überflüssige Environment, aber
-  nicht gratis. **Erst wiederholen, dann konfigurieren.** Wer der Meldung sofort
+  nicht gratis. **Eher wiederholen als konfigurieren.** Wer der Meldung sofort
   folgt, legt eine Environment an, die es schon gibt, und hält das Problem
   danach für gelöst.
+
+  **Wiederholen heisst aber nicht sofort wiederholen**, und das stand hier eine
+  Fassung lang zu einfach. Am 9.9.2026 ging die Meldung auf `#87` zweimal einem
+  Lauf voraus, der 20 beziehungsweise 21 Sekunden später doch startete; auf
+  `#76` lief er in derselben Sekunde. Wer in diesem Zustand erneut auslöst,
+  erzeugt einen zweiten Lauf, der den ersten aus dem Bericht verdrängt — und
+  macht dessen Ausgang unfeststellbar. Zuerst also in den Statusbericht sehen,
+  ob ein Lauf erschienen ist. Steht dort keiner, ist die Wiederholung eine
+  **bewusst riskante Wahl** und kein sicherer Handgriff: Ein Kriterium, das den
+  gescheiterten Auslöser vom verzögerten unterscheidet, gibt es nicht (oben, im
+  Abschnitt über das Warten).
 
 Wiederholt sich die Meldung, ist sie **stabil** — mehr nicht. Auch das belegt
 keine fehlende Environment: Ein Aussetzer, der zwei Anläufe überdauert, sieht
