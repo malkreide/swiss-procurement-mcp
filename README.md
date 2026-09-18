@@ -244,7 +244,9 @@ upstream response body (OBS-002).
 | **Who picks** | The client's first request, once per connection. A request carrying the `2026-07-28` `_meta` envelope opens a modern connection; anything else opens a handshake connection. |
 | **Pinned in** | `MCP_PROTOCOL_VERSION` in [`server.py`](src/swiss_procurement_mcp/server.py) |
 | **SDK** | `mcp>=2.0.0,<3` |
-| **Cache hints** | `tools/list` and `server/discover`: `ttlMs` 300000, `cacheScope` `public` |
+| **Cache hints** | `tools/list`, `server/discover`, `prompts/list`, `resources/list`, `resources/templates/list`: `ttlMs` 300000, `cacheScope` `public` |
+| **Server identity** | `server/discover` answers `name`, `title`, `version` (the installed distribution's) and `websiteUrl`, plus server-level `instructions` |
+| **Verified by** | [`tests/test_modern_era.py`](tests/test_modern_era.py) — real `2026-07-28` envelope requests over HTTP *and* stdio |
 
 The MCP Python SDK negotiates the protocol version in the session layer and
 offers no constructor parameter for it, so the version cannot be pinned by
@@ -256,6 +258,35 @@ configuration. It is pinned as a declared constant and enforced by detection:
 
 That split is deliberate. An SDK bump should break *our* build, not the runtime
 of someone who upgraded `mcp` in their own environment.
+
+### What the two eras actually do differently
+
+The pin used to be checked against SDK constants and one `initialize` round
+trip. That round trip can only ever reach the handshake era, which caps at
+`2025-11-25` — so nothing in this repository had ever sent a `2026-07-28`
+request. A server can pin a revision it answers with `400` and stay green.
+
+Measured on 2026-09-18 against `mcp` 2.2.0, through both transports:
+
+- **There is no handshake.** `server/discover` replaces it, and it is the only
+  place a native client can ask who this server is. Every request carries its
+  own `_meta` envelope (protocol version, client info, client capabilities);
+  without it the server answers `-32602`.
+- **Requests route by header.** `Mcp-Method` and `Mcp-Name` must agree with the
+  body, or the request is refused with `-32020` *before* the tool runs — so a
+  proxy that reads only headers cannot be pointed at a different tool than the
+  body names. (`Mcp-Param-*` is unused here; see [`_cors.py`](src/swiss_procurement_mcp/_cors.py).)
+- **`initialize` is refused differently per transport, and both are right.**
+  Over HTTP each POST stands alone, so there is no connection serving an era
+  and `initialize` is simply not a method: `-32601`, HTTP 404. Over stdio the
+  connection picks its era with the first request, so a later `initialize` is
+  from the wrong era: `-32022`, naming the served revision.
+- **Capabilities read differently per era, and this is the SDK's doing, not a
+  setting here.** At `2026-07-28` the SDK derives `tools.listChanged`,
+  `prompts.listChanged`, `resources.listChanged` and `resources.subscribe` from
+  one fact — whether `subscriptions/listen` is served — and `MCPServer`
+  registers that unconditionally. So `server/discover` reports all four as
+  `true` where `initialize` reports all four as `false`, for the same server.
 
 ### Update policy
 

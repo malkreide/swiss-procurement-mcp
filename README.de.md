@@ -201,7 +201,9 @@ Keine API-Keys — die gekapselten simap.ch-Lese-Endpoints sind vollständig öf
 | **Wer entscheidet** | Die erste Anfrage des Clients, einmal pro Verbindung. Eine Anfrage mit dem `2026-07-28`-`_meta`-Envelope öffnet eine moderne Verbindung, alles andere eine Handshake-Verbindung. |
 | **Gepinnt in** | `MCP_PROTOCOL_VERSION` in [`server.py`](src/swiss_procurement_mcp/server.py) |
 | **SDK** | `mcp>=2.0.0,<3` |
-| **Cache hints** | `tools/list` and `server/discover`: `ttlMs` 300000, `cacheScope` `public` |
+| **Cache hints** | `tools/list`, `server/discover`, `prompts/list`, `resources/list`, `resources/templates/list`: `ttlMs` 300000, `cacheScope` `public` |
+| **Server-Identität** | `server/discover` liefert `name`, `title`, `version` (die der installierten Distribution) und `websiteUrl` sowie `instructions` auf Server-Ebene |
+| **Geprüft durch** | [`tests/test_modern_era.py`](tests/test_modern_era.py) — echte `2026-07-28`-Envelope-Anfragen über HTTP *und* stdio |
 
 Das MCP-Python-SDK handelt die Protokollversion in der Session-Schicht aus und
 bietet dafür keinen Konstruktor-Parameter — die Version lässt sich also nicht
@@ -214,6 +216,39 @@ durch Erkennung durchgesetzt:
 
 Diese Trennung ist Absicht: ein SDK-Bump soll *unseren* Build brechen, nicht die
 Laufzeit von jemandem, der `mcp` in seiner eigenen Umgebung aktualisiert hat.
+
+### Was die beiden Ären tatsächlich unterschiedlich machen
+
+Der Pin wurde bisher gegen SDK-Konstanten und einen `initialize`-Durchlauf
+geprüft. Dieser Durchlauf erreicht immer nur die Handshake-Ära, und die deckelt
+bei `2025-11-25` — eine `2026-07-28`-Anfrage hatte dieses Repo also nie
+gestellt. Ein Server kann eine Revision pinnen, die er mit `400` beantwortet,
+und dabei grün bleiben.
+
+Gemessen am 18.9.2026 gegen `mcp` 2.2.0, über beide Transporte:
+
+- **Es gibt keinen Handshake.** `server/discover` tritt an seine Stelle und ist
+  die einzige Stelle, an der ein nativer Client erfährt, wer dieser Server ist.
+  Jede Anfrage trägt ihren eigenen `_meta`-Envelope (Protokollversion,
+  Client-Info, Client-Capabilities); ohne ihn antwortet der Server `-32602`.
+- **Anfragen routen über Header.** `Mcp-Method` und `Mcp-Name` müssen zum Rumpf
+  passen, sonst wird die Anfrage mit `-32020` abgelehnt, *bevor* das Werkzeug
+  läuft — ein Proxy, der nur Header liest, kann also nicht auf ein anderes
+  Werkzeug zeigen als der Rumpf nennt. (`Mcp-Param-*` wird hier nicht
+  verwendet, siehe [`_cors.py`](src/swiss_procurement_mcp/_cors.py).)
+- **`initialize` wird je Transport anders abgelehnt, und beides stimmt.** Über
+  HTTP steht jeder POST für sich, es gibt keine Verbindung, die eine Ära
+  bediente, und `initialize` ist schlicht keine Methode: `-32601`, HTTP 404.
+  Über stdio entscheidet die erste Anfrage die Ära der Verbindung, ein späteres
+  `initialize` kommt also aus der falschen Ära: `-32022`, unter Nennung der
+  bedienten Revision.
+- **Capabilities lesen sich je Ära anders, und das ist das SDK und keine
+  Einstellung hier.** Bei `2026-07-28` leitet das SDK `tools.listChanged`,
+  `prompts.listChanged`, `resources.listChanged` und `resources.subscribe` aus
+  einer einzigen Tatsache ab — ob `subscriptions/listen` bedient wird —, und
+  `MCPServer` registriert das bedingungslos. `server/discover` meldet deshalb
+  alle vier als `true`, wo `initialize` alle vier als `false` meldet, für
+  denselben Server.
 
 ### Update-Policy
 
