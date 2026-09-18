@@ -98,6 +98,27 @@ async def test_every_hinted_method_actually_answers() -> None:
         assert result.cache_scope == "public", f"{method} answered {result.cache_scope}"
 
 
+async def test_die_gehinteten_listen_sind_leer() -> None:
+    """Der Ausloeser, den der Absatz in `server.py` benennt — und der beim
+    ersten Anlauf fehlte.
+
+    `tools/list` traegt seinen eigenen («the day a tool list becomes
+    caller-dependent, this has to become `private`»). Die drei Listen-Hinweise
+    daneben hatten keinen, und ihr Fall ist schwaecher: Sie sind `public` und
+    fuenf Minuten gueltig, **weil die Listen leer sind**. Ein registriertes
+    Prompt oder eine registrierte Resource koennte sehr wohl vom Aufrufer
+    abhaengen, und der Hinweis wuerde dann die Liste des einen Aufrufers fuer
+    fuenf Minuten an den naechsten weiterreichen.
+
+    Faellt dieser Test, ist die Antwort also nicht, die Zahl anzupassen,
+    sondern den Scope neu zu entscheiden.
+    """
+    async with Client(mcp) as client:
+        assert not (await client.list_prompts()).prompts
+        assert not (await client.list_resources()).resources
+        assert not (await client.list_resource_templates()).resource_templates
+
+
 def test_resources_read_stays_unhinted() -> None:
     """The one cacheable method that really has no answer.
 

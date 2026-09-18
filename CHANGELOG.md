@@ -7,6 +7,60 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+Selbstpruefung des vorangegangenen PR #89, nachdem dessen Codex-Lauf zweimal am
+erschoepften Kontingent scheiterte und der PR ungeprueft gemergt wurde. Drei
+Befunde, alle an derselben Stelle: eine Messung war weiter aufgeschrieben
+worden, als sie reichte.
+
+- **«Every search needs at least one filter» galt zwei von sechs Tools.**
+  `_assert_filtered` wird von `search_procurements` und
+  `search_procurements_detailed` aufgerufen, sonst von niemandem;
+  `search_awards` traegt seine vier Zuschlagstypen immer mit, und die Code-
+  und Stellensuchen verlangen ihre Abfrage schon per Schema, wo ein filterloser
+  Aufruf gar nicht baubar ist. Aus «zwei von sechs» war «jede» geworden —
+  dieselbe Klasse wie «mindestens ein Los antwortet», aufgeschrieben als «Lose
+  antworten». Die neue Zusicherung bindet den Satz ans Verhalten statt an
+  seinen Wortlaut und ueberlebt damit jede Umformulierung, die wahr bleibt.
+
+- **«pass the ids it returns» verschwieg, dass es zwei sind.**
+  `get_procurement_details` verlangt `project_id` **und** `publication_id`; ein
+  Modell, das die Instruktionen liest und das Schema nicht, haelt die Aufgabe
+  mit einer Id fuer erfuellt. Geprueft wird jetzt die Eigenschaft: jedes
+  Pflichtfeld des Eingabemodells muss in den Instruktionen vorkommen.
+
+  Aufgefallen ist diese Luecke nicht beim Schreiben, sondern in der Gegenprobe
+  — die Korrektur zurueckzunehmen liess die Suite gruen. Eine Aussage, die man
+  folgenlos entfernen kann, ist keine zugesicherte Aussage.
+
+- **Die beiden `initialize`-Tests waren als «zwei Seiten» derselben Situation
+  beschrieben und sind es nicht.** Sie unterscheiden sich in Transport *und*
+  Vorgeschichte zugleich; aus den zwei verschiedenen Fehlercodes auf «der
+  Transport macht den Unterschied» zu schliessen ist genau der
+  Konfundierungsfehler, vor dem `CLAUDE.md` an `#86` warnt — und er stand in
+  einem Docstring, der ihn selbst zitiert.
+
+  Nachgemessen wurde die fehlende Zelle, und sie faellt anders aus als
+  vermutet: Ein enveloppiertes `initialize` als **erste** stdio-Anfrage wird
+  nicht abgelehnt, sondern oeffnet eine Handshake-Verbindung auf `2025-11-25`.
+  `serve_dual_era_loop` entscheidet die Aera daran, ob die eroeffnende Anfrage
+  `initialize` heisst, nicht daran, ob sie enveloppiert ist. Wer den Envelope
+  stempelt und trotzdem mit `initialize` eroeffnet, bekommt also still eine
+  aeltere Aera. Damit ist auch belegt, warum die HTTP-Situation ueber stdio
+  nicht herstellbar ist — es gibt drei Zellen und keine vierte.
+
+### Added
+
+- **Ein Ausloeser fuer die drei neuen Cache-Hinweise.** `tools/list` traegt
+  seinen eigenen («the day a tool list becomes caller-dependent…»);
+  `prompts/list`, `resources/list` und `resources/templates/list` hatten
+  keinen, obwohl ihr Fall schwaecher ist: Sie sind `public` und fuenf Minuten
+  gueltig, **weil die Listen leer sind**. Ein registriertes Prompt koennte vom
+  Aufrufer abhaengen, und der Hinweis wuerde dessen Liste fuenf Minuten lang an
+  den naechsten Aufrufer weiterreichen. `test_die_gehinteten_listen_sind_leer`
+  faellt, sobald eine der drei nicht mehr leer ist.
+
+### Fixed
+
 - **Die Version, die MCP-Clients sehen, war der leere String — in beiden Aeren.**
   `tests/test_version_identity.py` oeffnet mit dem Satz «die Version, die dieser
   Server ankuendigt, muss die sein, die er ist», und haelt ihn fuer den

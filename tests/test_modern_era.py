@@ -44,11 +44,29 @@ from mcp_types import (
     PROTOCOL_VERSION_META_KEY,
     UNSUPPORTED_PROTOCOL_VERSION,
 )
-from mcp_types.version import LATEST_MODERN_VERSION, MODERN_PROTOCOL_VERSIONS
+from mcp_types.version import (
+    LATEST_HANDSHAKE_VERSION,
+    LATEST_MODERN_VERSION,
+    MODERN_PROTOCOL_VERSIONS,
+)
+from pydantic import ValidationError
 
 from swiss_procurement_mcp.__main__ import build_http_app
 from swiss_procurement_mcp.constants import SIMAP_BASE
-from swiss_procurement_mcp.server import INSTRUCTIONS, LIST_CACHE_TTL_MS, MCP_PROTOCOL_VERSION
+from swiss_procurement_mcp.inputs import (
+    AwardSearchInput,
+    CpvSearchInput,
+    DetailedSearchInput,
+    ProcurementDetailInput,
+    SearchInput,
+)
+from swiss_procurement_mcp.server import (
+    INSTRUCTIONS,
+    LIST_CACHE_TTL_MS,
+    MCP_PROTOCOL_VERSION,
+    search_procurements,
+    search_procurements_detailed,
+)
 
 SERVER_INFO_META_KEY = "io.modelcontextprotocol/serverInfo"
 
@@ -157,17 +175,28 @@ async def test_ohne_envelope_lehnt_der_server_ab() -> None:
 
 
 async def test_ueber_http_ist_initialize_gar_keine_methode() -> None:
-    """Die beiden Aeren mischen sich nicht — ueber HTTP aber anders als ueber stdio.
+    """Ein enveloppiertes `initialize` als *einzelne* Anfrage, ueber HTTP.
 
-    Erwartet worden war hier `UNSUPPORTED_PROTOCOL_VERSION` (-32022), der Code,
-    den `runner.py` fuer eine moderne Verbindung vorsieht. Gemessen am
-    18.9.2026 antwortet der HTTP-Eingang stattdessen `METHOD_NOT_FOUND` mit
-    HTTP 404, und das ist nicht der Fehler, sondern der Unterschied: eine
-    2026-07-28-Anfrage ueber HTTP ist ein einzelner, in sich geschlossener
-    POST. Es gibt keine Verbindung, die eine Aera «bediente» — es gibt nur
-    eine Methodentabelle, und `initialize` steht in dieser Revision nicht
-    darin. `test_stdio_lehnt_den_handshake_mit_der_aera_ab` faehrt die andere
-    Seite; die beiden Codes nebeneinander sind der eigentliche Befund.
+    Erwartet worden war `UNSUPPORTED_PROTOCOL_VERSION` (-32022), der Code, den
+    `runner.py` fuer eine moderne Verbindung vorsieht. Gemessen am 18.9.2026
+    antwortet der HTTP-Eingang `METHOD_NOT_FOUND` mit HTTP 404: Es gibt hier
+    keine Verbindung, die eine Aera bediente, sondern eine Methodentabelle, und
+    `initialize` steht in dieser Revision nicht darin.
+
+    **Dieser Test und `test_stdio_lehnt_den_handshake_mit_der_aera_ab` sind
+    nicht zwei Seiten derselben Muenze**, und die erste Fassung dieses
+    Docstrings hat genau das behauptet. Sie unterscheiden sich in zwei Groessen
+    zugleich — Transport *und* Vorgeschichte: hier steht das `initialize`
+    allein, dort folgt es einer vorangegangenen modernen Anfrage. Aus zwei
+    verschiedenen Codes auf «der Transport macht den Unterschied» zu schliessen
+    waere derselbe Konfundierungsfehler, vor dem `CLAUDE.md` an `#86` warnt.
+
+    Aufloesen laesst sich das nicht durch einen dritten Testfall, sondern nur
+    dadurch, dass man die fehlende Zelle misst — und die gibt es nicht:
+    `test_ueber_stdio_oeffnet_ein_enveloppiertes_initialize_die_alte_aera`
+    zeigt, dass ein `initialize` ohne Vorgeschichte ueber stdio gar nicht
+    abgelehnt *wird*. Die Situation dieses Tests ist ueber stdio nicht
+    herstellbar. Was bleibt, sind drei gemessene Faelle und keine Ursache.
     """
     status, body = await _post("initialize")
 
@@ -273,6 +302,63 @@ def test_die_instruktionen_sagen_das_noetigste(aussage: str) -> None:
     ein Treffer ein Projekt und keine Publikation ist.
     """
     assert aussage in INSTRUCTIONS
+
+
+async def test_die_filterregel_der_instruktionen_gilt_genau_den_genannten_tools() -> None:
+    """Die Korrektur einer Uebergeneralisierung, an das Verhalten gebunden.
+
+    Hier stand «Every search needs at least one filter». Gemessen ruft
+    `_assert_filtered` genau zwei Tools auf: `search_procurements` und
+    `search_procurements_detailed`. `search_awards` traegt seine vier
+    Zuschlagstypen immer mit und faellt nie darunter; die Code- und
+    Stellensuchen verlangen ihre Abfrage schon per Schema, dort ist ein
+    filterloser Aufruf gar nicht baubar.
+
+    Aus «zwei von sechs» war «jede» geworden — dieselbe Klasse wie «mindestens
+    ein Los antwortet», aufgeschrieben als «Lose antworten». Ein reiner
+    Textvergleich wuerde die Formulierung einfrieren; diese Zusicherung bindet
+    den Satz stattdessen an das, was die Tools tun, und ueberlebt jede
+    Umformulierung, die wahr bleibt.
+    """
+    for genannt in ("`search_procurements`", "`search_procurements_detailed`"):
+        assert genannt in INSTRUCTIONS
+
+    with pytest.raises(ValueError, match="at least one filter"):
+        await search_procurements(SearchInput())
+    with pytest.raises(ValueError, match="at least one filter"):
+        await search_procurements_detailed(DetailedSearchInput())
+
+    # Die Gegenprobe: ein Tool, das die Regel NICHT traegt. Ohne sie waere die
+    # Zusicherung auch gegen einen Server gruen, der jede Suche so abweist —
+    # und dann waere «jede» ja richtig gewesen.
+    AwardSearchInput()  # filterlos baubar, und der Aufruf faellt nicht darunter
+    with pytest.raises(ValidationError):
+        CpvSearchInput()  # verlangt `query` schon im Schema
+
+
+async def test_die_instruktionen_nennen_jede_pflichtangabe_des_detail_tools() -> None:
+    """Der zweite Satz der Instruktionen, an das Schema gebunden.
+
+    Er sagt, `get_procurement_details` brauche *beide* Ids. Die erste Fassung
+    sagte nur «pass the ids it returns», was ein Modell auch mit einer Id
+    erfuellt zu haben glaubt — das Tool verlangt `project_id` **und**
+    `publication_id`.
+
+    Aufgefallen ist die Luecke nicht beim Schreiben, sondern in der Gegenprobe:
+    Die Korrektur wieder zurueckzunehmen liess die Suite gruen. Eine Aussage,
+    die man folgenlos entfernen kann, ist keine zugesicherte Aussage.
+
+    Geprueft wird die Eigenschaft, nicht der Satz: Jedes Pflichtfeld des
+    Eingabemodells muss in den Instruktionen vorkommen. Kommt eines dazu,
+    faellt das hier — und nicht erst bei einem Modell, das im Dunkeln raet.
+    """
+    pflicht = [
+        name for name, feld in ProcurementDetailInput.model_fields.items() if feld.is_required()
+    ]
+    assert pflicht, "das Modell hat keine Pflichtfelder — dann prueft dieser Test nichts"
+
+    fehlend = [name for name in pflicht if f"`{name}`" not in INSTRUCTIONS]
+    assert not fehlend, f"Pflichtangabe(n) ungenannt in den Instruktionen: {fehlend}"
 
 
 async def test_beide_aeren_nennen_dieselbe_version() -> None:
@@ -460,13 +546,14 @@ def test_stdio_bedient_die_moderne_aera() -> None:
 
 
 def test_stdio_lehnt_den_handshake_mit_der_aera_ab() -> None:
-    """Die Gegenseite zu `test_ueber_http_ist_initialize_gar_keine_methode`.
+    """Ein `initialize` **nach** einer modernen Anfrage, ueber stdio.
 
     stdio traegt eine Verbindung, und die entscheidet ihre Aera mit der ersten
     Anfrage. Ein spaeteres `initialize` ist deshalb nicht «unbekannt», sondern
-    aus der falschen Aera — und die Absage sagt das mit einem anderen Code als
-    ueber HTTP. Wer nur den einen Transport prueft, schreibt die halbe Wahrheit
-    auf.
+    aus der falschen Aera, und die Absage sagt das.
+
+    Nicht die Gegenprobe zum HTTP-Fall: dort fehlt die Vorgeschichte, die hier
+    die Aera festlegt. Siehe den Docstring dort.
     """
     antworten = _stdio_roundtrip(
         _stdio_request(1, "server/discover"),
@@ -485,3 +572,46 @@ def test_stdio_lehnt_den_handshake_mit_der_aera_ab() -> None:
     absage = next(a for a in antworten if a["id"] == 2)
     assert absage["error"]["code"] == UNSUPPORTED_PROTOCOL_VERSION
     assert absage["error"]["data"]["supported"] == list(MODERN_PROTOCOL_VERSIONS)
+
+
+def test_ueber_stdio_oeffnet_ein_enveloppiertes_initialize_die_alte_aera() -> None:
+    """Die dritte Zelle — und die einzige, in der der Envelope folgenlos bleibt.
+
+    Ein `initialize` als *erste* Anfrage einer stdio-Verbindung wird nicht
+    abgelehnt, auch wenn es den 2026-07-28-Envelope traegt: `serve_dual_era_loop`
+    entscheidet die Aera daran, ob die eroeffnende Anfrage `initialize` heisst,
+    und **nicht** daran, ob sie enveloppiert ist. Gemessen am 18.9.2026 kommt
+    `2025-11-25` zurueck — die Handshake-Obergrenze, ohne jeden Hinweis darauf,
+    dass der Envelope ignoriert wurde.
+
+    Das ist der Fall, der die beiden Tests darueber trennt: Die Situation des
+    HTTP-Falls (ein enveloppiertes `initialize` ohne Vorgeschichte) ist ueber
+    stdio nicht herstellbar, weil sie dort in einer Handshake-Verbindung endet
+    statt in einer Absage.
+
+    Fuer einen Client-Autor ist es zugleich die unangenehmste Stelle der
+    Revision: Wer den Envelope stempelt und trotzdem mit `initialize` eroeffnet,
+    bekommt stillschweigend eine Verbindung einer aelteren Aera.
+    """
+    antworten = _stdio_roundtrip(
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "_meta": _envelope(),
+                "protocolVersion": MCP_PROTOCOL_VERSION,
+                "capabilities": {},
+                "clientInfo": {"name": "modern-era-test", "version": "1"},
+            },
+        }
+    )
+
+    assert len(antworten) == 1, antworten
+    ergebnis = antworten[0]
+    assert "error" not in ergebnis, ergebnis
+    ausgehandelt = ergebnis["result"]["protocolVersion"]
+    assert ausgehandelt != MCP_PROTOCOL_VERSION, (
+        "der Envelope wird auf `initialize` doch beachtet — dann ist der Docstring falsch"
+    )
+    assert ausgehandelt == LATEST_HANDSHAKE_VERSION
