@@ -276,11 +276,22 @@ Measured on 2026-09-18 against `mcp` 2.2.0, through both transports:
   body, or the request is refused with `-32020` *before* the tool runs — so a
   proxy that reads only headers cannot be pointed at a different tool than the
   body names. (`Mcp-Param-*` is unused here; see [`_cors.py`](src/swiss_procurement_mcp/_cors.py).)
-- **`initialize` is refused differently per transport, and both are right.**
-  Over HTTP each POST stands alone, so there is no connection serving an era
-  and `initialize` is simply not a method: `-32601`, HTTP 404. Over stdio the
-  connection picks its era with the first request, so a later `initialize` is
-  from the wrong era: `-32022`, naming the served revision.
+- **`initialize` gets three different answers, and the transport is not what
+  separates them.** The first write-up here called the HTTP and stdio cases
+  "two sides" of one situation; they differ in two variables at once, transport
+  *and* history, so neither explains the other. The three measured cells:
+
+  | Situation | Answer |
+  |---|---|
+  | enveloped `initialize`, alone, over HTTP | `-32601` METHOD_NOT_FOUND, HTTP 404 |
+  | `initialize` *after* a modern request, over stdio | `-32022` UNSUPPORTED_PROTOCOL_VERSION |
+  | enveloped `initialize` **first**, over stdio | accepted — a `2025-11-25` handshake |
+
+  The fourth cell does not exist: over stdio an `initialize` without history
+  opens a legacy connection instead of being refused, so the HTTP situation
+  cannot be reproduced there. Note the third row — **stamping the envelope on
+  `initialize` silently gets you a connection of an older era**, with nothing
+  saying the envelope was ignored.
 - **Capabilities read differently per era, and this is the SDK's doing, not a
   setting here.** At `2026-07-28` the SDK derives `tools.listChanged`,
   `prompts.listChanged`, `resources.listChanged` and `resources.subscribe` from

@@ -106,6 +106,15 @@ async def _lifespan(_server: MCPServer):
 # `resources/read` is cacheable per spec and stays unset, because that one
 # really has no answer: there is no resource to read, so there is nothing whose
 # freshness could be described.
+#
+# **What makes the three hints right is that the lists are empty**, and that is
+# the trigger the paragraph above was missing. `tools/list` states its own
+# ("the day a tool list becomes caller-dependent, this has to become
+# `private`"); these three had none, and their case is weaker, not stronger:
+# a registered prompt or resource could well be caller-dependent, and a
+# `public` five-minute hint would then hand one caller's list to another.
+# `test_die_gehinteten_listen_sind_leer` fails the day any of them stops being
+# empty — that is the reminder to decide the scope again, not to bump a number.
 LIST_CACHE_TTL_MS = 300_000
 
 CACHE_HINTS = {
@@ -139,16 +148,20 @@ INSTRUCTIONS = (
     "Read-only access to simap.ch, the Swiss public procurement platform — all cantons "
     "and the Confederation, updated intraday.\n"
     "\n"
-    "Start at `search_procurements` and pass the ids it returns to "
-    "`get_procurement_details`. simap indexes *projects*, not publications: one hit is "
+    "Start at `search_procurements`. `get_procurement_details` needs *both* ids from a "
+    "hit, `project_id` and `publication_id`. simap indexes *projects*, not publications: "
+    "one hit is "
     "one project, represented by its newest publication, so a tender published in March "
     "and awarded in July appears once, as the July award. `get_publication_history` "
     "reaches the earlier publications; for a project with lots it needs a `lot_id` from "
     'the search hit, and a lot without its own history answers "not decidable" rather '
     'than "none".\n'
     "\n"
-    "Every search needs at least one filter — simap answers a filterless query with "
-    "nothing rather than with everything. A `canton` filter selects the procuring body "
+    "The project search (`search_procurements`, `search_procurements_detailed`) needs at "
+    "least one filter — simap answers a filterless project search with nothing rather "
+    "than with everything. The code and office searches take a required query instead, "
+    "and `search_awards` carries its own filter. A `canton` filter selects the procuring "
+    "body "
     "by default, not the place of delivery; roughly 60% of publications carry no "
     "structured delivery address and are invisible to the delivery filter.\n"
     "\n"

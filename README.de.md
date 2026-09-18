@@ -236,12 +236,24 @@ Gemessen am 18.9.2026 gegen `mcp` 2.2.0, über beide Transporte:
   läuft — ein Proxy, der nur Header liest, kann also nicht auf ein anderes
   Werkzeug zeigen als der Rumpf nennt. (`Mcp-Param-*` wird hier nicht
   verwendet, siehe [`_cors.py`](src/swiss_procurement_mcp/_cors.py).)
-- **`initialize` wird je Transport anders abgelehnt, und beides stimmt.** Über
-  HTTP steht jeder POST für sich, es gibt keine Verbindung, die eine Ära
-  bediente, und `initialize` ist schlicht keine Methode: `-32601`, HTTP 404.
-  Über stdio entscheidet die erste Anfrage die Ära der Verbindung, ein späteres
-  `initialize` kommt also aus der falschen Ära: `-32022`, unter Nennung der
-  bedienten Revision.
+- **`initialize` bekommt drei verschiedene Antworten, und der Transport ist
+  nicht das, was sie trennt.** Die erste Fassung nannte den HTTP- und den
+  stdio-Fall «zwei Seiten» derselben Situation; sie unterscheiden sich in zwei
+  Grössen zugleich, Transport *und* Vorgeschichte, also erklärt keine die
+  andere. Die drei gemessenen Zellen:
+
+  | Situation | Antwort |
+  |---|---|
+  | enveloppiertes `initialize`, allein, über HTTP | `-32601` METHOD_NOT_FOUND, HTTP 404 |
+  | `initialize` *nach* einer modernen Anfrage, über stdio | `-32022` UNSUPPORTED_PROTOCOL_VERSION |
+  | enveloppiertes `initialize` **zuerst**, über stdio | angenommen — ein `2025-11-25`-Handshake |
+
+  Die vierte Zelle gibt es nicht: Über stdio öffnet ein `initialize` ohne
+  Vorgeschichte eine Handshake-Verbindung, statt abgelehnt zu werden — die
+  HTTP-Situation ist dort also nicht herstellbar. Die dritte Zeile ist die
+  unangenehmste: **Wer den Envelope auf `initialize` stempelt, bekommt
+  stillschweigend eine Verbindung einer älteren Ära**, ohne jeden Hinweis
+  darauf, dass der Envelope ignoriert wurde.
 - **Capabilities lesen sich je Ära anders, und das ist das SDK und keine
   Einstellung hier.** Bei `2026-07-28` leitet das SDK `tools.listChanged`,
   `prompts.listChanged`, `resources.listChanged` und `resources.subscribe` aus
