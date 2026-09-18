@@ -69,8 +69,41 @@ def test_every_hinted_method_is_one_the_spec_can_cache() -> None:
     assert not unknown, f"not cacheable per spec 2026-07-28: {unknown}"
 
 
-def test_no_hint_describes_a_surface_this_server_does_not_have() -> None:
-    """`prompts/list` and `resources/list` are cacheable methods, and hinting at
-    them would be a lie about what is registered. The day either is registered,
-    this test is the reminder to hint at it deliberately."""
-    assert set(CACHE_HINTS) == {"tools/list", "server/discover"}
+async def test_every_hinted_method_actually_answers() -> None:
+    """The check that replaced a set comparison — and the reason it had to.
+
+    This file used to assert `set(CACHE_HINTS) == {"tools/list",
+    "server/discover"}` under the sentence that hinting `prompts/list` or
+    `resources/list` "would be a lie about what is registered". Measured
+    against the running server on 2026-09-18, both answer HTTP 200 with an
+    empty array: `MCPServer` registers the handlers whether or not anything is
+    registered through them. The premise was about the inventory, the hint is
+    about the answer, and the two are not the same claim.
+
+    A set comparison could not have caught that, because it never asked the
+    server anything. This one does: a hint on a method that does not answer
+    fails here, which is the property the old test was reaching for.
+    """
+    async with Client(mcp) as client:
+        answers = {
+            "tools/list": await client.list_tools(),
+            "prompts/list": await client.list_prompts(),
+            "resources/list": await client.list_resources(),
+            "resources/templates/list": await client.list_resource_templates(),
+        }
+
+    for method, result in answers.items():
+        assert method in CACHE_HINTS, f"{method} answers but carries no hint"
+        assert result.ttl_ms == LIST_CACHE_TTL_MS, f"{method} answered ttlMs={result.ttl_ms}"
+        assert result.cache_scope == "public", f"{method} answered {result.cache_scope}"
+
+
+def test_resources_read_stays_unhinted() -> None:
+    """The one cacheable method that really has no answer.
+
+    `resources/read` names a resource, and this server registers none — there
+    is nothing whose freshness a hint could describe. This is where the old
+    test's instinct was right, so it is kept for exactly that method.
+    """
+    assert "resources/read" not in CACHE_HINTS
+    assert "resources/read" in CACHEABLE_METHODS  # still the spec's business, just not ours

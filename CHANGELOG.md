@@ -7,6 +7,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Die Version, die MCP-Clients sehen, war der leere String — in beiden Aeren.**
+  `tests/test_version_identity.py` oeffnet mit dem Satz «die Version, die dieser
+  Server ankuendigt, muss die sein, die er ist», und haelt ihn fuer den
+  User-Agent, den simap.ch sieht. Fuer `serverInfo` hielt ihn nichts:
+  `MCPServer` bekam kein `version=`, der SDK-Standard ist `""`, und so meldete
+  sich ein Paket auf 0.18.5 bei jedem Client als Version ohne Inhalt. Gemessen
+  am 18.9.2026 gegen `mcp` 2.2.0, gleichermassen im `initialize`-Ergebnis und
+  im `_meta` von `server/discover`.
+
+  In der Revision `2026-07-28` wiegt das schwerer als vorher, nicht weniger:
+  Dort gibt es keinen Handshake mehr, `server/discover` ist die **einzige**
+  Stelle, an der ein nativer Client nach der Identitaet fragen kann. Der Wert
+  kommt jetzt aus `constants.VERSION`, also aus den Metadaten der installierten
+  Distribution — kein zweites Literal, aus demselben Grund, den `constants.py`
+  ausfuehrt.
+
+- **`server/discover` trug keine `instructions`.** Bei einem Handshake liefert
+  `initialize` sie mit; ohne Handshake ist `DiscoverResult.instructions` die
+  einzige Server-Ebene, auf der ein Modell Orientierung bekommt, bevor es ein
+  Werkzeug waehlt. Sie war leer, obwohl jedes einzelne Werkzeug ausfuehrlich
+  dokumentiert ist — die drei Dinge, an denen ein Modell ohne Vorwissen
+  scheitert (eine filterlose Suche liefert nichts; ein Treffer ist ein Projekt
+  und keine Publikation; `canton` meint standardmaessig die Vergabestelle),
+  standen nirgends auf Server-Ebene.
+
 - **`get_publication_history` war fuer jede losbasierte Beschaffung kaputt —
   und meldete dafuer eine Stoerung.** Der Endpunkt `past-publications` fuehrt
   laut Spec einen optionalen Parameter `lotId`; bei einer Publikation mit Losen
@@ -54,6 +79,48 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `pyproject.toml` bindet seit der 2.x-Migration auf `mcp>=2.0.0,<3`.
 
 ### Added
+
+- **`tests/test_modern_era.py` — der Pin wird jetzt gefahren statt behauptet.**
+  Bisher prueften die Zusicherungen `MCP_PROTOCOL_VERSION` gegen SDK-Konstanten
+  und fuhren einen `initialize` durch den ASGI-Stack. Dieser Durchlauf erreicht
+  nur die Handshake-Aera, und die deckelt bei `2025-11-25`: eine einzige
+  `2026-07-28`-Anfrage hatte dieses Repo nie gestellt. Ein Server kann eine
+  Revision pinnen, die er mit `400` beantwortet, und dabei gruen bleiben —
+  dieselbe Klasse wie der handgeschriebene Stub, der die Annahme seines Autors
+  bestaetigt.
+
+  Zwanzig Faelle, jeder mit echtem Pro-Request-Envelope: `server/discover`,
+  `tools/list`, ein `tools/call` gegen eine aufgezeichnete Antwort, die
+  Ablehnung ohne Envelope, die Ablehnung bei Header/Rumpf-Konflikt, die
+  Cache-Hinweise am HTTP-Rand, `resultType` — und **stdio**, der Transport,
+  mit dem dieser Server ausgeliefert wird und der in keiner Zusicherung
+  vorkam. Jede neue Zusicherung ist einzeln neutralisiert worden; die
+  Gegenprobe faellt jeweils genau dort, wo sie soll.
+
+- **`title` und `websiteUrl` in `serverInfo`.** Der Titel ist, was ein Client
+  einem Menschen zeigt, die Adresse, wohin er schaut, wenn dieser Server etwas
+  Unerwartetes tut. `icons` bleibt bewusst leer: dieses Repo liefert keines,
+  und eine erfundene URL waere derselbe Fehler wie die leere Version, nur in
+  einem Feld, das niemand nachschlaegt.
+
+- **Cache-Hinweise (SEP-2549) auch fuer `prompts/list`, `resources/list` und
+  `resources/templates/list` — und das ist eine Korrektur.** Sie standen
+  unhinted unter dem Satz, dieser Server registriere weder das eine noch das
+  andere, «und ein Hinweis darauf beschriebe eine Oberflaeche, die es nicht
+  gibt». Die Oberflaeche gibt es: gemessen antworten alle drei mit HTTP 200
+  und leerem Array, weil `MCPServer` die Handler registriert, unabhaengig
+  davon, ob etwas *durch* sie registriert ist. Clients rufen sie also auf und
+  bekamen `ttlMs: 0, cacheScope: private` — «sofort veraltet, nie teilen» —
+  fuer die stabilste Antwort, die dieser Server hat. Die Praemisse betraf das
+  Inventar, der Hinweis betrifft die Antwort.
+
+  `resources/read` bleibt ungehinted: dort hatte die alte Regel recht, denn
+  eine Ressource, deren Frische zu beschreiben waere, gibt es nicht.
+
+  Die Zusicherung, die das absicherte, war ein Mengenvergleich auf
+  `CACHE_HINTS` — sie hat den Server nie etwas gefragt und konnte den
+  Fehlbefund deshalb nicht bemerken. Sie ist durch einen Aufruf je gehintete
+  Methode ersetzt.
 
 - **`lot_id` an `get_publication_history`** und **`lots_type` plus `lots` an
   jedem Suchtreffer.** Der Mapper liess die `lots`-Liste der Quelle fallen;

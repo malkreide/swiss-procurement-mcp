@@ -36,6 +36,7 @@ from .constants import (
     PROCESS_TYPES,
     PROJECT_SUB_TYPES,
     PUB_TYPES,
+    VERSION,
 )
 from .inputs import (
     MAX_DETAIL_N,
@@ -92,17 +93,77 @@ async def _lifespan(_server: MCPServer):
 # answer is identical for every authorization context. The day a tool list
 # becomes caller-dependent, this has to become `private` in the same commit.
 #
-# `prompts/list` and `resources/list` stay unset on purpose — this server
-# registers neither, and hinting at them would describe a surface that does not
-# exist.
+# **`prompts/list` and `resources/list` are hinted too, and the reason is a
+# correction.** They stood unhinted under the sentence "this server registers
+# neither, and hinting at them would describe a surface that does not exist".
+# The surface exists. Measured against the running ASGI stack on 2026-09-18,
+# all three list methods answer HTTP 200 with an empty array — `MCPServer`
+# registers the handlers whether or not anything is registered *through* them,
+# so a client calls them and gets `ttlMs: 0, cacheScope: private` back. The
+# premise was about the inventory; the hint is about the answer, and that
+# answer is the emptiest, most stable one this server has.
+#
+# `resources/read` is cacheable per spec and stays unset, because that one
+# really has no answer: there is no resource to read, so there is nothing whose
+# freshness could be described.
 LIST_CACHE_TTL_MS = 300_000
 
 CACHE_HINTS = {
     "tools/list": CacheHint(ttl_ms=LIST_CACHE_TTL_MS, scope="public"),
     "server/discover": CacheHint(ttl_ms=LIST_CACHE_TTL_MS, scope="public"),
+    "prompts/list": CacheHint(ttl_ms=LIST_CACHE_TTL_MS, scope="public"),
+    "resources/list": CacheHint(ttl_ms=LIST_CACHE_TTL_MS, scope="public"),
+    "resources/templates/list": CacheHint(ttl_ms=LIST_CACHE_TTL_MS, scope="public"),
 }
 
-mcp = MCPServer("swiss-procurement-mcp", lifespan=_lifespan, cache_hints=CACHE_HINTS)
+# ARCH-013: what a client learns about this server before it calls anything.
+#
+# At the handshake era the `initialize` result carries `serverInfo` and
+# `instructions`. Spec 2026-07-28 has no handshake at all — `server/discover`
+# is the only place a native client can ask, and it answers from exactly these
+# constructor arguments. Left unset they are not absent but wrong-shaped:
+# measured on 2026-09-18, `server/discover` stamped
+# `serverInfo: {"name": "swiss-procurement-mcp", "version": ""}` and no
+# instructions, in a repository whose `tests/test_version_identity.py` opens
+# with "the version this server announces must be the version it actually is".
+# That file holds the User-Agent simap.ch sees. Nothing held the version MCP
+# clients see, and it was the empty string in both eras.
+#
+# `VERSION` is read here rather than written: it comes from the installed
+# distribution's metadata, for the reason `constants.py` sets out at length.
+#
+# No `icons=`. This repository ships no icon, and an invented URL would be a
+# claim about a file that does not exist — the identity field version got
+# wrong, repeated in a field nobody checks.
+INSTRUCTIONS = (
+    "Read-only access to simap.ch, the Swiss public procurement platform — all cantons "
+    "and the Confederation, updated intraday.\n"
+    "\n"
+    "Start at `search_procurements` and pass the ids it returns to "
+    "`get_procurement_details`. simap indexes *projects*, not publications: one hit is "
+    "one project, represented by its newest publication, so a tender published in March "
+    "and awarded in July appears once, as the July award. `get_publication_history` "
+    "reaches the earlier publications; for a project with lots it needs a `lot_id` from "
+    'the search hit, and a lot without its own history answers "not decidable" rather '
+    'than "none".\n'
+    "\n"
+    "Every search needs at least one filter — simap answers a filterless query with "
+    "nothing rather than with everything. A `canton` filter selects the procuring body "
+    "by default, not the place of delivery; roughly 60% of publications carry no "
+    "structured delivery address and are invisible to the delivery filter.\n"
+    "\n"
+    "Answers are advisory. The publication on simap.ch itself stays authoritative."
+)
+
+mcp = MCPServer(
+    "swiss-procurement-mcp",
+    title="Swiss Public Procurement (simap.ch)",
+    version=VERSION,
+    website_url="https://github.com/malkreide/swiss-procurement-mcp",
+    instructions=INSTRUCTIONS,
+    lifespan=_lifespan,
+    cache_hints=CACHE_HINTS,
+)
 
 # OBS-003: structured JSON to stderr. stdout carries the MCP protocol.
 configure_logging()
