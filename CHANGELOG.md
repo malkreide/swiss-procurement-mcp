@@ -5,6 +5,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **`scripts/check_release_drift.py` — die Versionsnummer wird gegen den Tag
+  geprueft, nicht nur gegen ihre Kopien.** Steht die deklarierte Version schon
+  als Tag, darf sich das ausgelieferte Artefakt seither nicht veraendert haben:
+  `src/` und die Laufzeit-Abhaengigkeiten. Vom 7.8. bis 27.9.2026 deklarierte
+  `main` 0.18.5, waehrend sich `src/` seit `v0.18.5` um +516/−23 Zeilen
+  veraendert hatte; `check_version_sync.py` blieb gruen, weil er die Kopien der
+  Nummer untereinander vergleicht. Gegen die echte Historie belegt: rot auf
+  `ac66e63` mit genau den fuenf geaenderten Dateien, gruen auf `4d06a1d`
+  (`v0.18.5`) und `26259be` (`v0.19.0`). Ab `ee480c2` am 7.8. waere er rot
+  gewesen — sieben Wochen vor dem Release.
+
+  Bei einem flachen Checkout bricht er ab, statt zu bestehen: ohne Tags saehe
+  er keinen und waere gruen. Der `lint`-Job checkt dafuer mit
+  `fetch-depth: 0` aus. Folge: Der erste PR nach einem Release, der `src/` oder
+  eine Laufzeit-Abhaengigkeit aendert, muss die Version anheben.
+
 ## [0.19.0] - 2026-09-27
 
 Erstes Release seit 0.18.5 vom 2.8.2026. Bis hierher trug `main` dieselbe
