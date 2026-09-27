@@ -102,6 +102,24 @@ def test_eine_alte_aenderung_ist_ein_befund(repo: Path) -> None:
     assert "seit 20 Tagen" in befund.reason
 
 
+def test_der_merge_zeitpunkt_wird_sekundengenau_gelesen(repo: Path) -> None:
+    """Der Zeitpunkt, nicht nur die Tageszahl.
+
+    Die erste Fassung las `%cI` mit `datetime.fromisoformat` und fiel in der
+    CI nur in einer Zelle: Python 3.10 kennt das `Z`, das Git 2.55 fuer UTC
+    schreibt, nicht. Lokal (Git 2.43 schreibt `+00:00`) war das unsichtbar.
+    Jetzt kommt ein Unix-Zeitstempel; dieser Test haelt fest, dass er ohne
+    Zeitzonenverschiebung ankommt — ein Fehler um einige Stunden fiele beim
+    Vergleich ganzer Tage nicht zuverlaessig auf.
+    """
+    _commit(repo, {"src/a.py": "A = 2\n"}, 20)
+
+    (commit,) = crl.pruefe(repo, JETZT).ausgeliefert
+
+    assert commit.datum == JETZT - timedelta(days=20)
+    assert commit.datum.utcoffset() == timedelta(0)
+
+
 @pytest.mark.parametrize(("tage", "erwartet"), [(13, "clear"), (14, "finding")])
 def test_die_schwelle_gilt_ab_dem_vierzehnten_tag(repo: Path, tage: int, erwartet: str) -> None:
     _commit(repo, {"src/a.py": "A = 2\n"}, tage)

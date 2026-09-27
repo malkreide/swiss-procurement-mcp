@@ -129,14 +129,20 @@ def pruefe(repo: Path, jetzt: datetime, schwelle_tage: int = DEFAULT_DAYS) -> Be
         "log",
         "--first-parent",
         "--reverse",
-        "--format=%H%x00%cI%x00%s",
+        # Unix-Zeitstempel, nicht `%cI`: Git 2.55 schreibt UTC als `...Z`, und
+        # `datetime.fromisoformat` kennt das `Z` erst ab Python 3.11 — dieser
+        # Job laeuft auf 3.10. Lokal mit Git 2.43 (`+00:00`) war der Fehler
+        # unsichtbar; erst die 3.10-Zelle der CI-Matrix mit dem neueren Git des
+        # Runners traf beide Bedingungen zugleich.
+        "--format=%H%x00%ct%x00%s",
         f"{tag_commit}..HEAD",
     ).stdout.splitlines()
     ausgeliefert: list[Commit] = []
     for zeile in linie:
-        sha, datum, betreff = zeile.split("\x00", 2)
+        sha, zeitstempel, betreff = zeile.split("\x00", 2)
         if _aendert_auslieferung(repo, f"{sha}^1", sha):
-            ausgeliefert.append(Commit(sha, datetime.fromisoformat(datum), betreff))
+            datum = datetime.fromtimestamp(int(zeitstempel), tz=timezone.utc)
+            ausgeliefert.append(Commit(sha, datum, betreff))
 
     if not ausgeliefert:
         # Netto veraendert, aber kein einzelner First-Parent-Commit zeigt es —
