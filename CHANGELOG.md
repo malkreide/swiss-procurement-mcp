@@ -7,6 +7,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Nächtlicher Job `release-lag` — wie lange liegen ausgelieferte
+  Aenderungen unveroeffentlicht in `main`?** `check_release_drift.py` ist nach
+  dem ersten Versionssprung gruen, egal wie lange das naechste Release dauert.
+  Vom 7.8. bis 27.9.2026 waren es 51 Tage, und die publizierte Version hatte
+  die ganze Zeit ein defektes `get_publication_history` fuer losbasierte
+  Beschaffungen. `scripts/check_release_lag.py` zaehlt ab dem **Merge** der
+  ersten ausgelieferten Aenderung (`src/` oder Laufzeit-Abhaengigkeiten, die
+  Definition importiert aus `check_release_drift.py`) seit dem neuesten von
+  HEAD aus erreichbaren Versions-Tag. Ab 14 Tagen oeffnet der Job ein Issue
+  mit Label `release`, ersetzt nachts dessen Text statt zu kommentieren und
+  schliesst es, sobald der Rueckstand unter der Schwelle liegt. Rot wird er
+  nur, wenn nichts messbar war.
+
+  Gegen die echte Historie: auf `ac66e63` mit Stichtag 26.9. `finding`
+  (49 Tage, Bezug `v0.18.5` — `v0.19.0` existiert, ist von dort aus aber nicht
+  erreichbar), mit Stichtag 21.8. noch `clear` (13 Tage).
+
 - **`scripts/check_release_drift.py` — die Versionsnummer wird gegen den Tag
   geprueft, nicht nur gegen ihre Kopien.** Steht die deklarierte Version schon
   als Tag, darf sich das ausgelieferte Artefakt seither nicht veraendert haben:

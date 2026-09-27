@@ -148,6 +148,123 @@ jobs:
             swiss-procurement-mcp:ci \
             python -c "import swiss_procurement_mcp.server; print('ok')"
 
+  release-lag:
+    # Wie `live` nur nachts oder von Hand: Der Rueckstand ist keine Eigenschaft
+    # eines PR, sondern der Zeit seit dem letzten Release.
+    #
+    # `check_release_drift.py` im Job `lint` verhindert, dass eine Nummer fuer
+    # zwei Codestaende steht. Wie lange ausgelieferte Aenderungen danach
+    # unveroeffentlicht bleiben, sieht er nicht: nach dem ersten Versionssprung
+    # ist er gruen. Vom 7.8. bis 27.9.2026 waren es 51 Tage, und in der
+    # publizierten Version war `get_publication_history` fuer losbasierte
+    # Beschaffungen die ganze Zeit defekt.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      # Volle Historie samt Tags: Der Bezug ist der neueste von HEAD aus
+      # erreichbare Versions-Tag, das Alter der Merge-Zeitpunkt in main.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.10"
+
+      # Nur Standardbibliothek, deshalb kein Install. Die Schwelle ist eine
+      # Setzung, keine Messung.
+      - name: Rueckstand messen
+        id: lag
+        env:
+          RELEASE_LAG_DAYS: "14"
+        run: python scripts/check_release_lag.py --report release-lag.md
+
+      - name: Issue oeffnen, aktualisieren oder schliessen
+        uses: actions/github-script@v9
+        # Ueber `env`, nicht ueber `${{ }}` im Skript — derselbe Grund wie im
+        # Job `live`. Der Bericht enthaelt Commit-Betreffe, also fremden Text;
+        # er wird aus der Datei gelesen und nie in Code eingesetzt.
+        env:
+          LAG_STATE: ${{ steps.lag.outputs.state }}
+          LAG_REASON: ${{ steps.lag.outputs.reason }}
+        with:
+          script: |
+            const fs = require('fs');
+            const state = process.env.LAG_STATE;
+            const reason = process.env.LAG_REASON || '';
+            const PREFIX = 'Release ueberfaellig';
+            const LABEL = 'release';
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}` +
+                        `/actions/runs/${context.runId}`;
+            const heute = new Date().toISOString().slice(0, 10);
+
+            const issues = await github.rest.issues.listForRepo({
+              ...context.repo, state: 'open', labels: LABEL, per_page: 100,
+            });
+            const open = issues.data.find(
+              (i) => !i.pull_request && i.title.startsWith(PREFIX)
+            );
+
+            if (state === 'unknown') {
+              // Nichts gemessen, also nichts am Issue aendern. Rot wird der
+              // Job im naechsten Schritt.
+              core.warning(`Release-Rueckstand nicht messbar: ${reason}. Am Issue wurde nichts geaendert.`);
+              return;
+            }
+
+            if (state === 'finding') {
+              const bericht = fs.readFileSync('release-lag.md', 'utf8');
+              const body = `${bericht}\n\nZuletzt gemessen am ${heute}: ${run}`;
+              if (open) {
+                // Den Text ersetzen statt jede Nacht zu kommentieren: Ein
+                // Rueckstand von drei Wochen waeren sonst 21 Kommentare.
+                await github.rest.issues.update({
+                  ...context.repo, issue_number: open.number, body,
+                });
+              } else {
+                try {
+                  await github.rest.issues.createLabel({
+                    ...context.repo, name: LABEL, color: 'fbca04',
+                    description: 'Ausgelieferte Aenderungen warten auf ein Release',
+                  });
+                } catch (e) {
+                  if (e.status !== 422) throw e;  // 422 = existiert bereits
+                }
+                await github.rest.issues.create({
+                  ...context.repo, title: `${PREFIX} (${heute})`, body, labels: [LABEL],
+                });
+              }
+              return;
+            }
+
+            // clear: nur hier wird zugemacht, weil nur hier gemessen und
+            // kein Rueckstand ueber der Schwelle gefunden wurde.
+            if (open) {
+              await github.rest.issues.createComment({
+                ...context.repo, issue_number: open.number,
+                body: `Kein Rueckstand mehr ueber der Schwelle (${reason}). Lauf: ${run}`,
+              });
+              await github.rest.issues.update({
+                ...context.repo, issue_number: open.number,
+                state: 'closed', state_reason: 'completed',
+              });
+            }
+
+      # Rot nur bei `unknown`. Ein Befund steht im Issue; wuerde er den Job
+      # rot faerben, waere der naechtliche Lauf womoeglich wochenlang rot aus
+      # einem Grund, der nichts mit dem Code zu tun hat — und rot, an das man
+      # sich gewoehnt, zeigt nichts mehr an.
+      - name: Nicht messbar ist rot
+        if: steps.lag.outputs.state == 'unknown'
+        env:
+          LAG_REASON: ${{ steps.lag.outputs.reason }}
+        run: |
+          echo "Release-Rueckstand nicht messbar: $LAG_REASON"
+          exit 1
+
   live:
     # Only on the nightly schedule or manual dispatch — never on PR/push so the
     # mainline build is not held hostage to simap.ch availability.
