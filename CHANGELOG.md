@@ -5,6 +5,29 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-09-27
+
+Erstes Release seit 0.18.5 vom 2.8.2026. Bis hierher trug `main` dieselbe
+Versionsnummer wie das publizierte Artefakt, bei +516/−23 Zeilen unter
+`src/` — `check_version_sync.py` blieb gruen, weil er die Kopien der Nummer
+untereinander vergleicht und nicht mit dem letzten Tag.
+
+Was Nutzende von 0.18.5 bisher nicht hatten, nach Gewicht:
+
+- **`get_publication_history` funktioniert fuer losbasierte Beschaffungen.**
+  In 0.18.5 antwortet es dort mit «simap.ch is currently unreachable»; der
+  Quelle fehlte ein Parameter (`lot_id`, neu), erreichbar war sie.
+- **Browser-Clients bestehen den CORS-Preflight** fuer die Routing-Header von
+  Spec `2026-07-28`.
+- **Spec `2026-07-28` wird nativ bedient**: `server/discover` nennt jetzt die
+  Version (bisher `""`), Titel, Projektadresse und Server-`instructions`.
+- Suchtreffer tragen `lots_type` und `lots`; ein verworfenes Los wird gezaehlt
+  statt still zu fehlen.
+- Retry mit Jitter, `Retry-After`, Deckel und Budget.
+
+Additiv, nicht brechend: ein neuer optionaler Parameter, neue Antwortfelder.
+Die Einzelheiten folgen.
+
 ### Fixed
 
 Selbstpruefung des vorangegangenen PR #89, nachdem dessen Codex-Lauf zweimal am
