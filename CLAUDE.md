@@ -383,7 +383,7 @@ offenblieb: sie biss noch nicht. `check_version_sync.py` ist selbst ein Gate,
 `classify_live_run.py` entscheidet über die Einordnung eines Live-Laufs.
 
 Seither ist `check_ruff_pin.py` dazugekommen — vier Dateien, gleicher Scope.
-Und dann `check_release_drift.py` — fünf.
+Und dann `check_release_drift.py` — fünf. Und `check_release_lag.py` — sechs.
 
 **`check_release_drift.py` braucht Tags, und `lint` holt sie deshalb.** Der
 Job checkt mit `fetch-depth: 0` aus, als einziger. Ohne das sähe der Check
@@ -402,6 +402,23 @@ eine Laufzeit-Abhängigkeit ändert, wird rot, bis er die Version anhebt. Das
 ist gewollt — welche Nummer, entscheidet der Inhalt; dass es eine andere sein
 muss, entscheidet der Check. Das betrifft auch Dependabot-PRs auf
 `dependencies`; das `dev`-Extra zählt nicht.
+
+**Den Rückstand misst ein nächtlicher Job, `release-lag`.** Der Drift-Check
+ist nach dem ersten Versionssprung grün, egal wie lange das nächste Release
+dauert — vom 7.8. bis 27.9.2026 waren es 51 Tage, und in der publizierten
+Version war `get_publication_history` für losbasierte Beschaffungen die ganze
+Zeit defekt. `check_release_lag.py` zählt ab dem Merge der ersten
+ausgelieferten Änderung seit dem neuesten von HEAD aus erreichbaren
+Versions-Tag; ab 14 Tagen (`RELEASE_LAG_DAYS`, eine Setzung, keine Messung)
+eröffnet der Job ein Issue mit Label `release`, ersetzt nachts dessen Text
+statt zu kommentieren und schliesst es, sobald kein Rückstand mehr über der
+Schwelle liegt.
+
+Rot wird der Job **nur** bei `unknown`, nicht beim Befund. Ein Befund steht im
+Issue; ein nächtlicher Lauf, der wochenlang aus einem Grund rot ist, der
+nichts mit dem Code zu tun hat, gewöhnt einen an Rot. Wie `live` läuft er nur
+auf `schedule` und `workflow_dispatch` — Änderungen am Job wirken also erst
+nach dem Merge.
 
 **Live-Tests: geplanter Workflow vorhanden.** `.github/workflows/ci.yml`,
 `cron: "23 3 * * *"` plus `workflow_dispatch`. Die Live-Suite ist also nicht bloss
