@@ -352,6 +352,7 @@ python -c "from swiss_procurement_mcp.server import mcp; print('Import OK')"
 pytest -m "not live" -v
 python scripts/check_version_sync.py
 python scripts/check_ruff_pin.py
+python scripts/check_release_drift.py
 ruff check src/ tests/ scripts/
 ruff format --check src/ tests/ scripts/
 pytest tests/ -m live -v --junitxml=live-report.xml 2>&1 | tee live-output.txt
@@ -382,6 +383,25 @@ offenblieb: sie biss noch nicht. `check_version_sync.py` ist selbst ein Gate,
 `classify_live_run.py` entscheidet über die Einordnung eines Live-Laufs.
 
 Seither ist `check_ruff_pin.py` dazugekommen — vier Dateien, gleicher Scope.
+Und dann `check_release_drift.py` — fünf.
+
+**`check_release_drift.py` braucht Tags, und `lint` holt sie deshalb.** Der
+Job checkt mit `fetch-depth: 0` aus, als einziger. Ohne das sähe der Check
+keinen Tag, hielte jede Version für unveröffentlicht und wäre grün — er bricht
+bei einem flachen Checkout deshalb ab, statt zu bestehen. Wer ihn in einen
+anderen Job verschiebt, nimmt `fetch-depth: 0` mit.
+
+Anlass: Vom 7.8. bis 27.9.2026 deklarierte `main` weiter die Version des
+letzten Tags, während sich das Artefakt seit diesem Tag um +516/−23 Zeilen
+unter `src/` verändert hatte. `check_version_sync.py` blieb grün, weil er die Kopien der Nummer
+untereinander vergleicht und nicht mit dem Tag. Konsistente Kopien belegen
+nicht, dass die Nummer zum Artefakt passt.
+
+**Die Folge für den Alltag:** Der erste PR nach einem Release, der `src/` oder
+eine Laufzeit-Abhängigkeit ändert, wird rot, bis er die Version anhebt. Das
+ist gewollt — welche Nummer, entscheidet der Inhalt; dass es eine andere sein
+muss, entscheidet der Check. Das betrifft auch Dependabot-PRs auf
+`dependencies`; das `dev`-Extra zählt nicht.
 
 **Live-Tests: geplanter Workflow vorhanden.** `.github/workflows/ci.yml`,
 `cron: "23 3 * * *"` plus `workflow_dispatch`. Die Live-Suite ist also nicht bloss

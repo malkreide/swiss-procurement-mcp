@@ -54,7 +54,13 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      # Volle Historie samt Tags, fuer die Release-Drift-Pruefung unten. Ohne
+      # `fetch-depth: 0` holt checkout nur den einen Commit und keinen Tag —
+      # der Check waere dann gruen, ohne einen Tag gesehen zu haben. Er bricht
+      # deshalb bei einem flachen Checkout ab, statt still zu bestehen.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v7
         with:
@@ -70,6 +76,14 @@ jobs:
       # PATH ein anderes ruff, gewinnt jenes, und der Install meldet nichts.
       - name: Ruff-Pin (PATH und Modul gegen pyproject.toml)
         run: python scripts/check_ruff_pin.py
+
+      # `check_version_sync.py` vergleicht die Kopien der Versionsnummer
+      # untereinander. Ob die Nummer noch zum Artefakt passt, sieht er nicht:
+      # Vom 7.8. bis 27.9.2026 deklarierte `main` weiter die Version des
+      # letzten Tags, waehrend sich `src/` seither um +516/-23 Zeilen
+      # veraendert hatte.
+      - name: Release-Drift (getaggte Version gegen src/ und Laufzeit-Abhaengigkeiten)
+        run: python scripts/check_release_drift.py
 
       # `scripts/` kam zuletzt dazu, weil es ausserhalb BEIDER Gates lag.
       # Dort steht kein Beiwerk: `check_version_sync.py` ist selbst ein
