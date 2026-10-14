@@ -61,6 +61,13 @@ DEFAULT_DAYS = 14
 _TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 
 
+def _jetzt() -> datetime:
+    """Die Uhr fuer `main`. Eigene Funktion, damit Tests sie ersetzen koennen:
+    Ihre Commit-Daten stehen fest, und gegen die echte Uhr gemessen kippt ein
+    Test, sobald genug Tage vergangen sind — am 7.10.2026 passiert."""
+    return datetime.now(timezone.utc)
+
+
 @dataclass(frozen=True)
 class Commit:
     sha: str
@@ -204,7 +211,7 @@ def main(argv: list[str] | None = None) -> int:
         schwelle = int(os.environ.get("RELEASE_LAG_DAYS", DEFAULT_DAYS))
     except ValueError:
         schwelle = DEFAULT_DAYS
-    befund = pruefe(ROOT, datetime.now(timezone.utc), schwelle)
+    befund = pruefe(ROOT, _jetzt(), schwelle)
 
     print(f"state={befund.state}")
     print(f"reason={befund.reason}")
