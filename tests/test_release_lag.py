@@ -251,6 +251,7 @@ def test_github_output_traegt_genau_zwei_zeilen(
     out = tmp_path / "gh_output"
     bericht = tmp_path / "bericht.md"
     monkeypatch.setattr(crl, "ROOT", repo)
+    monkeypatch.setattr(crl, "_jetzt", lambda: JETZT)
     monkeypatch.setenv("GITHUB_OUTPUT", str(out))
     monkeypatch.setenv("RELEASE_LAG_DAYS", "14")
 
@@ -269,6 +270,7 @@ def test_die_schwelle_kommt_aus_der_umgebung(
     _commit(repo, {"src/a.py": "A = 2\n"}, 20)
     out = tmp_path / "gh_output"
     monkeypatch.setattr(crl, "ROOT", repo)
+    monkeypatch.setattr(crl, "_jetzt", lambda: JETZT)
     monkeypatch.setenv("GITHUB_OUTPUT", str(out))
     monkeypatch.setenv("RELEASE_LAG_DAYS", "30")
 
