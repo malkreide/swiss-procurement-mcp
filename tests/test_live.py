@@ -122,7 +122,16 @@ async def test_live_constants_match_the_openapi_spec(schema_name, ours):
     HTTP 400 / errorCode E0025 for users.
     """
     async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as http:
-        spec = (await http.get(SPEC_URL)).text
+        response = await http.get(SPEC_URL)
+
+    # Status first: on 16.11.2026 the spec came back as HTTP 500, and the body
+    # of that error was searched for the schema — the run reported
+    # "PubProcessType not found in the spec", which reads like upstream drift.
+    # A source that did not answer says nothing about the schema.
+    assert response.status_code == 200, (
+        f"spec unreachable (HTTP {response.status_code}) — no statement about {schema_name}"
+    )
+    spec = response.text
 
     start = spec.find(f"\n    {schema_name}:")
     assert start != -1, f"{schema_name} not found in the spec"
